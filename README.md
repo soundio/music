@@ -41,8 +41,6 @@ density.
 Takes an array of note numbers and returns the difference between the minimum
 and maximum.
 
-### .invert(array)
-
 ### .transpose(array, n)
 
 Takes an array of note numbers and transposes them by <code>n</code>.
@@ -58,6 +56,7 @@ Returns a number in the range <code>0-1</code> representing the ratio of
 note numbers in <code>array2</code> that are a chromatic half-step away from
 note numbers in <code>array1</code>.
 
+    // Two of these three notes are a chromatic half-step away
     music.chromaticism([61, 65, 68], [60, 64, 70])  // 0.666
 
 ### .parallelism(array1, array2)
@@ -65,6 +64,9 @@ note numbers in <code>array1</code>.
 Returns a number in the range <code>0-1</code> representing the ratio of note
 numbers in <code>array2</code> that can be considered part of a group that has
 moved chromatically as a block from note numbers in <code>array1</code>.
+
+    // Two of these three notes move in parallel
+    music.chromaticism([61, 65, 68], [59, 63, 70])  // 0.666
 
 ### .contraryParallelism(array1, array2)
 
@@ -74,3 +76,7 @@ moved chromaticically as a block from note numbers in <code>array1</code>.
 
 Contrary parallelism requires chords of at least four notes. If either array
 is less than length <code>4</code>, <code>contraryParallelism</code> returns 0.
+
+    // All four of these notes belong to a group that moves in parallel,
+    // with each group moving contrary to the other
+    music.chromaticism([61, 65, 68, 70], [59, 63, 70, 72])  // 1
