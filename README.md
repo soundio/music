@@ -9,7 +9,7 @@ A library of functions for analysing musical information.
     $ component install stephband/midi-graph-->
     
     
-#### music.consonance(array)
+### .consonance(array)
 
 Takes an array of note numbers and returns a number from 0-1 that rates the
 consonance of that group of notes.
@@ -26,7 +26,7 @@ Single notes are also perfectly consonant.
 
 All other intervals return a value betweeen 0 and 1.
 
-#### music.density(array)
+### .density(array)
 
 Takes an array of note numbers and rates the density of the group of notes
 between 0 and 1. The more notes there are closer together, the higher the
