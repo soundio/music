@@ -14,7 +14,7 @@ A library of functions for analysing and transforming musical information.
 Takes an array of note numbers and returns a number from 0-1 that rates the
 consonance of that group of notes.
 
-    // Silence is perfectly consonant
+    // Silence is golden
     music.consonance([])                    // 1
     
     // A single tone is consonant
@@ -41,14 +41,14 @@ density.
 Takes an array of note numbers and returns the difference between the minimum
 and maximum.
 
-### .transpose(array, n)
-
-Takes an array of note numbers and transposes them by <code>n</code>.
-
 ### .scale(array)
 
 Returns an ascending array of numbers in the range <code>0-12</code> that
 represents the scale formed from the notes in <code>array</code>.
+
+### .transpose(array, n)
+
+Takes an array of note numbers and transposes them by <code>n</code>.
 
 ### .chromaticism(array1, array2)
 
