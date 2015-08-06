@@ -72,7 +72,7 @@ moved chromatically as a block from note numbers in <code>array1</code>.
 
 Returns a number in the range <code>0-1</code> representing the ratio of note
 numbers in <code>array2</code> that can be considered part of a group that has
-moved chromaticically as a block from note numbers in <code>array1</code>, where
+moved chromatically as a block from note numbers in <code>array1</code>, where
 there is more than one group and they move by different distances.
 
     // All four of these notes belong to a group that moves in parallel,
