@@ -58,6 +58,8 @@ Returns a number in the range <code>0-1</code> representing the ratio of
 note numbers in <code>array2</code> that are a chromatic half-step away from
 note numbers in <code>array1</code>.
 
+    music.chromaticism([61, 65, 68], [60, 64, 70])  // 0.666
+
 ### .parallelism(array1, array2)
 
 Returns a number in the range <code>0-1</code> representing the ratio of note
