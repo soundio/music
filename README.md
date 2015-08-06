@@ -14,17 +14,18 @@ A library of functions for analysing and transforming musical information.
 Takes an array of note numbers and returns a number from 0-1 that rates the
 consonance of that group of notes.
 
-    music.consonance([64, 68])    // a major third
+    // Silence is perfectly consonant
+    music.consonance([])                    // 1
+    
+    // A single tone is consonant
+    music.consonance([80])                  // 1
+    
+    // A major third is less consonant
+    music.consonance([64, 68])              // 0.5
+    
+    // C7♭9 is really quite dissonant
+    music.consonance([60, 61, 64, 67, 70])  // 0.129
 
-Silence is deemed to be perfectly consonant.
-
-    music.consonance([])          // 1
-
-Single notes are also perfectly consonant.
-
-    music.consonance([80])        // 1
-
-All other intervals return a value betweeen 0 and 1.
 
 ### .density(array)
 
@@ -47,6 +48,9 @@ and maximum.
 Takes an array of note numbers and transposes them by <code>n</code>.
 
 ### .scale(array)
+
+Returns an ascending array of numbers in the range <code>0-12</code> that
+represents the scale formed from the notes in <code>array</code>.
 
 ### .chromaticism(array1, array2)
 

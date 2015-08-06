@@ -1,14 +1,89 @@
-<html>
-	<head>
-		
-	</head>
+<style>
+	body {
+		font-family: monospace;
+		font-size: 1.25rem;
+		line-height: 1.875rem;
+		color: #666666;
+	}
 
-	<body>
-		Music
+	input, table {
+		font-family: inherit;
+		font-size: inherit;
+	}
 
-		<script src="js/harmony.js"></script>
-		<script>
-			console.log(music);
-		</script>
-	</body>
-</html>
+	input, .array, output {
+		color: black;
+	}
+
+	input {
+		line-height: 1.75rem;
+		border-width: 0;
+		background-color: #eeeeee;
+	}
+</style>
+
+<p>Enter a comma-delimited list of note numbers:</p>
+
+<p>[<input type="text" id="tones" value="61,65,68"/>]</p>
+
+<table>
+	<tr>
+		<td>music.consonance([<span class="array"></span>])</td>
+		<td>=</td>
+		<td><output id="consonance-output"></output></td>
+	</tr>
+	<tr>
+		<td>music.density([<span class="array"></span>])</td>
+		<td>=</td>
+		<td><output id="density-output"></output></td>
+	</tr>
+	<tr>
+		<td>music.range([<span class="array"></span>])</td>
+		<td>=</td>
+		<td><output id="range-output"></output></td>
+	</tr>
+	<tr>
+		<td>music.scale([<span class="array"></span>])</td>
+		<td>=</td>
+		<td>[<output id="scale-output"></output>]</td>
+	</tr>
+</table>
+
+<script src="js/music-harmony.js"></script>
+<script>
+	var music = window.music;
+
+	var input = document.getElementById('tones');
+	var arraySpans = document.querySelectorAll('.array');
+	var rangeOutput = document.getElementById('range-output');
+	var densityOutput = document.getElementById('density-output');
+	var consonanceOutput = document.getElementById('consonance-output');
+	var scaleOutput = document.getElementById('scale-output');
+
+	function updateArraySpans(value) {
+		var n = arraySpans.length;
+		while (n--) { arraySpans[n].innerHTML = value; }
+	}
+
+	function parse(value) {
+		var number = parseInt(value, 10);
+		return Number.isNaN(number) ? '' : number ;
+	}
+
+	function update(input) {
+		var array = input.value.split(/\s*\,\s*/).map(parse);
+
+		updateArraySpans(array.join(', '));
+		rangeOutput.innerHTML = music.range(array);
+		densityOutput.innerHTML = music.density(array);
+		consonanceOutput.innerHTML = music.consonance(array);
+		scaleOutput.innerHTML = music.scale(array);
+	}
+
+	input.addEventListener('input', function(e) {
+		update(e.target);
+	});
+
+	update(input);
+</script>
+
