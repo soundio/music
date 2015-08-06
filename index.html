@@ -2,7 +2,7 @@
 	body {
 		font-family: monospace;
 		font-size: 1.25rem;
-		line-height: 1.875rem;
+		line-height: 1.75rem;
 		color: #666666;
 	}
 
@@ -17,12 +17,20 @@
 
 	input {
 		line-height: 1.75rem;
+		padding-left: 0.25rem;
+		padding-right: 0.25rem;
 		border-width: 0;
 		background-color: #eeeeee;
 	}
+
+	.small-input {
+		width: 2.5rem;
+	}
+
+	td { height: 1.75rem; }
 </style>
 
-<p>Enter a comma-delimited list of note numbers:</p>
+<p>Enter an array of note numbers to represent a chord:</p>
 
 <p>[<input type="text" id="tones" value="61,65,68"/>]</p>
 
@@ -47,6 +55,34 @@
 		<td>=</td>
 		<td>[<output id="scale-output"></output>]</td>
 	</tr>
+
+	<tr>
+		<td>music.transpose([<span class="array"></span>], <input type="text" class="small-input" id="transpose-input" value="-2"/>)</td>
+		<td>=</td>
+		<td>[<output id="transpose-output"></output>]</td>
+	</tr>
+</table>
+
+<p>Enter a second array of note numbers to represent a second chord:</p>
+
+<p>[<input type="text" id="array2-input" value="60,64,69"/>]</p>
+
+<table>
+	<tr>
+		<td>music.chromaticism([<span class="array"></span>], [<span class="array2"></span>])</td>
+		<td>=</td>
+		<td><output id="chromaticism-output"></output></td>
+	</tr>
+	<tr>
+		<td>music.parallelism([<span class="array"></span>], [<span class="array2"></span>])</td>
+		<td>=</td>
+		<td><output id="parallelism-output"></output></td>
+	</tr>
+	<tr>
+		<td>music.contraryParallelism([<span class="array"></span>], [<span class="array2"></span>])</td>
+		<td>=</td>
+		<td><output id="contrary-output"></output></td>
+	</tr>
 </table>
 
 <script src="js/music-harmony.js"></script>
@@ -54,15 +90,40 @@
 	var music = window.music;
 
 	var input = document.getElementById('tones');
+	var array2Input = document.getElementById('array2-input');
 	var arraySpans = document.querySelectorAll('.array');
+	var array2Spans = document.querySelectorAll('.array2');
 	var rangeOutput = document.getElementById('range-output');
 	var densityOutput = document.getElementById('density-output');
 	var consonanceOutput = document.getElementById('consonance-output');
 	var scaleOutput = document.getElementById('scale-output');
 
-	function updateArraySpans(value) {
+	var transposeInput = document.getElementById('transpose-input');
+	var transposeOutput = document.getElementById('transpose-output');
+
+	var chromaticismOutput = document.getElementById('chromaticism-output');
+	var parallelismOutput = document.getElementById('parallelism-output');
+	var contraryOutput = document.getElementById('contrary-output');
+
+	var array1, array2, transpose;
+
+	function updateArray1Spans(value) {
 		var n = arraySpans.length;
 		while (n--) { arraySpans[n].innerHTML = value; }
+	}
+
+	function updateArray2Spans(value) {
+		var n = array2Spans.length;
+		while (n--) { array2Spans[n].innerHTML = value; }
+	}
+
+	function updateTranspose(input) {
+		transpose = parseInt(input.value, 10);
+	}
+
+	function updateArray2(input) {
+		array2 = input.value.split(/\s*\,\s*/).map(parse);
+		updateArray2Spans(array2.join(', '));
 	}
 
 	function parse(value) {
@@ -71,19 +132,37 @@
 	}
 
 	function update(input) {
-		var array = input.value.split(/\s*\,\s*/).map(parse);
+		array1 = input.value.split(/\s*\,\s*/).map(parse);
+		updateArray1Spans(array1.join(', '));
 
-		updateArraySpans(array.join(', '));
-		rangeOutput.innerHTML = music.range(array);
-		densityOutput.innerHTML = music.density(array);
-		consonanceOutput.innerHTML = music.consonance(array);
-		scaleOutput.innerHTML = music.scale(array);
+		rangeOutput.innerHTML = music.range(array1);
+		densityOutput.innerHTML = music.density(array1);
+		consonanceOutput.innerHTML = music.consonance(array1);
+		scaleOutput.innerHTML = music.scale(array1);
+		transposeOutput.innerHTML = music.transpose(array1, transpose);
+		chromaticismOutput.innerHTML = music.chromaticism(array1, array2);
+		parallelismOutput.innerHTML = music.parallelism(array1, array2);
+		contraryOutput.innerHTML = music.contraryParallelism(array1, array2);
 	}
+
+	transposeInput.addEventListener('input', function(e) {
+		updateTranspose(e.target);
+		transposeOutput.innerHTML = music.transpose(array, transpose);
+	});
+
+	array2Input.addEventListener('input', function(e) {
+		updateArray2(e.target);
+		chromaticismOutput.innerHTML = music.chromaticism(array1, array2);
+		parallelismOutput.innerHTML = music.parallelism(array1, array2);
+		contraryOutput.innerHTML = music.contraryParallelism(array1, array2);
+	});
 
 	input.addEventListener('input', function(e) {
 		update(e.target);
 	});
 
+	updateTranspose(transposeInput);
+	updateArray2(array2Input);
 	update(input);
 </script>
 

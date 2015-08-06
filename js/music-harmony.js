@@ -1,13 +1,21 @@
-// harmony.js
+// music-harmony.js
 // Analysis arrays of note numbers for harmonic properties.
-//
-// References:
-// http://www.acousticslab.org/learnmoresra/moremodel.html
-// https://en.wikipedia.org/wiki/Roughness_%28psychophysics%29
-// http://music.stackexchange.com/questions/4439/is-there-a-way-to-measure-the-consonance-or-dissonance-of-a-chord
 
 (function(window) {
 	"use strict";
+
+	var noteNames = [
+	    	'C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G♯', 'A', 'B♭', 'B'
+	    ];
+
+	var noteTable = {
+	    	'C':  0, 'C♯': 1, 'D♭': 1, 'D': 2, 'D♯': 3, 'E♭': 3, 'E': 4,
+	    	'F':  5, 'F♯': 6, 'G♭': 6, 'G': 7, 'G♯': 8, 'A♭': 8, 'A': 9,
+	    	'A♯': 10, 'B♭': 10, 'B': 11
+	    };
+
+	var rnotename = /^([A-G][♭♯]?)(\d)$/;
+	var rshorthand = /[b#]/g;
 
 	var modes = [
 		{ scale: [0,1,5,7,10],       name: "insen",                 mode: 0, symbol: "sus7♭9" },
@@ -36,6 +44,13 @@
 		{ scale: [0,1,3,4,6,7,9,10], name: "diminished",            mode: 0, symbol: "7♭9" }
 	];
 
+	// This is a limit on how far away a parallel group can be and still be
+	// considered parallel. Y'know, 3 octave jumps don't sound all that parallel.
+	var parallelGroupTransposeLimit = 12;
+
+
+	// Arrays functions
+
 	// Map
 	function mod12(n) { return n % 12; }
 	function square(n) { return n * n; };
@@ -54,7 +69,32 @@
 	function shorter(arr1, arr2) { return arr2.length - arr1.length; };
 	function longer(arr1, arr2) { return arr1.length - arr2.length; };
 
-	// Arrays
+	function intersect(arr1, arr2) {
+		// A fast intersect that assumes arrays are sorted (ascending) numbers.
+		var l1 = arr1.length, l2 = arr2.length,
+		    i1 = 0, i2 = 0,
+		    arr3 = [];
+	
+		while (i1 < l1 && i2 < l2) {
+			if (arr1[i1] === arr2[i2]) {
+				arr3.push(arr1[i1]);
+				++i1;
+				++i2;
+			}
+			else if (arr2[i2] > arr1[i1]) {
+				++i1;
+			}
+			else {
+				++i2;
+			}
+		}
+	
+		return arr3;
+	};
+
+	function unite(arr1, arr2) {
+		return arr1.concat(arr2).filter(unique);
+	}
 
 	function isSubset(arr1, arr2) {
 		// Is arr2 a subset of arr1?
@@ -89,7 +129,15 @@
 	}
 
 
+
+
 	// Harmony
+	//
+	// References:
+	// http://www.acousticslab.org/learnmoresra/moremodel.html
+	// https://en.wikipedia.org/wiki/Roughness_%28psychophysics%29
+	// http://music.stackexchange.com/questions/4439/is-there-a-way-to-measure-the-consonance-or-dissonance-of-a-chord
+
 	var intervals = justIntervals();
 
 	// The multiplication factor we use to turn floats into in integer
@@ -179,7 +227,6 @@
 		return array.map(createAddFn(n));
 	}
 
-
 	function scale(array) {
 		return array.map(mod12).filter(unique).sort(greater);
 	}
@@ -227,7 +274,7 @@
 				ignore[t] = true;
 	
 				// Get all matching notes
-				intersection = fn.intersect(arr1, arr2.map(fnAdd(t)));
+				intersection = intersect(arr1, arr2.map(createAddFn(t)));
 				
 				// Throw away any results that are only a single note
 				if (intersection.length === 1) { continue; }
@@ -311,11 +358,11 @@
 	}
 
 	function chromaticism(arr1, arr2) {
-		var down = fn.intersect(arr1, arr2.map(increment)),
-		    up   = fn.intersect(arr1, arr2.map(decrement));
+		var down = intersect(arr1, arr2.map(increment)),
+		    up   = intersect(arr1, arr2.map(decrement));
 
-		return fn.unite(down, up).length / arr1.length;
-	};
+		return unite(down, up).length / arr1.length;
+	}
 
 	function parallelism(arr1, arr2) {
 		var lengths;
@@ -323,10 +370,9 @@
 		// Single notes or silence do not count as parallelism
 		if (arr1.length < 2) { return 0; }
 
-		return chromaticGroups(arr1, arr2)
+		return Math.max.apply(Math, chromaticGroups(arr1, arr2)
 			.map(propArray)
-			.map(propLength)
-			.reduce(fn.max, 0) / arr1.length ;
+			.map(propLength)) / arr1.length ;
 	}
 
 	function contraryParallelism(arr1, arr2) {
@@ -344,7 +390,34 @@
 		return data.rating;
 	}
 
+	function noteToNumber(str) {
+		var r = rnotename.exec(normaliseNoteName(str));
+		return parseInt(r[2]) * 12 + noteTable[r[1]];
+	}
+
+	function numberToNote(n) {
+		return noteNames[n % 12];
+	}
+
+	function numberToOctave(n) {
+		return Math.floor(n / 12) - (5 - MIDI.middle);
+	}
+
+	function numberToFrequency(n, frequency) {
+		return (frequency || 440) * Math.pow(1.059463094359, (n + 3 - (MIDI.middle + 2) * 12));
+	}
+
+	function frequencyToNumber(n, frequency) {
+		// TODO: Implement
+		return;
+	}
+
 	window.music = {
+		noteToNumber: noteToNumber,
+		numberToNote: numberToNote,
+		numberToOctave: numberToOctave,
+		numberToFrequency: numberToFrequency,
+
 		modes: modes,
 
 		consonance: consonance,

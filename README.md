@@ -54,6 +54,21 @@ represents the scale formed from the notes in <code>array</code>.
 
 ### .chromaticism(array1, array2)
 
+Returns a number in the range <code>0-1</code> representing the ratio of
+note numbers in <code>array2</code> that are a chromatic half-step away from
+note numbers in <code>array1</code>.
+
 ### .parallelism(array1, array2)
 
+Returns a number in the range <code>0-1</code> representing the ratio of note
+numbers in <code>array2</code> that can be considered part of a group that has
+moved chromatically as a block from note numbers in <code>array1</code>.
+
 ### .contraryParallelism(array1, array2)
+
+Returns a number in the range <code>0-1</code> representing the ratio of note
+numbers in <code>array2</code> that can be considered part of a group that has
+moved chromaticically as a block from note numbers in <code>array1</code>.
+
+Contrary parallelism requires chords of at least four notes. If either array
+is less than length <code>4</code>, <code>contraryParallelism</code> returns 0.
