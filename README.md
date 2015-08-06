@@ -1,6 +1,6 @@
 # music
 
-A library of functions for analysing musical information.
+A library of functions for analysing and transforming musical information.
 
 <!--## Installation
 

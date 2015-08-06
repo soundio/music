@@ -1,13 +1,40 @@
-// music.harmony.js
-// Analysised arrays of intervals for harmonic properties.
+// harmony.js
+// Analysis arrays of note numbers for harmonic properties.
 //
-// Reference:
+// References:
 // http://www.acousticslab.org/learnmoresra/moremodel.html
 // https://en.wikipedia.org/wiki/Roughness_%28psychophysics%29
 // http://music.stackexchange.com/questions/4439/is-there-a-way-to-measure-the-consonance-or-dissonance-of-a-chord
 
 (function(window) {
 	"use strict";
+
+	var modes = [
+		{ scale: [0,1,5,7,10],       name: "insen",                 mode: 0, symbol: "sus7♭9" },
+
+		{ scale: [0,2,4,7,9],        name: "pentatonic",            mode: 0, symbol: "∆" },
+		{ scale: [0,2,5,7,10],       name: "pentatonic",            mode: 0, symbol: "7sus9" },
+		{ scale: [0,3,5,8,10],       name: "pentatonic",            mode: 0, symbol: "-♭6" },
+		{ scale: [0,2,5,7,9],        name: "pentatonic",            mode: 0, symbol: "7sus13" },
+		{ scale: [0,3,5,7,10],       name: "pentatonic",            mode: 0, symbol: "-7" },
+
+		{ scale: [0,2,4,5,7,9,11],   name: "major",                 mode: 0, symbol: "∆" },
+		{ scale: [0,2,3,5,7,9,10],   name: "major",                 mode: 1, symbol: "-7" },
+		{ scale: [0,1,3,5,7,8,10],   name: "major",                 mode: 0, symbol: "sus7♭9" },
+		{ scale: [0,2,4,6,7,9,11],   name: "major",                 mode: 0, symbol: "∆♯11" },
+		{ scale: [0,2,4,5,7,9,10],   name: "major",                 mode: 0, symbol: "7" },
+		{ scale: [0,2,3,5,7,8,11],   name: "major",                 mode: 0, symbol: "-♭6" },
+		{ scale: [0,1,3,5,6,8,10],   name: "major",                 mode: 0, symbol: "ø" },
+
+		{ scale: [0,2,4,5,7,8,9,11], name: "bebop major",           mode: 0, symbol: "∆" },
+		{ scale: [0,2,3,5,7,9,11],   name: "melodic minor",         mode: 0, symbol: "-∆" },
+		{ scale: [0,2,3,5,7,8,11],   name: "harmonic minor",        mode: 0, symbol: "-∆♭6" },
+		{ scale: [0,2,4,5,7,8,11],   name: "harmonic major",        mode: 0, symbol: "∆♭6" },
+		{ scale: [0,2,4,5,7,8,11],   name: "double harmonic major", mode: 0, symbol: "∆♭6♯9" },
+
+		{ scale: [0,2,3,5,6,8,9,11], name: "diminished",            mode: 0, symbol: "˚7" },
+		{ scale: [0,1,3,4,6,7,9,10], name: "diminished",            mode: 0, symbol: "7♭9" }
+	];
 
 	// Map
 	function mod12(n) { return n % 12; }
@@ -152,33 +179,6 @@
 		return array.map(createAddFn(n));
 	}
 
-	var modes = [
-		{ scale: [0,1,5,7,10],       name: "insen",                 mode: 0, symbol: "sus7♭9" },
-
-		{ scale: [0,2,4,7,9],        name: "pentatonic",            mode: 0, symbol: "∆" },
-		{ scale: [0,2,5,7,10],       name: "pentatonic",            mode: 0, symbol: "7sus9" },
-		{ scale: [0,3,5,8,10],       name: "pentatonic",            mode: 0, symbol: "-♭6" },
-		{ scale: [0,2,5,7,9],        name: "pentatonic",            mode: 0, symbol: "7sus13" },
-		{ scale: [0,3,5,7,10],       name: "pentatonic",            mode: 0, symbol: "-7" },
-
-		{ scale: [0,2,4,5,7,9,11],   name: "major",                 mode: 0, symbol: "∆" },
-		{ scale: [0,2,3,5,7,9,10],   name: "major",                 mode: 1, symbol: "-7" },
-		{ scale: [0,1,3,5,7,8,10],   name: "major",                 mode: 0, symbol: "sus7♭9" },
-		{ scale: [0,2,4,6,7,9,11],   name: "major",                 mode: 0, symbol: "∆♯11" },
-		{ scale: [0,2,4,5,7,9,10],   name: "major",                 mode: 0, symbol: "7" },
-		{ scale: [0,2,3,5,7,8,11],   name: "major",                 mode: 0, symbol: "-♭6" },
-		{ scale: [0,1,3,5,6,8,10],   name: "major",                 mode: 0, symbol: "ø" },
-
-		{ scale: [0,2,4,5,7,8,9,11], name: "bebop major",           mode: 0, symbol: "∆" },
-		{ scale: [0,2,3,5,7,9,11],   name: "melodic minor",         mode: 0, symbol: "-∆" },
-		{ scale: [0,2,3,5,7,8,11],   name: "harmonic minor",        mode: 0, symbol: "-∆♭6" },
-		{ scale: [0,2,4,5,7,8,11],   name: "harmonic major",        mode: 0, symbol: "∆♭6" },
-		{ scale: [0,2,4,5,7,8,11],   name: "double harmonic major", mode: 0, symbol: "∆♭6♯9" },
-
-		{ scale: [0,2,3,5,6,8,9,11], name: "diminished",            mode: 0, symbol: "˚7" },
-		{ scale: [0,1,3,4,6,7,9,10], name: "diminished",            mode: 0, symbol: "7♭9" }
-	];
-
 
 	function scale(array) {
 		return array.map(mod12).filter(unique);
@@ -199,9 +199,9 @@
 	}
 
 
-	function propArray(o) { return o.array; }
-	function propTrans(o) { return o.trans; }
-	function propLength(o) { return o.length; }
+	function propArray(object) { return object.array; }
+	function propTrans(object) { return object.trans; }
+	function propLength(object) { return object.length; }
 
 	function chromaticGroups(arr1, arr2) {
 		var l1 = arr1.length, i1 = -1,
@@ -216,10 +216,10 @@
 		while (++i1 < l1) {
 			n = arr1[i1];
 			i2 = -1;
-//console.log('n', n);
+			//console.log('n', n);
 			while (++i2 < l2) {
 				t = n - arr2[i2];
-//console.log('t', t);
+			//console.log('t', t);
 				if (Math.abs(t) > parallelGroupTransposeLimit) { continue; }
 	
 				// We may have already tested and stored this transposition.
