@@ -5,7 +5,7 @@
 	"use strict";
 
 	var noteNames = [
-	    	'C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G♯', 'A', 'B♭', 'B'
+	    	'C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'B♭', 'B'
 	    ];
 
 	var noteTable = {
@@ -17,36 +17,80 @@
 	var rnotename = /^([A-G][♭♯]?)(\d)$/;
 	var rshorthand = /[b#]/g;
 
-	var modes = [
-		{ scale: [0,1,5,7,10],       name: "insen",                 mode: 0, symbol: "sus7♭9" },
-
-		{ scale: [0,2,4,7,9],        name: "pentatonic",            mode: 0, symbol: "∆" },
-		{ scale: [0,2,5,7,10],       name: "pentatonic",            mode: 0, symbol: "7sus9" },
-		{ scale: [0,3,5,8,10],       name: "pentatonic",            mode: 0, symbol: "-♭6" },
-		{ scale: [0,2,5,7,9],        name: "pentatonic",            mode: 0, symbol: "7sus13" },
-		{ scale: [0,3,5,7,10],       name: "pentatonic",            mode: 0, symbol: "-7" },
-
-		{ scale: [0,2,4,5,7,9,11],   name: "major",                 mode: 0, symbol: "∆" },
-		{ scale: [0,2,3,5,7,9,10],   name: "major",                 mode: 1, symbol: "-7" },
-		{ scale: [0,1,3,5,7,8,10],   name: "major",                 mode: 0, symbol: "sus7♭9" },
-		{ scale: [0,2,4,6,7,9,11],   name: "major",                 mode: 0, symbol: "∆♯11" },
-		{ scale: [0,2,4,5,7,9,10],   name: "major",                 mode: 0, symbol: "7" },
-		{ scale: [0,2,3,5,7,8,11],   name: "major",                 mode: 0, symbol: "-♭6" },
-		{ scale: [0,1,3,5,6,8,10],   name: "major",                 mode: 0, symbol: "ø" },
-
-		{ scale: [0,2,4,5,7,8,9,11], name: "bebop major",           mode: 0, symbol: "∆" },
-		{ scale: [0,2,3,5,7,9,11],   name: "melodic minor",         mode: 0, symbol: "-∆" },
-		{ scale: [0,2,3,5,7,8,11],   name: "harmonic minor",        mode: 0, symbol: "-∆♭6" },
-		{ scale: [0,2,4,5,7,8,11],   name: "harmonic major",        mode: 0, symbol: "∆♭6" },
-		{ scale: [0,2,4,5,7,8,11],   name: "double harmonic major", mode: 0, symbol: "∆♭6♯9" },
-
-		{ scale: [0,2,3,5,6,8,9,11], name: "diminished",            mode: 0, symbol: "˚7" },
-		{ scale: [0,1,3,4,6,7,9,10], name: "diminished",            mode: 0, symbol: "7♭9" }
-	];
-
 	// This is a limit on how far away a parallel group can be and still be
 	// considered parallel. Y'know, 3 octave jumps don't sound all that parallel.
 	var parallelGroupTransposeLimit = 12;
+
+	var modes = [
+		{ scale: [0,2,4,7,9],      group: "pentatonic", name: "major pentatonic", tonic: 0, symbol: "∆" },
+		{ scale: [0,2,5,7,10],     group: "pentatonic", name: "",                 tonic: 2, symbol: "7sus9" },
+		{ scale: [0,3,5,8,10],     group: "pentatonic", name: "",                 tonic: 4, symbol: "-♭6" },
+		{ scale: [0,2,5,7,9],      group: "pentatonic", name: "",                 tonic: 7, symbol: "7sus13" },
+		{ scale: [0,3,5,7,10],     group: "pentatonic", name: "minor pentatonic", tonic: 9, symbol: "-7" },
+
+		{ scale: [0,1,5,7,10],     group: "insen", name: "insen 1st mode", tonic: 0,  symbol: "sus7♭9" },
+		{ scale: [0,4,6,9,11],     group: "insen", name: "insen 2nd mode", tonic: 1,  symbol: "" },
+		{ scale: [0,2,5,7,8],      group: "insen", name: "insen 3rd mode", tonic: 5,  symbol: "" },
+		{ scale: [0,3,5,6,10],     group: "insen", name: "insen 4th mode", tonic: 7,  symbol: "" },
+		{ scale: [0,2,3,7,9],      group: "insen", name: "insen 5th mode", tonic: 10, symbol: "" },
+
+		{ scale: [0,2,4,6,8,10],   group: "whole tone", name: "whole tone", tonic: 0, symbol: "7+" },
+
+		{ scale: [0,2,4,5,7,9,11], group: "major", name: "ionic",      tonic: 0,  symbol: "∆" },
+		{ scale: [0,2,3,5,7,9,10], group: "major", name: "dorian",     tonic: 2,  symbol: "-7" },
+		{ scale: [0,1,3,5,7,8,10], group: "major", name: "phrygian",   tonic: 4,  symbol: "sus7♭9" },
+		{ scale: [0,2,4,6,7,9,11], group: "major", name: "lydian",     tonic: 5,  symbol: "∆♯11" },
+		{ scale: [0,2,4,5,7,9,10], group: "major", name: "mixolydian", tonic: 7,  symbol: "7" },
+		{ scale: [0,2,3,5,7,8,10], group: "major", name: "aeolian",    tonic: 9,  symbol: "-♭6" },
+		{ scale: [0,1,3,5,6,8,10], group: "major", name: "locrian",    tonic: 11, symbol: "ø" },
+
+		{ scale: [0,2,3,5,7,9,11], group: "melodic minor", name: "", tonic: 0,  symbol: "-∆" },
+		{ scale: [0,1,3,5,7,9,10], group: "melodic minor", name: "", tonic: 2,  symbol: "sus7♭9" },
+		{ scale: [0,2,4,6,8,9,11], group: "melodic minor", name: "", tonic: 3,  symbol: "∆♯5" },
+		{ scale: [0,2,4,6,7,9,10], group: "melodic minor", name: "", tonic: 5,  symbol: "7♯11" },
+		{ scale: [0,2,4,5,7,8,10], group: "melodic minor", name: "", tonic: 7,  symbol: "7♭13" },
+		{ scale: [0,2,3,5,6,8,10], group: "melodic minor", name: "", tonic: 9,  symbol: "ø" },
+		{ scale: [0,1,3,4,6,8,10], group: "melodic minor", name: "", tonic: 11, symbol: "7alt" },
+
+		{ scale: [0,2,3,5,7,8,11], group: "harmonic minor", name: "", tonic: 0,  symbol: "-♭6" },
+		{ scale: [0,1,3,5,6,9,10], group: "harmonic minor", name: "", tonic: 2,  symbol: "" },
+		{ scale: [0,2,4,5,8,9,11], group: "harmonic minor", name: "", tonic: 3,  symbol: "" },
+		{ scale: [0,2,3,6,7,9,10], group: "harmonic minor", name: "", tonic: 5,  symbol: "" },
+		{ scale: [0,1,4,5,7,8,10], group: "harmonic minor", name: "", tonic: 7,  symbol: "" },
+		{ scale: [0,3,4,6,7,9,11], group: "harmonic minor", name: "", tonic: 8,  symbol: "" },
+		{ scale: [0,1,3,4,6,8,9],  group: "harmonic minor", name: "", tonic: 11, symbol: "" },
+
+		{ scale: [0,2,4,5,7,8,11], group: "harmonic major", name: "", tonic: 0,  symbol: "" },
+		{ scale: [0,2,3,5,6,9,10], group: "harmonic major", name: "", tonic: 2,  symbol: "" },
+		{ scale: [0,1,3,4,7,8,10], group: "harmonic major", name: "", tonic: 4,  symbol: "" },
+		{ scale: [0,2,3,6,7,9,11], group: "harmonic major", name: "", tonic: 5,  symbol: "" },
+		{ scale: [0,1,4,5,7,9,10], group: "harmonic major", name: "", tonic: 7,  symbol: "" },
+		{ scale: [0,3,4,6,8,9,11], group: "harmonic major", name: "", tonic: 8,  symbol: "" },
+		{ scale: [0,1,3,5,6,8,9],  group: "harmonic major", name: "", tonic: 11, symbol: "" },
+
+		{ scale: [0,1,4,5,7,8,11],  group: "double harmonic major", name: "", tonic: 0,  symbol: "" },
+		{ scale: [0,3,4,6,7,10,11], group: "double harmonic major", name: "", tonic: 1,  symbol: "" },
+		{ scale: [0,1,3,4,7,8,9],   group: "double harmonic major", name: "", tonic: 4,  symbol: "" },
+		{ scale: [0,2,3,6,7,8,11],  group: "double harmonic major", name: "", tonic: 5,  symbol: "" },
+		{ scale: [0,1,4,5,6,9,10],  group: "double harmonic major", name: "", tonic: 7,  symbol: "" },
+		{ scale: [0,3,4,5,8,9,11],  group: "double harmonic major", name: "", tonic: 8,  symbol: "" },
+		{ scale: [0,1,2,5,6,8,9],   group: "double harmonic major", name: "", tonic: 11, symbol: "" },
+
+		{ scale: [0,2,3,5,6,8,9,11], group: "diminished", name: "whole step / half step", tonic: 0, symbol: "˚7" },
+		{ scale: [0,1,3,4,6,7,9,10], group: "diminished", name: "half step / whole step", tonic: 2, symbol: "7♭9" }
+	];
+
+	var rootModes = (function(modes) {
+		var roots = {};
+
+		modes.forEach(function(mode) {
+			if (mode.tonic === 0) {
+				roots[mode.group] = mode;
+			}
+		});
+
+		return roots;
+	})(modes);
 
 
 	// Arrays functions
@@ -227,18 +271,27 @@
 		return array.map(createAddFn(n));
 	}
 
-	function scale(array) {
+	function toScale(array) {
 		return array.map(mod12).filter(unique).sort(greater);
 	}
 
 	function getModes(array) {
-		var mode = mode(array);
-		var n = modes.length;
-		var results = [];
+		var scale = toScale(array);
+		var min = scale[0];
 
-		while (n--) {
-			if (isSubset(modes[n].scale, mode)) {
-				results.push(modes[n]);
+		if (min !== 0) {
+			scale = transpose(scale, -min);
+		}
+
+		var n = -1;
+		var l = modes.length;
+		var results = [];
+		var rootMode;
+
+		while (++n < l) {
+			if (isSubset(modes[n].scale, scale)) {
+				rootMode = rootModes[modes[n].group];
+				results.push([wrap12(min - modes[n].tonic), rootMode]);
 			}
 		}
 
@@ -423,7 +476,8 @@
 		consonance: consonance,
 		density: density,
 		range: range,
-		scale: scale,
+		scale: toScale,
+		getModes: getModes,
 
 		invert: invert,
 		transpose: transpose,
