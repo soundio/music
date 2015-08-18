@@ -4,18 +4,23 @@
 (function(window) {
 	"use strict";
 
-	var noteNames = [
-	    	'C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G♯', 'A', 'B♭', 'B'
-	    ];
+	var noteNames = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'B♭', 'B'];
 
-	var noteTable = {
+	var noteNumbers = {
 	    	'C':  0, 'C♯': 1, 'D♭': 1, 'D': 2, 'D♯': 3, 'E♭': 3, 'E': 4,
 	    	'F':  5, 'F♯': 6, 'G♭': 6, 'G': 7, 'G♯': 8, 'A♭': 8, 'A': 9,
 	    	'A♯': 10, 'B♭': 10, 'B': 11
 	    };
 
-	var rnotename = /^([A-G][♭♯]?)(\d)$/;
+	var A4 = 69;
+
+	var rnotename = /^([A-G][♭♯]?)(-?\d)$/;
 	var rshorthand = /[b#]/g;
+
+	var intervalNames = [
+		'', '♭2', '♮2', '-3', '∆3', '4', '♭5', '5', '♭6', '♮6', '7', '∆7',
+		'8ve', '♭9', '♮9', '♯9', '10', '11', '♯11', '12', '♭13', '13'
+	];
 
 	var modes = [
 		{ scale: [0,1,5,7,10],       name: "insen",                 mode: 0, symbol: "sus7♭9" },
@@ -390,33 +395,54 @@
 		return data.rating;
 	}
 
+	function replaceSymbol($0, $1) {
+		return $1 === '#' ? '♯' :
+			$1 === 'b' ? '♭' :
+			'' ;
+	}
+
+	function normaliseNoteName(name) {
+		return name.replace(rshorthand, replaceSymbol);
+	}
+
 	function noteToNumber(str) {
 		var r = rnotename.exec(normaliseNoteName(str));
-		return parseInt(r[2]) * 12 + noteTable[r[1]];
+		return (parseInt(r[2]) + 1) * 12 + noteNumbers[r[1]];
 	}
 
 	function numberToNote(n) {
-		return noteNames[n % 12];
+		return noteNames[n % 12] + numberToOctave(n);
 	}
 
 	function numberToOctave(n) {
-		return Math.floor(n / 12) - (5 - MIDI.middle);
+		return Math.floor(n / 12) - 1;
 	}
 
-	function numberToFrequency(n, frequency) {
-		return (frequency || 440) * Math.pow(1.059463094359, (n + 3 - (MIDI.middle + 2) * 12));
+	function numberToFrequency(n, tuning) {
+		return (tuning || music.tuning) * Math.pow(2, (n - A4) / 12);
 	}
 
-	function frequencyToNumber(n, frequency) {
-		// TODO: Implement
-		return;
+	function frequencyToNumber(frequency, tuning) {
+		var number = A4 + 12 * Math.log(frequency / (tuning || music.tuning)) / Math.log(2);
+
+		// Rounded it to nearest 1,000,000th to avoid floating point errors and
+		// return whole semitone numbers where possible. Surely no-one needs
+		// more accuracy than a millionth of a semitone?
+		return Math.round(1000000 * number) / 1000000;
+	}
+
+	function numberToIntervalName(n) {
+		return intervalNames[n];
 	}
 
 	window.music = {
+		tuning: 440,
+
 		noteToNumber: noteToNumber,
 		numberToNote: numberToNote,
 		numberToOctave: numberToOctave,
 		numberToFrequency: numberToFrequency,
+		numberToInterval: numberToIntervalName,
 
 		modes: modes,
 
