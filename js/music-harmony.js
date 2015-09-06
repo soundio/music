@@ -4,22 +4,27 @@
 (function(window) {
 	"use strict";
 
-	var noteNames = [
-	    	'C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'B♭', 'B'
-	    ];
+	var noteNames = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'B♭', 'B'];
 
-	var noteTable = {
+	var noteNumbers = {
 	    	'C':  0, 'C♯': 1, 'D♭': 1, 'D': 2, 'D♯': 3, 'E♭': 3, 'E': 4,
 	    	'F':  5, 'F♯': 6, 'G♭': 6, 'G': 7, 'G♯': 8, 'A♭': 8, 'A': 9,
 	    	'A♯': 10, 'B♭': 10, 'B': 11
 	    };
 
-	var rnotename = /^([A-G][♭♯]?)(\d)$/;
+	var A4 = 69;
+
+	var rnotename = /^([A-G][♭♯]?)(-?\d)$/;
 	var rshorthand = /[b#]/g;
 
 	// This is a limit on how far away a parallel group can be and still be
 	// considered parallel. Y'know, 3 octave jumps don't sound all that parallel.
 	var parallelGroupTransposeLimit = 24;
+
+	var intervalNames = [
+		'unison', '♭2nd', '2nd', '-3rd', '∆3rd', '4th', 'tritone', '5th', '♭6th', '6th', '-7th', '∆7th',
+		'octave', '♭9th', '9th', '♯9th', '10th', '11th', '♯11th', '12th', '♭13th', '13th'
+	];
 
 	var modes = [
 		{ scale: [0,2,4,7,9],      group: "pentatonic", name: "major pentatonic", tonic: 0, symbol: "∆" },
@@ -443,33 +448,54 @@
 		return data.rating;
 	}
 
+	function replaceSymbol($0, $1) {
+		return $1 === '#' ? '♯' :
+			$1 === 'b' ? '♭' :
+			'' ;
+	}
+
+	function normaliseNoteName(name) {
+		return name.replace(rshorthand, replaceSymbol);
+	}
+
 	function noteToNumber(str) {
 		var r = rnotename.exec(normaliseNoteName(str));
-		return parseInt(r[2]) * 12 + noteTable[r[1]];
+		return (parseInt(r[2]) + 1) * 12 + noteNumbers[r[1]];
 	}
 
 	function numberToNote(n) {
-		return noteNames[n % 12];
+		return noteNames[n % 12] + numberToOctave(n);
 	}
 
 	function numberToOctave(n) {
-		return Math.floor(n / 12) - (5 - MIDI.middle);
+		return Math.floor(n / 12) - 1;
 	}
 
-	function numberToFrequency(n, frequency) {
-		return (frequency || 440) * Math.pow(1.059463094359, (n + 3 - (MIDI.middle + 2) * 12));
+	function numberToFrequency(n, tuning) {
+		return (tuning || music.tuning) * Math.pow(2, (n - A4) / 12);
 	}
 
-	function frequencyToNumber(n, frequency) {
-		// TODO: Implement
-		return;
+	function frequencyToNumber(frequency, tuning) {
+		var number = A4 + 12 * Math.log(frequency / (tuning || music.tuning)) / Math.log(2);
+
+		// Rounded it to nearest 1,000,000th to avoid floating point errors and
+		// return whole semitone numbers where possible. Surely no-one needs
+		// more accuracy than a millionth of a semitone?
+		return Math.round(1000000 * number) / 1000000;
+	}
+
+	function numberToIntervalName(n) {
+		return intervalNames[n];
 	}
 
 	window.music = {
+		tuning: 440,
+
 		noteToNumber: noteToNumber,
 		numberToNote: numberToNote,
 		numberToOctave: numberToOctave,
 		numberToFrequency: numberToFrequency,
+		numberToInterval: numberToIntervalName,
 
 		modes: modes,
 
