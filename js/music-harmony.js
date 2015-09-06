@@ -19,7 +19,7 @@
 
 	// This is a limit on how far away a parallel group can be and still be
 	// considered parallel. Y'know, 3 octave jumps don't sound all that parallel.
-	var parallelGroupTransposeLimit = 12;
+	var parallelGroupTransposeLimit = 24;
 
 	var modes = [
 		{ scale: [0,2,4,7,9],      group: "pentatonic", name: "major pentatonic", tonic: 0, symbol: "∆" },
