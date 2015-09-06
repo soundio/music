@@ -27,70 +27,70 @@
 	];
 
 	var modes = [
-		{ scale: [0,2,4,7,9],      group: "pentatonic", name: "major pentatonic", tonic: 0, symbol: "∆" },
-		{ scale: [0,2,5,7,10],     group: "pentatonic", name: "",                 tonic: 2, symbol: "7sus9" },
-		{ scale: [0,3,5,8,10],     group: "pentatonic", name: "",                 tonic: 4, symbol: "-♭6" },
-		{ scale: [0,2,5,7,9],      group: "pentatonic", name: "",                 tonic: 7, symbol: "7sus13" },
-		{ scale: [0,3,5,7,10],     group: "pentatonic", name: "minor pentatonic", tonic: 9, symbol: "-7" },
+		{ family: "pentatonic", transpose: 0, scale: [0,2,4,7,9],  name: "major pentatonic", symbol: "∆" },
+		{ family: "pentatonic", transpose: 2, scale: [0,2,5,7,10], name: "",                 symbol: "7sus9" },
+		{ family: "pentatonic", transpose: 4, scale: [0,3,5,8,10], name: "",                 symbol: "-♭6" },
+		{ family: "pentatonic", transpose: 7, scale: [0,2,5,7,9],  name: "",                 symbol: "7sus13" },
+		{ family: "pentatonic", transpose: 9, scale: [0,3,5,7,10], name: "minor pentatonic", symbol: "-7" },
 
-		{ scale: [0,1,5,7,10],     group: "insen", name: "insen 1st mode", tonic: 0,  symbol: "sus7♭9" },
-		{ scale: [0,4,6,9,11],     group: "insen", name: "insen 2nd mode", tonic: 1,  symbol: "" },
-		{ scale: [0,2,5,7,8],      group: "insen", name: "insen 3rd mode", tonic: 5,  symbol: "" },
-		{ scale: [0,3,5,6,10],     group: "insen", name: "insen 4th mode", tonic: 7,  symbol: "" },
-		{ scale: [0,2,3,7,9],      group: "insen", name: "insen 5th mode", tonic: 10, symbol: "" },
+		{ family: "insen", transpose: 0,  scale: [0,1,5,7,10], name: "1st mode", symbol: "sus7♭9" },
+		{ family: "insen", transpose: 1,  scale: [0,4,6,9,11], name: "2nd mode", symbol: "" },
+		{ family: "insen", transpose: 5,  scale: [0,2,5,7,8],  name: "3rd mode", symbol: "" },
+		{ family: "insen", transpose: 7,  scale: [0,3,5,6,10], name: "4th mode", symbol: "" },
+		{ family: "insen", transpose: 10, scale: [0,2,3,7,9],  name: "5th mode", symbol: "" },
 
-		{ scale: [0,2,4,6,8,10],   group: "whole tone", name: "whole tone", tonic: 0, symbol: "7+" },
+		{ family: "whole tone", transpose: 0, scale: [0,2,4,6,8,10], name: "whole tone", symbol: "7+" },
 
-		{ scale: [0,2,4,5,7,9,11], group: "major", name: "ionic",      tonic: 0,  symbol: "∆" },
-		{ scale: [0,2,3,5,7,9,10], group: "major", name: "dorian",     tonic: 2,  symbol: "-7" },
-		{ scale: [0,1,3,5,7,8,10], group: "major", name: "phrygian",   tonic: 4,  symbol: "sus7♭9" },
-		{ scale: [0,2,4,6,7,9,11], group: "major", name: "lydian",     tonic: 5,  symbol: "∆♯11" },
-		{ scale: [0,2,4,5,7,9,10], group: "major", name: "mixolydian", tonic: 7,  symbol: "7" },
-		{ scale: [0,2,3,5,7,8,10], group: "major", name: "aeolian",    tonic: 9,  symbol: "-♭6" },
-		{ scale: [0,1,3,5,6,8,10], group: "major", name: "locrian",    tonic: 11, symbol: "ø" },
+		{ family: "major", transpose: 0,  scale: [0,2,4,5,7,9,11], name: "ionic",      symbol: "∆" },
+		{ family: "major", transpose: 2,  scale: [0,2,3,5,7,9,10], name: "dorian",     symbol: "-7" },
+		{ family: "major", transpose: 4,  scale: [0,1,3,5,7,8,10], name: "phrygian",   symbol: "sus7♭9" },
+		{ family: "major", transpose: 5,  scale: [0,2,4,6,7,9,11], name: "lydian",     symbol: "∆♯11" },
+		{ family: "major", transpose: 7,  scale: [0,2,4,5,7,9,10], name: "mixolydian", symbol: "7" },
+		{ family: "major", transpose: 9,  scale: [0,2,3,5,7,8,10], name: "aeolian",    symbol: "-♭6" },
+		{ family: "major", transpose: 11, scale: [0,1,3,5,6,8,10], name: "locrian",    symbol: "ø" },
 
-		{ scale: [0,2,3,5,7,9,11], group: "melodic minor", name: "", tonic: 0,  symbol: "-∆" },
-		{ scale: [0,1,3,5,7,9,10], group: "melodic minor", name: "", tonic: 2,  symbol: "sus7♭9" },
-		{ scale: [0,2,4,6,8,9,11], group: "melodic minor", name: "", tonic: 3,  symbol: "∆♯5" },
-		{ scale: [0,2,4,6,7,9,10], group: "melodic minor", name: "", tonic: 5,  symbol: "7♯11" },
-		{ scale: [0,2,4,5,7,8,10], group: "melodic minor", name: "", tonic: 7,  symbol: "7♭13" },
-		{ scale: [0,2,3,5,6,8,10], group: "melodic minor", name: "", tonic: 9,  symbol: "ø" },
-		{ scale: [0,1,3,4,6,8,10], group: "melodic minor", name: "", tonic: 11, symbol: "7alt" },
+		{ family: "melodic minor",  transpose: 0,  scale: [0,2,3,5,7,9,11], name: "", symbol: "-∆" },
+		{ family: "melodic minor",  transpose: 2,  scale: [0,1,3,5,7,9,10], name: "", symbol: "sus7♭9" },
+		{ family: "melodic minor",  transpose: 3,  scale: [0,2,4,6,8,9,11], name: "", symbol: "∆♯5" },
+		{ family: "melodic minor",  transpose: 5,  scale: [0,2,4,6,7,9,10], name: "", symbol: "7♯11" },
+		{ family: "melodic minor",  transpose: 7,  scale: [0,2,4,5,7,8,10], name: "", symbol: "7♭13" },
+		{ family: "melodic minor",  transpose: 9,  scale: [0,2,3,5,6,8,10], name: "", symbol: "ø" },
+		{ family: "melodic minor",  transpose: 11, scale: [0,1,3,4,6,8,10], name: "", symbol: "7alt" },
 
-		{ scale: [0,2,3,5,7,8,11], group: "harmonic minor", name: "", tonic: 0,  symbol: "-♭6" },
-		{ scale: [0,1,3,5,6,9,10], group: "harmonic minor", name: "", tonic: 2,  symbol: "" },
-		{ scale: [0,2,4,5,8,9,11], group: "harmonic minor", name: "", tonic: 3,  symbol: "" },
-		{ scale: [0,2,3,6,7,9,10], group: "harmonic minor", name: "", tonic: 5,  symbol: "" },
-		{ scale: [0,1,4,5,7,8,10], group: "harmonic minor", name: "", tonic: 7,  symbol: "" },
-		{ scale: [0,3,4,6,7,9,11], group: "harmonic minor", name: "", tonic: 8,  symbol: "" },
-		{ scale: [0,1,3,4,6,8,9],  group: "harmonic minor", name: "", tonic: 11, symbol: "" },
+		{ family: "harmonic minor", transpose: 0,  scale: [0,2,3,5,7,8,11], name: "", symbol: "-♭6" },
+		{ family: "harmonic minor", transpose: 2,  scale: [0,1,3,5,6,9,10], name: "", symbol: "" },
+		{ family: "harmonic minor", transpose: 3,  scale: [0,2,4,5,8,9,11], name: "", symbol: "" },
+		{ family: "harmonic minor", transpose: 5,  scale: [0,2,3,6,7,9,10], name: "", symbol: "" },
+		{ family: "harmonic minor", transpose: 7,  scale: [0,1,4,5,7,8,10], name: "", symbol: "" },
+		{ family: "harmonic minor", transpose: 8,  scale: [0,3,4,6,7,9,11], name: "", symbol: "" },
+		{ family: "harmonic minor", transpose: 11, scale: [0,1,3,4,6,8,9],  name: "", symbol: "" },
 
-		{ scale: [0,2,4,5,7,8,11], group: "harmonic major", name: "", tonic: 0,  symbol: "" },
-		{ scale: [0,2,3,5,6,9,10], group: "harmonic major", name: "", tonic: 2,  symbol: "" },
-		{ scale: [0,1,3,4,7,8,10], group: "harmonic major", name: "", tonic: 4,  symbol: "" },
-		{ scale: [0,2,3,6,7,9,11], group: "harmonic major", name: "", tonic: 5,  symbol: "" },
-		{ scale: [0,1,4,5,7,9,10], group: "harmonic major", name: "", tonic: 7,  symbol: "" },
-		{ scale: [0,3,4,6,8,9,11], group: "harmonic major", name: "", tonic: 8,  symbol: "" },
-		{ scale: [0,1,3,5,6,8,9],  group: "harmonic major", name: "", tonic: 11, symbol: "" },
+		{ family: "harmonic major", transpose: 0,  scale: [0,2,4,5,7,8,11], name: "", symbol: "" },
+		{ family: "harmonic major", transpose: 2,  scale: [0,2,3,5,6,9,10], name: "", symbol: "" },
+		{ family: "harmonic major", transpose: 4,  scale: [0,1,3,4,7,8,10], name: "", symbol: "" },
+		{ family: "harmonic major", transpose: 5,  scale: [0,2,3,6,7,9,11], name: "", symbol: "" },
+		{ family: "harmonic major", transpose: 7,  scale: [0,1,4,5,7,9,10], name: "", symbol: "" },
+		{ family: "harmonic major", transpose: 8,  scale: [0,3,4,6,8,9,11], name: "", symbol: "" },
+		{ family: "harmonic major", transpose: 11, scale: [0,1,3,5,6,8,9],  name: "", symbol: "" },
 
-		{ scale: [0,1,4,5,7,8,11],  group: "double harmonic major", name: "", tonic: 0,  symbol: "" },
-		{ scale: [0,3,4,6,7,10,11], group: "double harmonic major", name: "", tonic: 1,  symbol: "" },
-		{ scale: [0,1,3,4,7,8,9],   group: "double harmonic major", name: "", tonic: 4,  symbol: "" },
-		{ scale: [0,2,3,6,7,8,11],  group: "double harmonic major", name: "", tonic: 5,  symbol: "" },
-		{ scale: [0,1,4,5,6,9,10],  group: "double harmonic major", name: "", tonic: 7,  symbol: "" },
-		{ scale: [0,3,4,5,8,9,11],  group: "double harmonic major", name: "", tonic: 8,  symbol: "" },
-		{ scale: [0,1,2,5,6,8,9],   group: "double harmonic major", name: "", tonic: 11, symbol: "" },
+		{ family: "double harmonic major", transpose: 0,  scale: [0,1,4,5,7,8,11],  name: "", symbol: "" },
+		{ family: "double harmonic major", transpose: 1,  scale: [0,3,4,6,7,10,11], name: "", symbol: "" },
+		{ family: "double harmonic major", transpose: 4,  scale: [0,1,3,4,7,8,9],   name: "", symbol: "" },
+		{ family: "double harmonic major", transpose: 5,  scale: [0,2,3,6,7,8,11],  name: "", symbol: "" },
+		{ family: "double harmonic major", transpose: 7,  scale: [0,1,4,5,6,9,10],  name: "", symbol: "" },
+		{ family: "double harmonic major", transpose: 8,  scale: [0,3,4,5,8,9,11],  name: "", symbol: "" },
+		{ family: "double harmonic major", transpose: 11, scale: [0,1,2,5,6,8,9],   name: "", symbol: "" },
 
-		{ scale: [0,2,3,5,6,8,9,11], group: "diminished", name: "whole step / half step", tonic: 0, symbol: "˚7" },
-		{ scale: [0,1,3,4,6,7,9,10], group: "diminished", name: "half step / whole step", tonic: 2, symbol: "7♭9" }
+		{ family: "diminished", transpose: 0, scale: [0,2,3,5,6,8,9,11], name: "whole step / half step", symbol: "˚7" },
+		{ family: "diminished", transpose: 2, scale: [0,1,3,4,6,7,9,10], name: "half step / whole step", symbol: "7♭9" }
 	];
 
 	var rootModes = (function(modes) {
 		var roots = {};
 
 		modes.forEach(function(mode) {
-			if (mode.tonic === 0) {
-				roots[mode.group] = mode;
+			if (mode.transpose === 0) {
+				roots[mode.scale] = mode;
 			}
 		});
 
@@ -269,7 +269,39 @@
 	}
 
 	function invert(array, n) {
-		
+		var note, high, low;
+		var notes = array.slice();
+
+		if (n > 0) {
+			while (n--) {
+				// Invert notes by taking the bottom and moving
+				// it as many octaves up as necessary to put it
+				// on top.
+
+				note = notes.shift();
+				high = notes[notes.length - 1];
+
+				while (note <= high) { note += 12; }
+
+				notes.push(note);
+			}
+		}
+		else if (n < 0) {
+			while (n--) {
+				// Invert notes by taking the top one and moving
+				// it as many octaves down as necessary to put
+				// it bottom.
+
+				note = notes.pop();
+				low = notes[0];
+
+				while (note >= low) { note -= 12; }
+
+				notes.unshift(note);
+			}
+		}
+
+		return notes;
 	}
 
 	function transpose(array, n) {
@@ -277,39 +309,27 @@
 	}
 
 	function toScale(array) {
-		var s = array.map(mod12).filter(unique).sort(greater);
-		var t = s[0];
+		var t = array[0] % 12;
 
-		s = transpose(scale, -t);
-
-		var scale = findScale(s) || s ;
-
-		return {
-			scale: findScale(s) || s
-		};
-	}
-
-	function getScales(array) {
-		var scale = createScale(array);
-	}
-
-	function getModes(array) {
-		var scale = toScale(array);
-		var min = scale[0];
-
-		if (min !== 0) {
-			scale = transpose(scale, -min);
+		if (t !== 0) {
+			array = transpose(array, -t);
 		}
+
+		return [array.map(mod12).filter(unique).sort(greater), t];
+	}
+
+	function findModes(array) {
+		var data = toScale(array);
+		var scale = data[0];
+		var transpose = data[1];
 
 		var n = -1;
 		var l = modes.length;
 		var results = [];
-		var rootMode;
 
 		while (++n < l) {
 			if (isSubset(modes[n].scale, scale)) {
-				rootMode = rootModes[modes[n].group];
-				results.push([wrap12(min - modes[n].tonic), rootMode]);
+				results.push([modes[n], transpose]);
 			}
 		}
 
@@ -503,6 +523,7 @@
 
 	window.music = {
 		tuning: 440,
+		modes: modes,
 
 		noteToNumber: noteToNumber,
 		numberToNote: numberToNote,
@@ -510,19 +531,15 @@
 		numberToFrequency: numberToFrequency,
 		numberToInterval: numberToIntervalName,
 
-		modes: modes,
-
-		consonance: consonance,
-		density: density,
-		range: range,
-
-		scale: toScale,
-		scales: getScales,
-		getModes: getModes,
+		toScale: toScale,
+		findModes: findModes,
 
 		invert: invert,
 		transpose: transpose,
 
+		consonance: consonance,
+		density: density,
+		range: range,
 		chromaticism: chromaticism,
 		parallelism: parallelism,
 		contraryParallelism: contraryParallelism
