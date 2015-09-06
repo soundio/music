@@ -232,8 +232,21 @@
 		return array.map(createAddFn(n));
 	}
 
-	function scale(array) {
-		return array.map(mod12).filter(unique).sort(greater);
+	function getScale(array) {
+		var s = array.map(mod12).filter(unique).sort(greater);
+		var t = s[0];
+
+		s = transpose(scale, -t);
+
+		var scale = findScale(s) || s ;
+
+		return {
+			scale: findScale(s) || s
+		};
+	}
+
+	function getScales(array) {
+		var scale = createScale(array);
 	}
 
 	function getModes(array) {
@@ -450,6 +463,7 @@
 		density: density,
 		range: range,
 		scale: scale,
+		scales: scales,
 
 		invert: invert,
 		transpose: transpose,
