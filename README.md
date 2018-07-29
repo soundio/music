@@ -41,10 +41,22 @@ density.
 Takes an array of note numbers and returns the difference between the minimum
 and maximum.
 
-### .scale(array)
+### .toScale(array)
 
-Returns an ascending array of numbers in the range <code>0-12</code> that
-represents the scale formed from the notes in <code>array</code>.
+Collapse an array of notes into 1 octave to make a scale.
+
+Returns a <code>[scale, transpose]</code> pair, where <code>scale</code> is an
+ascending array of unique numbers starting with <code>0</code> and in the range
+<code>0-12</code>, and <code>transpose</code> is a number representing the
+transposition needed to put it in the key of the notes in <code>array</code>.
+
+### .findModes(array)
+
+Find modes where all the notes in <code>array</code> can be found.
+
+Returns an array of <code>[mode, transpose]</code> pairs, representing all modes
+that are supersets of, or an exact match to <code>toScale(array)</code>, and
+their <code>transpose</code> values.
 
 ### .transpose(array, n)
 
