@@ -2,7 +2,7 @@
 //
 // A library of musical functions
 
-import { add, curry, gcd, lcm, factorise, diff, compose, get } from '../../fn/fn.js';
+import { add, curry, gcd, lcm, factorise, diff, compose, get } from '../../fn/module.js';
 
 if (window.console && window.console.log) {
 	console.log('Music       - https://github.com/soundio/music');
