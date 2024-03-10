@@ -1,6 +1,7 @@
 // music-harmony.js
 // Analysis arrays of note numbers for harmonic properties.
 
+import intersect from './intersect.js';
 import config from './config.js';
 
 const noteNames = ['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'B♭', 'B'];
@@ -116,29 +117,6 @@ function lesser(v1, v2) { return v2 - v1; };
 function greater(v1, v2) { return v1 - v2; };
 function shorter(arr1, arr2) { return arr2.length - arr1.length; };
 function longer(arr1, arr2) { return arr1.length - arr2.length; };
-
-function intersect(arr1, arr2) {
-	// A fast intersect that assumes arrays are sorted (ascending) numbers.
-	var l1 = arr1.length, l2 = arr2.length,
-		i1 = 0, i2 = 0,
-		arr3 = [];
-
-	while (i1 < l1 && i2 < l2) {
-		if (arr1[i1] === arr2[i2]) {
-			arr3.push(arr1[i1]);
-			++i1;
-			++i2;
-		}
-		else if (arr2[i2] > arr1[i1]) {
-			++i1;
-		}
-		else {
-			++i2;
-		}
-	}
-
-	return arr3;
-};
 
 function unite(arr1, arr2) {
 	return arr1.concat(arr2).filter(unique);

@@ -87,8 +87,15 @@
 	</tr>
 </table>
 
-<script src="js/music.js"></script>
-<script>
+<script type="module">
+	import Notes from './modules/notes.js';
+
+
+	console.table(Notes.cache, ['name', 'length', 'range', 'density', 'consonance', 'symbol']);
+
+</script>
+
+<!--script>
 	var music = window.Music;
 
 	var input = document.getElementById('tones');
@@ -166,5 +173,5 @@
 	updateTranspose(transposeInput);
 	updateArray2(array2Input);
 	update(input);
-</script>
+</script-->
 
