@@ -2,9 +2,8 @@
 import intersect from './intersect.js';
 import { consonance, chromaticism, parallelism, contraryParallelism, numberToIntervalName } from './harmony';
 
-
+const DEBUG  = true;
 const assign = Object.assign;
-const cache  = {};
 
 
 /**
@@ -51,41 +50,26 @@ function validate(numbers) {
     }
 }
 
-export default class Notes extends Int8Array {
-    static cache = {}
+export default class Notes {
+    //static cache = {}
     static of() { return this.from(arguments); }
     static from(numbers) { return new this(numbers); }
 
     constructor(numbers) {
         // Check validity of arguments
-        if (window.DEBUG) { validate(numbers); }
+        if (DEBUG) { validate(numbers); }
 
         // Instantiate as TypedArray
-        super(numbers);
+        this.data = Int8Array.from(numbers);
 
         // Generate id
-        this.id = this.join();
-
-        // Cache notes so there is only ever one notes object representing a given
-        // collection of notes
-        const cache = this.constructor.cache;
-        if (cache[this.id]) { return cache[this.id]; }
-        cache[this.id] = this;
+        this.id = this.data.join();
 
         // Properties
-        this.range   = this.length ? this[this.length - 1] : 0 ;
-        this.density = this.length / (this.range + 1);
-    }
-
-    // Lazy self-overriding property
-    get consonance() {
-        return define(this, 'consonance', consonance(this));
-    }
-
-    // We do not want map to return an instance of Notes, which would create an
-    // entry in cache, but of Int8 array, which is less strict
-    map(fn) {
-        return Int8Array.from(this, fn);
+        this.size       = this.data.length;
+        this.range      = this.data.length ? this.data[this.data.length - 1] : 0 ;
+        this.density    = this.data.length / (this.range + 1);
+        this.consonance = consonance(this.data);
     }
 }
 
@@ -95,12 +79,12 @@ Notes.invert = function(notes) {
     }
 
     // Cannot invert single notes or silence
-    if (notes.length < 2) {
+    if (notes.data.length < 2) {
         return notes;
     }
 
     // Renormalise to notes[1] as bass
-    const array = notes.map((n) => n - notes[1]);
+    const array = notes.data.map((n) => n - notes.data[1]);
     array[0] += 12;
     array.sort();
     return new Notes(array);
@@ -113,7 +97,7 @@ Notes.inversions = function(notes) {
     let inversion = notes;
     while (true) {
         inversion = Notes.invert(inversion);
-        if (inversion === notes) { break; }
+        if (inversion.id === notes.id) { break; }
         inversions.push(inversion);
     }
 
@@ -163,148 +147,3 @@ Notes.findSupersets = function(notes) {
     }
     return supersets;
 };
-
-
-
-
-
-
-
-
-// Populate with silence
-
-const a = assign(Notes.of(),  { name: 'Silence' });
-
-// Populate with single note
-
-const b = assign(Notes.of(0), { name: 'Note' });
-
-// Populate with named intervals
-
-let n = 0, name;
-while (name = numberToIntervalName(++n)) {
-    assign(Notes.of(0, n), { name });
-}
-
-// Populate with named triads
-
-let inversion;
-inversion = assign(Notes.of(0,4,7),         { name: "Major triad" });
-inversion = assign(Notes.invert(inversion), { name: "Major triad 1st inversion" });
-inversion = assign(Notes.invert(inversion), { name: "Major triad 2nd inversion" });
-
-inversion = assign(Notes.of(0,3,7),         { name: "Minor triad" });
-inversion = assign(Notes.invert(inversion), { name: "Minor triad 1st inversion" });
-inversion = assign(Notes.invert(inversion), { name: "Minor triad 2nd inversion" });
-
-// Populate with common quads
-
-Notes.inversions(Notes.of(0, 5, 7, 10)); // Maj 7
-Notes.inversions(Notes.of(0, 4, 7, 11)); // Sus 4
-Notes.inversions(Notes.of(0, 3, 7, 11)); // Min Maj
-Notes.inversions(Notes.of(0, 3, 7, 10)); // Min 7
-Notes.inversions(Notes.of(0, 3, 6, 10)); // Half Dim
-Notes.inversions(Notes.of(0, 3, 6, 9 )); // Dim
-
-// Populate with named scales
-
-inversion = assign(Notes.of(0,2,4,7,9),     { symbol: "6",     name: "Pentatonic 1st mode (major)" });
-inversion = assign(Notes.invert(inversion), { symbol: "9sus",  name: "Pentatonic 2nd mode"  });
-inversion = assign(Notes.invert(inversion), { symbol: "-♭6",   name: "Pentatonic 3rd mode"   });
-inversion = assign(Notes.invert(inversion), { symbol: "13sus", name: "Pentatonic 4th mode" });
-inversion = assign(Notes.invert(inversion), { symbol: "-11",   name: "Pentatonic 5th mode (minor)" });
-
-inversion = assign(Notes.of(0,1,5,7,10),     { name: "Insen 1st mode",  symbol: "sus7♭9" });
-inversion = assign(Notes.invert(inversion),  { name: "Insen 2nd mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Insen 3rd mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Insen 4th mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Insen 5th mode" });
-
-inversion = assign(Notes.of(0,2,4,6,8,10),   { name: "Whole tone",  symbol: "7+" });
-
-inversion = assign(Notes.of(0,2,4,5,7,9,11), { name: "Ionian",     symbol: "∆" });
-inversion = assign(Notes.invert(inversion),  { name: "Dorian",     symbol: "-7" });
-inversion = assign(Notes.invert(inversion),  { name: "Phrygian",   symbol: "sus7♭9" });
-inversion = assign(Notes.invert(inversion),  { name: "Lydian",     symbol: "∆♯11" });
-inversion = assign(Notes.invert(inversion),  { name: "Mixolydian", symbol: "7" });
-inversion = assign(Notes.invert(inversion),  { name: "Aeolian",    symbol: "-♭6" });
-inversion = assign(Notes.invert(inversion),  { name: "Locrian",    symbol: "ø" });
-
-inversion = assign(Notes.of(0,2,3,5,7,9,11), { name: "Melodic Minor 1st mode", symbol: "-∆" });
-inversion = assign(Notes.invert(inversion),  { name: "Melodic Minor 2nd mode", symbol: "7sus♭9" });
-inversion = assign(Notes.invert(inversion),  { name: "Melodic Minor 3rd mode", symbol: "∆♯5" });
-inversion = assign(Notes.invert(inversion),  { name: "Melodic Minor 4th mode", symbol: "7♯11" });
-inversion = assign(Notes.invert(inversion),  { name: "Melodic Minor 5th mode", symbol: "7♭13" });
-inversion = assign(Notes.invert(inversion),  { name: "Melodic Minor 6th mode", symbol: "ø" });
-inversion = assign(Notes.invert(inversion),  { name: "Melodic Minor 7th mode", symbol: "7alt" });
-
-inversion = assign(Notes.of(0,2,4,5,7,8,11), { name: "Harmonic Major 1st mode", symbol: "∆♭6" });
-inversion = assign(Notes.invert(inversion),  { name: "Harmonic Major 2nd mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Harmonic Major 3rd mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Harmonic Major 4th mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Harmonic Major 5th mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Harmonic Major 6th mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Harmonic Major 7th mode" });
-
-inversion = assign(Notes.of(0,2,3,5,7,8,11), { name: "Harmonic Minor 1st mode", symbol: "-♭6" });
-inversion = assign(Notes.invert(inversion),  { name: "Harmonic Minor 2nd mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Harmonic Minor 3rd mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Harmonic Minor 4th mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Harmonic Minor 5th mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Harmonic Minor 6th mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Harmonic Minor 7th mode" });
-
-inversion = assign(Notes.of(0,1,4,5,7,8,11), { name: "Double Harmonic Major 1st mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Double Harmonic Major 2nd mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Double Harmonic Major 3rd mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Double Harmonic Major 4th mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Double Harmonic Major 5th mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Double Harmonic Major 6th mode" });
-inversion = assign(Notes.invert(inversion),  { name: "Double Harmonic Major 7th mode" });
-
-inversion = assign(Notes.of(0,2,3,5,6,8,9,11), { name: "Diminished whole step / half step", symbol: "˚" });
-inversion = assign(Notes.invert(inversion),    { name: "Diminished half step / whole step", symbol: "7♭9" });
-
-
-/* Change
-
-function Change(a, b, transpose = 0) {
-    // Cache change so there is only ever one change object representing a given change
-    const id = Notes.getId(a) + '-' + Notes.getId(b) + ':' + transpose;
-    if (cache[id]) { return cache[id]; }
-    cache[id] = this;
-
-    this.a = a;
-    this.b = b;
-    this.transpose = transpose;
-
-    const bt = Array.from(b, (n) => n + transpose));
-    this.chromaticism        = chromaticism(a, bt)
-    this.parallelism         = parallelism(a, bt);
-    this.contraryParallelism = contraryParallelism(a. bt);
-    this.common              = intersect(a, b).length;
-
-    a.changes.push(this);
-}
-
-
-
-function testOption(value, option) {
-        // Option is not defined
-    return option === undefined ? true :
-        // Option is a number
-        typeof option === 'number' ? value === option :
-        // Option is a range
-        (value >= option[0] && value < option[1]) ;
-}
-
-function findChanges(a, options) {
-    a.changes.filter(({ b }) => {
-        return testOption(a.length, options.length);
-    });
-}
-
-function createChanges(a, options) {
-
-}
-*/
