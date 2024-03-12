@@ -73,6 +73,12 @@ export default class Notes {
     }
 }
 
+Notes.normalise = function(notes) {
+    let i = notes.length;
+    while (i--) notes[i] = notes[i] - notes[0];
+    return notes;
+};
+
 Notes.invert = function(notes) {
     if (notes.range > 11) {
         throw new Error('TODO: Not implemented Notes.invert() of notes with range > octave');

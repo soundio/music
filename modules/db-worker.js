@@ -22,16 +22,11 @@ function send(command, data) {
     postMessage(message);
 }
 
-onmessage = overload((e) => e.data.command, {
-    default: (e) => console.log('message', e)
-});
 
 
-// Set up database
 
-console.log('Populating database');
-
-const db             = await openDB('music', 1, {
+// Database
+const db = await openDB('music', 1, {
     upgrade(db, oldVersion, newVersion, transaction, e) {
         console.log('UPGRADE', db, oldVersion, newVersion, transaction);
 
@@ -43,6 +38,9 @@ const db             = await openDB('music', 1, {
         const relations = db.createObjectStore('relations', {
             autoIncrement: true
         });
+
+        // Create an index for fast searching
+        modes.createIndex("size-range-consonance", ["size", "range", "consonance"]);
     },
 
     blocked(currentVersion, blockedVersion, e) {
@@ -57,6 +55,80 @@ const db             = await openDB('music', 1, {
         console.log('TERMINATED');
     },
 });
+unwrap(db).onerror   = (e) => console.log('DB Error', db.errorCode);
+unwrap(db).onsuccess = (e) => console.log('DB Success');
+
+
+
+onmessage = overload((e) => e.data.command, {
+    find: (e) => {
+        console.log('FINDING');
+        const min = e.data.data.min;
+        const max = e.data.data.max;
+
+        const store = unwrap(db.transaction("modes")).objectStore("modes");
+        // size, range, consonance
+        //const keyRange = IDBKeyRange.bound(min, max);
+        let r = 0;
+
+        store
+        .index('size-range-consonance')
+        .openCursor(IDBKeyRange.bound(min, max)).onsuccess = (event) => {
+            const cursor = event.target.result;
+
+            if (cursor) {
+                const data = cursor.value;
+
+                // Extra jiggery-pokery needed due to the way IndexedDB
+                // compares compound indices.
+                // https://gist.github.com/inexorabletash/704e9688f99ac12dd336
+                // https://w3c.github.io/IndexedDB/#key-construct
+
+                // Handle out-of-bounds lower ranges.
+                if (data.range < min[1]) {
+                    cursor.continue([data.size, min[1], min[2]]);
+                    return;
+                }
+
+                if (data.consonance < min[2]) {
+                    cursor.continue([data.size, data.range, min[2]]);
+                    return;
+                }
+
+                // Handle out-of-bounds upper ranges.
+                if (data.range > max[1]) {
+                    cursor.continue([data.size + 1, min[1], min[2]]);
+                    return;
+                }
+
+                if (data.consonance > max[2]) {
+                    cursor.continue([data.size, data.range + 1, min[2]]);
+                    return;
+                }
+
+                // RESULT!!!
+                console.log('id', cursor.key, 'data', data);
+                ++r;
+
+                // Limit to 50 results
+                if (r < 300) {
+                    cursor.continue();
+                    return;
+                }
+            }
+
+            console.log(r, 'entries found');
+        };
+    },
+
+    default: (e) => console.log('message', e)
+});
+
+
+
+
+
+
 const transaction    = db.transaction(['modes', 'relations'], 'readwrite');
 const modesStore     = unwrap(transaction.objectStore('modes'));
 const relationsStore = transaction.objectStore('relations');
@@ -206,17 +278,21 @@ modes.push(
     mode = assign(Notes.invert(mode),         { name: "Diminished half step / whole step", symbol: "7♭9" })
 );
 
-
 // Add named modes to db
 let i = -1;
 while (modes[++i]) modesStore.add(modes[i]).onerror = onerror;
 
 // Fill in all other modes
-generateModes([0], (notes) => modesStore.add(notes).onerror = onerror, 6, 36);
+generateModes([0], (notes) => modesStore.add(notes).onerror = onerror, 2, 36);
 
-
-await transaction.done.then(() => {
-    const endTime = performance.now() / 1000;
-    send('db-populated', { elapsedTime: endTime - beginTime });
+// Wait until database is populated
+transaction.done
+.then(() => {
+    const endTime     = performance.now() / 1000;
+    const elapsedTime = endTime - beginTime;
+    console.log('Database built (' + elapsedTime.toFixed(3) + 's)');
+    send('db-populated', { elapsedTime });
+})
+.catch((error) => {
+    send('db-error', error);
 });
-
