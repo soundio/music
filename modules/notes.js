@@ -153,3 +153,19 @@ Notes.findSupersets = function(notes) {
     }
     return supersets;
 };
+
+Notes.generateContraryParallels = function(notes) {
+    if (notes.length < 4) { return []; }
+
+    const splits = [];
+
+    let n = 0, a, b;
+    while (notes[++n]) {
+        // Clone notes
+        b = notes.slice();
+        // a starts as notes[0]
+        a = b.splice(1);
+        // b has n spliced out of it
+        a.push(b.splice(n, 1)[0]);
+    }
+};

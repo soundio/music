@@ -1,0 +1,26 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    ${ include("../documentation/templates/head.literal", "../../package.json") }
+</head>
+
+<body class="4x-grid @1-6x-grid @2-7x-grid @3-9x-grid grid">
+    <header class="x1 4x @2-x2 x-stretch">
+        <h1 class="text-01">Literal <span class="text-06">0.8.3</span></h1>
+    </header>
+
+    <section class="x1 4x @2-x2 x-stretch">
+        ${ include('./README.md', data) }
+    </section>
+
+    ${ include("../templates/nav.literal", "../nav.json") }
+    ${ include('../documentation/templates/credit.literal', '../package.json') }
+    ${ include('../documentation/templates/footer.literal', '../package.json') }
+    ${ include('../documentation/templates/scripts.literal', '../package.json') }
+
+    <script type="module">
+        import '../build/literal-html/module.js';
+    </script>
+</body>
+</html>

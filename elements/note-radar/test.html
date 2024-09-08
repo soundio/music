@@ -1,0 +1,51 @@
+<head>
+    <meta charset="utf-8" />
+    <meta name="author" content="Stephen" />
+    <meta name="description" content="Documentation for Literal. Literal puts JS into your HTML. Literal defines a custom include element that parses and renders templates written as JS Literals, in a small library under 15kB minified and gzipped." />
+    <meta name="viewport" content="width=device-width" />
+
+    <script>
+        window.DEBUG = true;
+    </script>
+
+    <script type="importmap">{
+      "imports": {
+        "dom/":     "../../../dom/modules/",
+        "fn/":      "../../../fn/modules/",
+        "literal/": "../../../literal/",
+        "midi/":    "../../../midi/modules/"
+      }
+    }</script>
+
+    <!--script type="importmap">{
+      "imports": {
+        "dom/":     "https://cdn.jsdelivr.net/gh/stephband/dom@master/modules/",
+        "fn/":      "https://cdn.jsdelivr.net/gh/stephband/fn@master/modules/",
+        "literal/": "https://cdn.jsdelivr.net/gh/stephband/literal@master/modules/"
+      }
+    }</script-->
+
+    <link rel="stylesheet" href="../../../bolt/elements/html.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/table.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/label.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/input.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/input-range.css" />
+    <link rel="stylesheet" href="../../../bolt/classes/block.css" />
+    <link rel="stylesheet" href="../../../bolt/classes/button.css" />
+    <link rel="stylesheet" href="../../../bolt/classes/select-button.css" />
+    <link rel="stylesheet" href="../../../bolt/classes/striped-table.css" />
+    <!--link rel="stylesheet" href="./module.css" /-->
+
+    <style>
+
+    </style>
+
+    <script type="module">
+        import 'literal/scope.js';
+        import './module.js';
+    </script>
+</head>
+
+<body>
+    <note-radar scale="C"></note-radar>
+</body>
