@@ -1,11 +1,11 @@
 import assignAttributes from 'dom/assign.js';
-import create      from 'dom/create.js';
-import Data        from 'fn/data.js';
-import overload    from 'fn/overload.js';
-import element, { getInternals } from 'literal/element/element.js';
-import toCartesian from 'fn/vector/to-cartesian-2d.js';
-import { frequencyToFloat } from 'midi/frequency.js';
-import { int7ToFloat } from 'midi/maths.js';
+import create           from 'dom/create.js';
+import Data             from 'fn/data.js';
+import overload         from 'fn/overload.js';
+import toCartesian      from 'fn/vector/to-cartesian-2d.js';
+import element, { getInternals }  from 'literal/element/element.js';
+import { frequencyToFloat }       from 'midi/frequency.js';
+import { int7ToFloat }            from 'midi/maths.js';
 import { toRootName, toNoteName } from 'midi/note.js';
 import { isNoteOn, isControl, toChannel, toType, toSignedFloat } from 'midi/message.js';
 
