@@ -27,18 +27,30 @@ line {
 .region[data-pitch^="G-"] { fill: oklch(0.9 0.02 162); }
 .region[data-pitch^="G♯"] { fill: oklch(0.9 0.02 192); }
 
-.region.highlight[data-pitch^="A-"] { fill: oklch(0.8 0.1 222); }
-.region.highlight[data-pitch^="B♭"] { fill: oklch(0.8 0.1 252); }
-.region.highlight[data-pitch^="B-"] { fill: oklch(0.8 0.1 282); }
-.region.highlight[data-pitch^="C-"] { fill: oklch(0.8 0.1 312); }
-.region.highlight[data-pitch^="C♯"] { fill: oklch(0.8 0.1 342); }
-.region.highlight[data-pitch^="D-"] { fill: oklch(0.8 0.1 12); }
-.region.highlight[data-pitch^="E♭"] { fill: oklch(0.8 0.1 42); }
-.region.highlight[data-pitch^="E-"] { fill: oklch(0.8 0.1 72); }
-.region.highlight[data-pitch^="F-"] { fill: oklch(0.8 0.1 102); }
-.region.highlight[data-pitch^="F♯"] { fill: oklch(0.8 0.1 132); }
-.region.highlight[data-pitch^="G-"] { fill: oklch(0.8 0.1 162); }
-.region.highlight[data-pitch^="G♯"] { fill: oklch(0.8 0.1 192); }
+.region.highlight[data-pitch^="A-"],
+.region.highlight[data-pitch^="A-"] ~ .region[data-pitch^="A-"] { fill: oklch(0.8 0.04 222); }
+.region.highlight[data-pitch^="B♭"],
+.region.highlight[data-pitch^="B♭"] ~ .region[data-pitch^="B♭"] { fill: oklch(0.8 0.04 252); }
+.region.highlight[data-pitch^="B-"],
+.region.highlight[data-pitch^="B-"] ~ .region[data-pitch^="B-"] { fill: oklch(0.8 0.04 282); }
+.region.highlight[data-pitch^="C-"],
+.region.highlight[data-pitch^="C-"] ~ .region[data-pitch^="C-"] { fill: oklch(0.8 0.04 312); }
+.region.highlight[data-pitch^="C♯"],
+.region.highlight[data-pitch^="C♯"] ~ .region[data-pitch^="C♯"] { fill: oklch(0.8 0.04 342); }
+.region.highlight[data-pitch^="D-"],
+.region.highlight[data-pitch^="D-"] ~ .region[data-pitch^="D-"] { fill: oklch(0.8 0.04 12); }
+.region.highlight[data-pitch^="E♭"],
+.region.highlight[data-pitch^="E♭"] ~ .region[data-pitch^="E♭"] { fill: oklch(0.8 0.04 42); }
+.region.highlight[data-pitch^="E-"],
+.region.highlight[data-pitch^="E-"] ~ .region[data-pitch^="E-"] { fill: oklch(0.8 0.04 72); }
+.region.highlight[data-pitch^="F-"],
+.region.highlight[data-pitch^="F-"] ~ .region[data-pitch^="F-"] { fill: oklch(0.8 0.04 102); }
+.region.highlight[data-pitch^="F♯"],
+.region.highlight[data-pitch^="F♯"] ~ .region[data-pitch^="F♯"] { fill: oklch(0.8 0.04 132); }
+.region.highlight[data-pitch^="G-"],
+.region.highlight[data-pitch^="G-"] ~ .region[data-pitch^="G-"] { fill: oklch(0.8 0.04 162); }
+.region.highlight[data-pitch^="G♯"],
+.region.highlight[data-pitch^="G♯"] ~ .region[data-pitch^="G♯"] { fill: oklch(0.8 0.04 192); }
 
 :host([scale~="A"])  .region[data-pitch^="A-"] { fill: oklch(0.8 0.04 222); }
 :host([scale~="A♯"]) .region[data-pitch^="B♭"],
@@ -67,8 +79,6 @@ line {
 :host([scale~="G#"]) .region[data-pitch^="G♯"],
 :host([scale~="A♭"]) .region[data-pitch^="G♯"],
 :host([scale~="Ab"]) .region[data-pitch^="G♯"] { fill: oklch(0.8 0.04 192); }
-
-
 
 .name {
     font-family: sans-serif;

@@ -58,10 +58,10 @@ function numberToRegion(n) {
     const da1 = numberToDA(n - 0.5);
     const da2 = numberToDA(n + 0.5);
     return {
-        p1: toCartesian([toDistance(da1[0] - 5.5), da1[1]]),
-        p2: toCartesian([toDistance(da1[0] + 5.5), da1[1]]),
-        p3: toCartesian([toDistance(da2[0] + 5.5), da2[1]]),
-        p4: toCartesian([toDistance(da2[0] - 5.5), da2[1]])
+        p1: toCartesian([toDistance(da1[0] - 12), da1[1]]),
+        p2: toCartesian([toDistance(da1[0]), da1[1]]),
+        p3: toCartesian([toDistance(da2[0]), da2[1]]),
+        p4: toCartesian([toDistance(da2[0] - 12), da2[1]])
     };
 }
 
@@ -87,26 +87,43 @@ function removeNote(notes, i) {
 export default element('note-radar', {
     shadow: `
         <link rel="stylesheet" href="./shadow.css" />
-        <svg viewbox="-56 -56 112 112" id="svg"></svg>
+        <svg viewbox="-52.5 -52.5 105 105" id="svg">
+            <defs>
+                <clipPath id="clip">
+                    <circle cx="0" cy="0" r="52.5"></circle>
+                </clipPath>
+            </defs>
+            <g clip-path="url(#clip)" id="regions"></g>
+            <!--circle cx="0" cy="0" r="3" fill="white" /-->
+            <g id="notes"></g>
+        </svg>
     `,
 
     construct: function(shadow, internals, data) {
-        const svg     = shadow.getElementById('svg');
+        const svg        = shadow.querySelector('svg');
+        const svgRegions = shadow.getElementById('regions');
         const regions = Array.from({ length: 128 }, (n, i) => {
             const box = numberToRegion(i);
             const r = toDistance(128 - i);
             return create('path', {
-                d: 'M' + box.p1.join(',')
+                d: i < 116 ?
+                // First 116
+                'M' + box.p1.join(',')
                  + 'L' + box.p2.join(',')
                  + 'A' + r + ' ' + r + ' 0 0 1 ' + box.p3.join(' ')
                  + 'L' + box.p4.join(',')
                  + 'A' + r + ' ' + r + ' 0 0 0 ' + box.p1.join(' ')
-                 + 'Z' ,
+                 + 'Z' :
+                // Last twelve segments meet in centre
+                'M0 0'
+                + 'L' + box.p2.join(',')
+                + 'A' + r + ' ' + r + ' 0 0 1 ' + box.p3.join(' ')
+                + 'Z' ,
                 class: 'region',
                 data: { pitch: toNoteName(i).replace(/\d/, ($0) => '-' + $0) }
             });
         });
-        svg.append.apply(svg, regions);
+        svgRegions.append.apply(svgRegions, regions);
 
         /*
         const circles = Array.from({ length: 128 }, (n, i) => {
@@ -118,7 +135,7 @@ export default element('note-radar', {
 
         const discs = Array.from({ length: 12 }, (n, i) => {
             const polar = numberToDA(i);
-            const cart  = toCartesian([49, polar[1]]);
+            const cart  = toCartesian([44.5, polar[1]]);
             return create('circle', {
                 cx: cart[0],
                 cy: cart[1],
@@ -127,11 +144,11 @@ export default element('note-radar', {
                 data: { pitch: toRootName(i) }
             });
         });
-        svg.append.apply(svg, discs);
+        svgRegions.append.apply(svgRegions, discs);
 
         const names = Array.from({ length: 12 }, (n, i) => {
             const polar = numberToDA(i);
-            const cart  = toCartesian([49, polar[1]]);
+            const cart  = toCartesian([44.5, polar[1]]);
             return create('text', {
                 x: cart[0],
                 y: cart[1],
@@ -140,9 +157,8 @@ export default element('note-radar', {
                 data: { pitch: toRootName(i) }
             });
         });
-        svg.append.apply(svg, names);
+        svgRegions.append.apply(svgRegions, names);
 
-        internals.svg     = svg;
         internals.regions = regions;
         internals.names   = names;
         internals.notes   = [];
@@ -150,18 +166,22 @@ export default element('note-radar', {
     },
 
     connect: function(shadow, internals, data) {
-        const { svg, notes, dots } = internals;
-        const pitch = frequencyToFloat(this.frequency);
+        const { notes, dots } = internals;
+        const svgRegions = shadow.getElementById('regions');
+        const svgNotes   = shadow.getElementById('notes');
+
+        /*const pitch = frequencyToFloat(this.frequency);
         notes.push(Note.of(pitch));
 
-        /*const number = Math.round(float);
+        const number = Math.round(float);
         const name   = toNoteName(number);
         const region = internals.regions[number];
         region.classList.add('highlight');*/
 
         Data.observe('length', notes, () => {
             console.log('RENDER', notes);
-            svg.append.apply(svg, notes.map(noteToElement));
+            notes.forEach((note) => svgRegions.querySelector('[data-pitch="' + toNoteName(Math.round(note.pitch)).replace(/\d/, ($0) => '-' + $0) + '"]').classList.add('highlight'));
+            svgNotes.append.apply(svgNotes, notes.map(noteToElement));
         }, 0);
     }
 }, {
