@@ -9,8 +9,34 @@ import { int7ToFloat } from 'midi/maths.js';
 import { toRootName, toNoteName } from 'midi/note.js';
 import { isNoteOn, isControl, toChannel, toType, toSignedFloat } from 'midi/message.js';
 
-const notes   = {};
-const pitches = {};
+
+const assign = Object.assign;
+
+
+/* Note() */
+
+function Note(pitch = 69, force = 0.5) {
+    this.pitchStart = pitch;
+    this.pitch = pitch;
+    this.force = force;
+}
+
+assign(Note, {
+    of: function(pitch, force) {
+        return new Note(pitch, force);
+    },
+
+    from: function(data) {
+        return new Note(data.pitch, data.force);
+    },
+
+    fromMIDI: function(message) {
+        return new Note(message[1], int7ToFloat(message[2]));
+    }
+});
+
+
+/* Functions */
 
 function toDistance(n) {
     return (6 + Math.pow(n, 1.4)) / 15;
@@ -50,15 +76,6 @@ function noteToElement(note) {
     });
 
     return note.element;
-}
-
-function messageToNote(message) {
-    return {
-        pitchStart: message[1],
-        pitch: message[1],
-        force: int7ToFloat(message[2]),
-        message: message
-    };
 }
 
 function removeNote(notes, i) {
@@ -134,8 +151,8 @@ export default element('note-radar', {
 
     connect: function(shadow, internals, data) {
         const { svg, notes, dots } = internals;
-        const float  = frequencyToFloat(this.frequency);
-        notes.push(messageToNote([144, float, 100]));
+        const pitch = frequencyToFloat(this.frequency);
+        notes.push(Note.of(pitch));
 
         /*const number = Math.round(float);
         const name   = toNoteName(number);
@@ -154,7 +171,8 @@ export default element('note-radar', {
         value: overload(toType, {
             noteon: function(message) {
                 const { notes } = getInternals(this);
-                const note = messageToNote(message);
+                const note = Note.fromMIDI(message);
+                note.message = message;
                 Data.of(notes).push(note);
             },
 
