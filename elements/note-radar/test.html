@@ -51,6 +51,14 @@
     <script type="module">
         import 'literal/scope.js';
         import './module.js';
+        import events from 'midi/events-stream.js';
+
+        const radar = document.querySelector('note-radar');
+
+        events({ type: 'note' }).each((message) => {
+            radar.midi(message);
+            //console.log(message);
+        });
     </script>
 </head>
 

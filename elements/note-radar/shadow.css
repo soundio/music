@@ -14,6 +14,10 @@ line {
     stroke-width: 0.25;
 }
 
+.region {
+    transition: fill 0.08s linear;
+}
+
 .region[data-pitch^="A-"] { fill: oklch(0.9 0.02 222); }
 .region[data-pitch^="B♭"] { fill: oklch(0.9 0.02 252); }
 .region[data-pitch^="B-"] { fill: oklch(0.9 0.02 282); }
@@ -28,29 +32,29 @@ line {
 .region[data-pitch^="G♯"] { fill: oklch(0.9 0.02 192); }
 
 .region.highlight[data-pitch^="A-"],
-.region.highlight[data-pitch^="A-"] ~ .region[data-pitch^="A-"] { fill: oklch(0.8 0.04 222); }
+.region.highlight[data-pitch^="A-"] ~ .region[data-pitch^="A-"] { fill: oklch(0.8 0.04 222); transition-duration: 0.032s; }
 .region.highlight[data-pitch^="B♭"],
-.region.highlight[data-pitch^="B♭"] ~ .region[data-pitch^="B♭"] { fill: oklch(0.8 0.04 252); }
+.region.highlight[data-pitch^="B♭"] ~ .region[data-pitch^="B♭"] { fill: oklch(0.8 0.04 252); transition-duration: 0.032s; }
 .region.highlight[data-pitch^="B-"],
-.region.highlight[data-pitch^="B-"] ~ .region[data-pitch^="B-"] { fill: oklch(0.8 0.04 282); }
+.region.highlight[data-pitch^="B-"] ~ .region[data-pitch^="B-"] { fill: oklch(0.8 0.04 282); transition-duration: 0.032s; }
 .region.highlight[data-pitch^="C-"],
-.region.highlight[data-pitch^="C-"] ~ .region[data-pitch^="C-"] { fill: oklch(0.8 0.04 312); }
+.region.highlight[data-pitch^="C-"] ~ .region[data-pitch^="C-"] { fill: oklch(0.8 0.04 312); transition-duration: 0.032s; }
 .region.highlight[data-pitch^="C♯"],
-.region.highlight[data-pitch^="C♯"] ~ .region[data-pitch^="C♯"] { fill: oklch(0.8 0.04 342); }
+.region.highlight[data-pitch^="C♯"] ~ .region[data-pitch^="C♯"] { fill: oklch(0.8 0.04 342); transition-duration: 0.032s; }
 .region.highlight[data-pitch^="D-"],
-.region.highlight[data-pitch^="D-"] ~ .region[data-pitch^="D-"] { fill: oklch(0.8 0.04 12); }
+.region.highlight[data-pitch^="D-"] ~ .region[data-pitch^="D-"] { fill: oklch(0.8 0.04 12); transition-duration: 0.032s; }
 .region.highlight[data-pitch^="E♭"],
-.region.highlight[data-pitch^="E♭"] ~ .region[data-pitch^="E♭"] { fill: oklch(0.8 0.04 42); }
+.region.highlight[data-pitch^="E♭"] ~ .region[data-pitch^="E♭"] { fill: oklch(0.8 0.04 42); transition-duration: 0.032s; }
 .region.highlight[data-pitch^="E-"],
-.region.highlight[data-pitch^="E-"] ~ .region[data-pitch^="E-"] { fill: oklch(0.8 0.04 72); }
+.region.highlight[data-pitch^="E-"] ~ .region[data-pitch^="E-"] { fill: oklch(0.8 0.04 72); transition-duration: 0.032s; }
 .region.highlight[data-pitch^="F-"],
-.region.highlight[data-pitch^="F-"] ~ .region[data-pitch^="F-"] { fill: oklch(0.8 0.04 102); }
+.region.highlight[data-pitch^="F-"] ~ .region[data-pitch^="F-"] { fill: oklch(0.8 0.04 102); transition-duration: 0.032s; }
 .region.highlight[data-pitch^="F♯"],
-.region.highlight[data-pitch^="F♯"] ~ .region[data-pitch^="F♯"] { fill: oklch(0.8 0.04 132); }
+.region.highlight[data-pitch^="F♯"] ~ .region[data-pitch^="F♯"] { fill: oklch(0.8 0.04 132); transition-duration: 0.032s; }
 .region.highlight[data-pitch^="G-"],
-.region.highlight[data-pitch^="G-"] ~ .region[data-pitch^="G-"] { fill: oklch(0.8 0.04 162); }
+.region.highlight[data-pitch^="G-"] ~ .region[data-pitch^="G-"] { fill: oklch(0.8 0.04 162); transition-duration: 0.032s; }
 .region.highlight[data-pitch^="G♯"],
-.region.highlight[data-pitch^="G♯"] ~ .region[data-pitch^="G♯"] { fill: oklch(0.8 0.04 192); }
+.region.highlight[data-pitch^="G♯"] ~ .region[data-pitch^="G♯"] { fill: oklch(0.8 0.04 192); transition-duration: 0.032s; }
 
 :host([scale~="A"])  .region[data-pitch^="A-"] { fill: oklch(0.8 0.04 222); }
 :host([scale~="A♯"]) .region[data-pitch^="B♭"],

@@ -166,6 +166,10 @@ export default element('note-radar', {
     },
 
     connect: function(shadow, internals, data) {
+        // TEMP
+        if (!this.range) this.range = 2;
+
+
         const { notes, dots } = internals;
         const svgRegions = shadow.getElementById('regions');
         const svgNotes   = shadow.getElementById('notes');
@@ -179,7 +183,8 @@ export default element('note-radar', {
         region.classList.add('highlight');*/
 
         Data.observe('length', notes, () => {
-            console.log('RENDER', notes);
+            //console.log('RENDER', notes);
+            svgRegions.querySelectorAll('.highlight').forEach((node) => node.classList.remove('highlight'));
             notes.forEach((note) => svgRegions.querySelector('[data-pitch="' + toNoteName(Math.round(note.pitch)).replace(/\d/, ($0) => '-' + $0) + '"]').classList.add('highlight'));
             svgNotes.append.apply(svgNotes, notes.map(noteToElement));
         }, 0);
@@ -187,6 +192,7 @@ export default element('note-radar', {
 }, {
     frequency: 'number',
     scale:     'string',
+    range:     'number',
     midi: {
         value: overload(toType, {
             noteon: function(message) {
@@ -221,15 +227,29 @@ export default element('note-radar', {
             },
 
             pitch: function(message) {
-                const { notes } = getInternals(this);
-                const bend = range * toSignedFloat(message);
+                const { notes, shadowRoot } = getInternals(this);
+                const bend = this.range * toSignedFloat(message);
 
                 let n = -1;
                 let note, originalPitch;
 
                 while (note = notes[++n]) if (toChannel(note.message) === toChannel(message)) {
-                    if (!note.pitchStart) note.pitchStart = note.pitch;
-                    note.pitch = note.pitchStart + bend;
+                    const pitch = note.pitchStart + bend;
+                    const oldPitch = Math.round(note.pitch);
+                    const newPitch = Math.round(pitch);
+
+                    note.pitch = pitch;
+
+                    // TEMP. Move this
+                    if (newPitch !== oldPitch) {
+                        const svgRegions = shadowRoot.getElementById('regions');
+                        svgRegions.querySelectorAll('.highlight').forEach((node) => node.classList.remove('highlight'));
+                        notes.forEach((note) => svgRegions.querySelector('[data-pitch="' + toNoteName(Math.round(note.pitch)).replace(/\d/, ($0) => '-' + $0) + '"]').classList.add('highlight'));
+                    }
+
+                    // TEMP. Move this
+                    const xy = numberToXY(note.pitch);
+                    assignAttributes(note.element, { cx: xy[0], cy: xy[1] });
                 };
             },
 
@@ -237,11 +257,15 @@ export default element('note-radar', {
                 const { notes } = getInternals(this);
 
                 // Breath control interpreted as force
-                if (message[1] === 3) {
+                if (message[1] === 2) {
                     let n = -1;
                     let note;
                     while (note = notes[++n]) if (toChannel(note.message) === toChannel(message)) {
                         note.force =  int7ToFloat(message[2]);
+                        // TEMP. Move this
+                        assignAttributes(note.element, {
+                            r: 0.5 + Math.sqrt(note.force) * 2.6
+                        });
                     };
                     return;
                 }
