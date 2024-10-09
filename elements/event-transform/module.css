@@ -1,0 +1,48 @@
+
+form {
+    display: grid;
+    font-family: system-ui, sans-serif;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-content: start;
+    column-gap: 1px;
+    row-gap: 0.1875em;
+    max-width: 20em;
+    padding-left: 0.1875em;
+    padding-right: 0.1875em;
+}
+
+form > *,
+form > [for],
+form > [name] {
+    margin: 0;
+}
+
+form > h1 {
+    grid-column: 1 / span 4;
+}
+
+form > [for$="0"], form > [name$="0"], form > fieldset[id$="0-data"] { grid-column: 1; border-top-right-radius: 0; border-bottom-right-radius: 0; }
+form > [for$="1"], form > [name$="1"], form > fieldset[id$="1-data"] { grid-column: 2; border-radius: 0; }
+form > [for$="2"], form > [name$="2"], form > fieldset[id$="2-data"] { grid-column: 3; border-radius: 0; }
+form > [for$="3"], form > [name$="3"], form > fieldset[id$="3-data"] { grid-column: 4; border-top-left-radius: 0; border-bottom-left-radius: 0; }
+form > [for="thru"] { grid-column: 1 / span 4; }
+
+form > [for^="filter"]     { grid-row: 2; }
+form > [name^="filter"]    { grid-row: 3; }
+form > [for^="transform"]  { display: none; }
+form > [name^="transform"] { grid-row: 4; }
+form > fieldset            { grid-row: 5; }
+form > [for^="thru"]       { grid-row: 6; }
+
+
+h1,
+label {
+    --size: 1.5em;
+    font-size: 0.625em;
+    font-weight: normal;
+    text-transform: uppercase;
+}
+
+fieldset > * {
+    margin: 0;
+}

@@ -1,0 +1,333 @@
+<head>
+    <meta charset="utf-8" />
+    <meta name="author" content="@stephband" />
+    <meta name="description" content="TODO" />
+    <meta name="viewport" content="width=device-width" />
+
+    <script>
+        window.DEBUG = true;
+    </script>
+
+    <script type="importmap">{
+        "imports": {
+            "dom/":        "../../../dom/modules/",
+            "fn/":         "../../../fn/modules/",
+            "form/":       "../../../form-elements/",
+            "literal/":    "../../../literal/",
+            "midi/":       "../../../midi/modules/",
+            "soundstage/": "../../../soundstage/modules/"
+        }
+    }</script>
+
+    <link rel="stylesheet" href="../../../bolt/elements/html.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/table.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/label.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/form.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/svg.css" />
+    <link rel="stylesheet" href="../../../bolt/classes/block.css" />
+    <link rel="stylesheet" href="../../../bolt/classes/button.css" />
+
+    <style>
+        html {
+            background-color: white;
+        }
+
+        body {
+            padding: 3.75rem 1.875rem;
+        }
+
+        body > header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            text-align: right;
+        }
+
+        .graph {
+            display: grid;
+            grid-auto-columns: 0rem;
+            grid-auto-rows: 0rem;
+            column-gap: 1.5rem;
+            row-gap: 1.5rem;
+            min-height: calc(100vh - 6rem);
+        }
+
+        .graph > * {
+            z-index: 2;
+        }
+
+        .graph > header,
+        .graph > footer {
+            position: absolute;
+            grid-column: auto;
+            grid-row: auto;
+            left: 1.875rem;
+        }
+
+        .graph > header {
+            top: 0;
+        }
+
+        .graph > footer {
+            bottom: 0;
+        }
+
+        .graph > svg {
+            position: absolute;
+            grid-column: auto;
+            grid-row: auto;
+            top: 0;
+            left: 0;
+            width: 1px;
+            height: 1px;
+            z-index: 1;
+            stroke: #999999;
+            stroke-width: 1.5px;
+        }
+
+        .graph > event-midi-input {
+            grid-column-end: span 6;
+            grid-row-end: span 2;
+        }
+
+        .graph > event-midi-output {
+            grid-column-end: span 6;
+            grid-row-end: span 2;
+        }
+
+        .graph > event-harmoniser {
+            grid-column-end: span 10;
+            grid-row-end: span 8;
+        }
+
+        .graph > event-button {
+            grid-column-end: span 8;
+            grid-row-end: span 6;
+        }
+
+        .graph > event-transform {
+            grid-column-end: span 15;
+            grid-row-end: span 6;
+        }
+
+        .graph > note-radar {
+            grid-column-end: span 15;
+            grid-row-end: span 15;
+        }
+
+        .cable-path:hover {
+            stroke: lightseagreen;
+            stroke-width: 3px;
+            cursor: pointer;
+        }
+
+        .dragging {
+            opacity: 0.5;
+        }
+    </style>
+
+    <script type="module">
+        import '../../../bolt/attributes/data-draggable.js';
+        import '../../../bolt/attributes/data-droppable.js';
+
+        import StageNode       from './module.js';
+        import EventMIDIInput  from '../event-midi-input/module.js';
+        import EventMIDIOutput from '../event-midi-output/module.js';
+        import EventButton     from '../event-button/module.js';
+        import EventTransform  from '../event-transform/module.js';
+        import EventHarmoniser from '../event-harmoniser/module.js';
+        import NoteRadar       from '../note-radar/element.js';
+
+        import { nodes }       from '../../modules/events-node.js';
+        import Transformer     from '../../modules/events-transform.js';
+
+        import clamp    from 'fn/clamp.js';
+        import create   from 'dom/create.js';
+        import delegate from 'dom/delegate.js';
+        import events   from 'dom/events.js';
+        import gestures from 'dom/gestures.js';
+        import rect     from 'dom/rect.js';
+        import style    from 'dom/style.js';
+        import MIDIOut  from 'midi/output.js';
+
+        const transformer       = new Transformer();
+        const fileMenu          = document.getElementById('stage-file-menu');
+        const graph             = document.querySelector('.graph');
+        const cablesElement     = document.getElementById('cables');
+        const buttonElement     = document.querySelector('event-button');
+        const transformElement  = document.querySelector('event-transform');
+        const harmoniserElement = document.querySelector('event-harmoniser');
+        const noteRadar         = document.querySelector('note-radar');
+        const MIDIInputElement  = document.querySelector('event-midi-input');
+        const MIDIOutputElement = document.querySelector('event-midi-output');
+
+
+
+        fileMenu.data = nodes;
+
+
+        transformElement.node = transformer;
+        //transformer.output(1).pipe(MIDIOut({ port: 'MIDI Monitor (Untitled)', channel: 1 }));
+        transformer.output(1).pipe(noteRadar.input(0));
+
+        buttonElement.output(0).pipe(transformer.input(0));
+        buttonElement.output(0).pipe(noteRadar.input(0));
+        buttonElement.output(0).pipe(MIDIOutputElement.input(0));
+        MIDIInputElement.output(12).pipe(harmoniserElement.input(0));
+        harmoniserElement.output(1).pipe(MIDIOutputElement.input(12));
+
+        /* Test buttons */
+        //transformer.output(1).each((event) => console.log('output', event[0].toFixed(3), event[1], event[2], event[3], event[4] || ''));
+
+        /* Drag n drop */
+        let dragGhost, dragOffset;
+
+        events('dragstart', document.body).each((e) => {
+            const path = e.composedPath();
+
+            // Ignore gestures in form controls
+            if (path[0].closest('[draggable="false"]') || path[0].form || ('name' in path[0] && 'value' in path[0])) {
+                // TODO: Does this stop drags from internal things tho? Like outputs?
+                e.preventDefault();
+                return;
+            }
+
+            const element = path.find((node) => node.getAttribute && node.getAttribute('draggable'));
+/*
+            if (element.getRootNode() !== document) {
+                // TODO: Does this stop drags from internal things tho? Like outputs?
+                e.preventDefault();
+                return;
+            }
+*/
+
+            const box = rect(element);
+            dragOffset = { x: e.clientX - box.left, y: e.clientY - box.top };
+            dragGhost  = element;
+        });
+
+        events('dragend', document.body).each((e) => {
+            dragOffset = undefined;
+            dragGhost  = undefined;
+
+            requestAnimationFrame(updateCables);
+        });
+
+        events('dragover', graph).each((e) => {
+            if (!dragGhost) return;//dragGhost = graph.querySelector('.dragging') || create('div', { class: 'dragging ghost' });
+
+            const box   = rect(graph);
+            const xgap  = style('column-gap', graph);
+            const ygap  = style('row-gap', graph);
+            const x = clamp(0, Infinity, Math.round((e.clientX - box.left - dragOffset.x) / xgap));
+            const y = clamp(0, Infinity, Math.round((e.clientY - box.top - dragOffset.y) / ygap));
+
+            dragGhost.style['grid-column-start'] = x + 1;
+            dragGhost.style['grid-row-start'] = y + 1;
+
+            requestAnimationFrame(updateCables);
+        });
+
+
+
+        function clearCables() {
+            while (cablesElement.firstChild) cablesElement.firstChild.remove();
+        }
+
+        function nodePartToBox(parent, node, part) {
+            const element = parent.querySelector('[data-node="' + node.id + '"]:not(.cable-path)');
+            if (!element) return console.log('Node element does not exist', node.id);
+
+            const shadow = element.shadowRoot;
+            if (!shadow) return console.log('Node shadow does not exist', element);
+
+            const elem = shadow.querySelector('[part="' + part + '"]');
+            if (!elem) return console.log('Node part="' + part + '" does not exist', element);
+
+            return rect(elem);
+        }
+
+        function drawCables(element, output, n) {
+            const source    = output.node;
+            const sourceBox = nodePartToBox(element, source, 'output-' + n);
+            const sourceX = sourceBox.left + 0.5 * sourceBox.width;
+            const sourceY = sourceBox.top + sourceBox.height;
+
+            let o = -1;
+            while (output[++o]) {
+                const node = output[o].node;
+
+                // If someone has programmatically piped this output to an
+                // arbitrary stream rather than a graph node input, it will not
+                // have a .node property. Ignore. TODO: should we show these somehow?
+                if (!node) continue;
+                const inputs = node.inputs;
+
+                // Find input index
+                let index;
+                for (index in inputs) if (inputs[index] === output[o]) break;
+
+                const targetBox = nodePartToBox(element, output[o].node, 'input-' + index);
+                const targetX = targetBox.left + 0.5 * targetBox.width;
+                const targetY = targetBox.top;
+                const diffX   = targetX - sourceX;
+                const diffY   = targetY - sourceY;
+
+                const d = 'M' + sourceX + ',' + sourceY
+                    + 'C' + sourceX + ',' + (sourceY + diffY * 0.666667)
+                    + ',' + targetX + ',' + (targetY - diffY * 0.666667)
+                    + ',' + targetX + ',' + targetY ;
+
+                cablesElement.appendChild(create('path', { class: 'cable-path', d, draggable: 'true', data: { draggable: 'application/json:' + JSON.stringify({ type: 'output', node: source.id, index: n }) } }));
+            }
+        }
+
+        function drawOutputs(parent, element) {
+            const node    = element.node;
+            const outputs = node.outputs;
+
+            let n;
+            for (n in outputs) {
+                // Ignore inputs or outputs size property - TODO: make it unenumerable
+                if (n === 'size') continue;
+                drawCables(parent, outputs[n], n);
+            }
+        }
+
+        function updateCables() {
+            //console.group('Draw');
+            clearCables();
+            drawOutputs(graph, harmoniserElement);
+            drawOutputs(graph, buttonElement);
+            drawOutputs(graph, transformElement);
+            drawOutputs(graph, noteRadar);
+            drawOutputs(graph, MIDIInputElement);
+            //console.groupEnd();
+        }
+
+        requestAnimationFrame(updateCables);
+    </script>
+</head>
+
+<body>
+    <header>
+        <file-menu prefix="stage/" id="stage-file-menu" title="Documents"></file-menu>
+    </header>
+    <section class="graph" data-droppable="application/json">
+        <header>
+            <event-midi-input></event-midi-input>
+        </header>
+        <svg viewbox="0 0 1 1" width="1" height="1">
+            <g id="cables"></g>
+        </svg>
+        <event-button draggable="true" data-draggable='application/json:{"type":"node","id":0}'></event-button>
+        <event-harmoniser draggable="true" data-draggable='application/json:{"type":"node","id":0}'></event-harmoniser>
+        <event-transform draggable="true" data-draggable='application/json:{"type":"node","id":0}'></event-transform>
+        <note-radar draggable="true" data-draggable='application/json:{"type":"node","id":0}'></note-radar>
+        <footer>
+            <event-midi-output></event-midi-output>
+        </footer>
+    </section>
+</body>

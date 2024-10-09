@@ -1,0 +1,162 @@
+@import '../../../bolt/elements/html.css';
+@import '../../../bolt/elements/type.css';
+@import '../../../bolt/elements/form.css';
+@import '../../../bolt/elements/focus.css';
+
+:host {
+    display: grid;
+    font-family: system-ui, sans-serif;
+    grid-template-columns: 1fr 6rem;
+    grid-template-rows: 1.125rem auto 0.5625rem;
+    width: fit-content;
+    background-color: rgba(180,180,180,0.7);
+    border-radius: 0.375em;
+}
+
+:host > * {
+    margin: 0;
+}
+
+:host > slot {
+    display: block;
+}
+
+:host > .inputs-ol,
+:host > .outputs-ol {
+    grid-column: 1;
+    margin-left: 0.5625em;
+    margin-right: 0.5625rem;
+}
+
+:host > .inputs-ol {
+    grid-row: 1;
+    align-self: start;
+    margin-top: -0.1875rem;
+}
+
+:host > .outputs-ol {
+    grid-row: 3;
+    align-self: end;
+    margin-bottom: -0.1875rem;
+}
+
+:host > h4 {
+    font-size: 0.625em;
+    line-height: 1em;
+    text-transform: uppercase;
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+    align-self: center;
+    margin-left: 0.375rem;
+    width: auto;
+    color: #444444;
+}
+
+:host > file-menu {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: stretch;
+    width: 100%;
+    color: #444444;
+}
+
+:host > form {
+    grid-column: 1 / span 2;
+    grid-row: 2;
+    justify-self: stretch;
+    align-self: stretch;
+    width: 100%;
+    background-color: #dddddd;
+}
+
+.inputs-ol,
+.outputs-ol {
+    display: flex;
+    height: 0.5625rem;
+    list-style: none;
+    column-gap: 0.1875rem;
+}
+
+.input-li,
+.output-li {
+    width: 0.5625rem;
+    height: 0.5625rem;
+    padding-left: 0.3125rem;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid #444444;
+    border-radius: 50%;
+    background: white;
+}
+
+file-menu {
+    --border-width: 0px;
+    --padding-left: 0.375rem;
+    --padding-right: 1.3125rem;
+    border-width: 0px;
+    border-left: 1px solid #dddddd;
+    line-height: 1.125rem;
+    background: transparent;
+    border-radius: 0;
+}
+
+
+label {
+    --size: 1.5em;
+    font-size: 0.625em;
+    font-weight: normal;
+    text-transform: uppercase;
+}
+
+input[type="number"],
+input[type="text"],
+select {
+    --size: 1.75em;
+    --border-width: 0px;
+
+    display: block;
+    font-size: 0.75em;
+
+    background: white;
+    border: 0px solid currentcolor;
+    border-radius: 0.25rem;
+}
+
+select {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+}
+
+input[type="number"] {
+    text-indent: 0.25rem;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+select {
+    -webkit-appearance: none;
+       -moz-appearance: none;
+            appearance: none;
+
+    padding-left: 0.25rem;
+    padding-right: 0;
+}
+
+
+
+
+
+

@@ -1,0 +1,60 @@
+:host {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-row-gap: 0.375em;
+    column-gap: 0.375em;
+    width: 600px;
+    height: auto;
+
+    font-family: sans-serif;
+    font-size: 0.8em;
+}
+
+:host > svg  {
+    grid-column: 1 / span 2;
+    justify-self: stretch;
+    width: 100%;
+}
+
+:host > [for="transpose"] {
+    justify-self: end;
+    align-self: baseline;
+}
+
+:host > [name="transpose"] {
+    justify-self: start;
+    align-self: baseline;
+    border-width: 0;
+}
+
+[name="transpose"] {
+    width: 4em;
+}
+
+.black-key {
+    fill: #666666;
+}
+
+.white-key {
+    fill: white;
+}
+
+.black-key[data-harmony="0"] { fill: #49769e; }
+.black-key[data-harmony="1"] { fill: #4aa391; }
+.black-key[data-harmony="2"] { fill: #7da751; }
+.black-key[data-harmony="3"] { fill: #a37859; }
+.black-key[data-harmony="4"] { fill: #a7516b; }
+.black-key[data-harmony="5"] { fill: #a75193; }
+.black-key[data-harmony="6"] { fill: #8659b5; }
+.black-key[data-harmony="7"] { fill: #5571b1; }
+.black-key[data-harmony="8"] { fill: #5485a6; }
+
+.white-key[data-harmony="0"] { fill: rgb(120, 180, 255); }
+.white-key[data-harmony="1"] { fill: rgb(120, 255, 240); }
+.white-key[data-harmony="2"] { fill: rgb(120, 255, 172); }
+.white-key[data-harmony="3"] { fill: rgb(255, 235, 120); }
+.white-key[data-harmony="4"] { fill: rgb(255, 167, 120); }
+.white-key[data-harmony="5"] { fill: rgb(255, 120, 150); }
+.white-key[data-harmony="6"] { fill: rgb(255, 120, 222); }
+.white-key[data-harmony="7"] { fill: rgb(186, 120, 255); }
+.white-key[data-harmony="8"] { fill: rgb(186, 120, 255); }

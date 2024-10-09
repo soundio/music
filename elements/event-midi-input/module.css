@@ -1,0 +1,15 @@
+
+:host {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1.125rem 0.5625rem;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+:host > file-menu {
+    display: none;
+}
+
+:host > .outputs-ol {
+    grid-row: 2;
+}

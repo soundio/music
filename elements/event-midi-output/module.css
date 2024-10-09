@@ -1,0 +1,17 @@
+
+@import '../stage-node/module.css';
+
+:host {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1.125rem;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+:host > file-menu {
+    display: none;
+}
+
+:host > .outputs-ol {
+    display: none;
+}

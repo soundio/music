@@ -1,0 +1,83 @@
+<head>
+    <meta charset="utf-8" />
+    <meta name="author" content="@stephband" />
+    <meta name="description" content="TODO" />
+    <meta name="viewport" content="width=device-width" />
+
+    <script>
+        window.DEBUG = true;
+    </script>
+
+    <script type="importmap">{
+        "imports": {
+            "dom/":        "../../../dom/modules/",
+            "fn/":         "../../../fn/modules/",
+            "form/":       "../../../form-elements/",
+            "literal/":    "../../../literal/",
+            "midi/":       "../../../midi/modules/",
+            "soundstage/": "../../../soundstage/modules/"
+        }
+    }</script>
+
+    <!--script type="importmap">{
+      "imports": {
+        "dom/":     "https://cdn.jsdelivr.net/gh/stephband/dom@master/modules/",
+        "fn/":      "https://cdn.jsdelivr.net/gh/stephband/fn@master/modules/",
+        "literal/": "https://cdn.jsdelivr.net/gh/stephband/literal@master/modules/"
+      }
+    }</script-->
+
+    <link rel="stylesheet" href="../../../bolt/elements/html.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/table.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/label.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/form.css" />
+    <link rel="stylesheet" href="../../../bolt/classes/block.css" />
+    <link rel="stylesheet" href="../../../bolt/classes/button.css" />
+    <!--link rel="stylesheet" href="./module.css" /-->
+
+    <style>
+        html {
+            background-color: rgb(220,220,220);
+        }
+
+        piano-keys {
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 1rem;
+        }
+    </style>
+
+    <script type="module">
+        import StorageSelect from 'form/file-menu/module.js';
+        import PianoKeyboard from './module.js';
+        import EventTransfomer from '../event-transform/module.js';
+        import delegate from 'dom/delegate.js';
+        import events from 'dom/events.js';
+        import MIDIOut  from 'midi/output.js';
+
+        const keyboard = document.querySelector('piano-keys');
+
+        keyboard.output(0).pipe(MIDIOut({ port: 'MIDI Monitor (Untitled)', channel: 1 }));
+        keyboard.output(1).pipe(MIDIOut({ port: 'MIDI Monitor (Untitled)', channel: 2 }));
+        keyboard.output(2).pipe(MIDIOut({ port: 'MIDI Monitor (Untitled)', channel: 3 }));
+        keyboard.output(3).pipe(MIDIOut({ port: 'MIDI Monitor (Untitled)', channel: 4 }));
+        keyboard.output(4).pipe(MIDIOut({ port: 'MIDI Monitor (Untitled)', channel: 5 }));
+        keyboard.output(5).pipe(MIDIOut({ port: 'MIDI Monitor (Untitled)', channel: 6 }));
+        keyboard.output(6).pipe(MIDIOut({ port: 'MIDI Monitor (Untitled)', channel: 7 }));
+
+        events('change', document.body).each(delegate({
+            'file-menu': (element) => keyboard.data = element.data
+        }));
+
+        document.body.querySelector('file-menu').data = keyboard.data;
+    </script>
+</head>
+
+<body>
+    <div style="width: 320px; margin: 1.875rem auto;">
+        <file-menu prefix="harmoniser/" title="Settings"></file-menu>
+    </div>
+
+    <piano-keys transpose="2" id="harmoniser"></piano-keys>
+    <event-transform></event-transform>
+</body>

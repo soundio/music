@@ -1,0 +1,95 @@
+
+:host {
+    grid-template-rows: 1.125rem auto auto 0.5625rem;
+}
+
+:host > button {
+    grid-column: 1 / span 2;
+    grid-row: 2;
+}
+
+:host > form {
+    grid-row: 3;
+}
+
+:host > .outputs-ol {
+    grid-row: 4;
+}
+
+
+form {
+    display: grid;
+    font-family: system-ui, sans-serif;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-content: start;
+    column-gap: 1px;
+    row-gap: 0.1875em;
+    max-width: 20em;
+    padding-left: 0.1875em;
+    padding-right: 0.1875em;
+}
+
+form > *,
+form > [for],
+form > [name] {
+    margin: 0;
+}
+
+form > button {
+    grid-column: 1 / span 3;
+}
+
+form > [for$="1"], form > [name$="1"] { grid-column: 1; }
+form > [for$="1"] { grid-column-end: span 3; }
+form > [for$="2"] { grid-column: 2; display: none; }
+form > [for$="3"], form > [name$="3"] { grid-column: 3; display: none; }
+form > [for="thru"] { grid-column: 1 / span 4; }
+
+form > [for^="pointerdown-"]  { grid-row: 1; }
+form > [name^="pointerdown-"] { grid-row: 2; }
+form > [for^="pointerup-"] { display: none; }
+form > [name^="pointerup-"] { grid-row: 3; }
+
+h1,
+label {
+    --size: 1.5em;
+    font-size: 0.625em;
+    font-weight: normal;
+    text-transform: uppercase;
+}
+
+input[type="number"],
+input[type="text"],
+select {
+    --size: 1.75em;
+
+    display: block;
+    font-size: 0.75em;
+
+    background: white;
+    border: 0px solid currentcolor;
+    border-radius: 0.25rem;
+}
+
+select[name$="1"] { border-top-right-radius: 0px; border-bottom-right-radius: 0px; }
+input[name$="2"] { border-radius: 0px; }
+input[name$="3"] { border-top-left-radius: 0px; border-bottom-left-radius: 0px; }
+
+select {
+    -webkit-appearance: none;
+       -moz-appearance: none;
+            appearance: none;
+
+    padding-left: 0.3125rem;
+    padding-right: 0;
+}
+
+fieldset > * {
+    margin: 0;
+}
+
+button {
+    line-height: 1.5rem;
+    border-width: 0;
+    background-color: yellow;
+}
