@@ -1,6 +1,6 @@
 :host {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto 1fr auto;
     grid-template-rows: 1.125rem 1fr auto 0.5625rem;
     column-gap: 0.375em;
     width: 600px;
@@ -13,7 +13,7 @@
 }
 
 :host > svg  {
-    grid-column: 1 / span 2;
+    grid-column: 1 / span 3;
     grid-row: 3;
     align-self: end;
     justify-self: stretch;

@@ -274,10 +274,9 @@
                 const targetY = targetBox.top;
                 const diffX   = targetX - sourceX;
                 const diffY   = targetY - sourceY;
-
                 const d = 'M' + sourceX + ',' + sourceY
-                    + 'C' + sourceX + ',' + (sourceY + diffY * 0.666667)
-                    + ',' + targetX + ',' + (targetY - diffY * 0.666667)
+                    + 'C' + sourceX + ',' + (sourceY + Math.max(diffY * 0.666667, 30))
+                    + ',' + targetX + ',' + (targetY - Math.max(diffY * 0.666667, 30))
                     + ',' + targetX + ',' + targetY ;
 
                 cablesElement.appendChild(create('path', { class: 'cable-path', d, draggable: 'true', data: { draggable: 'application/json:' + JSON.stringify({ type: 'output', node: source.id, index: n }) } }));
