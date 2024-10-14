@@ -1,4 +1,5 @@
 
+import Data                 from 'fn/data.js';
 import get                  from 'fn/get.js';
 import overload             from 'fn/overload.js';
 import { frequencyToFloat } from 'midi/frequency.js';
@@ -26,12 +27,17 @@ const toEvent = overload(toType, {
 });
 
 
+function updateOutputs() {
+    console.log('TODO?');
+}
+
 /* MIDIInput() */
 
 export default function MIDIInput(data = defaults) {
     const inputs  = { size: 0 };
     const outputs = { size: 16 };
     EventsNode.call(this, inputs, outputs);
+    this.data = Data.of(data);
 }
 
 assign(MIDIInput.prototype, EventsNode.prototype, {
@@ -45,6 +51,22 @@ assign(MIDIInput.prototype, EventsNode.prototype, {
             MIDIEvents({ channel: n + 1 }).map(toEvent),
             { node: this }
         ));
+
+        this.data = Data.of(data);
+
+        Signal.tick(() => {
+            const id = this.data.port;
+            this.port = ports[id];
+            updateOutputs(this.inputs, this.port);
+        });
+
+        MIDIOutputs.each((port) => {
+            ports[port.id] = port;
+            if (this.data.id === port.id) {
+                this.port = port;
+                updateOutputs(this.inputs, this.port);
+            }
+        });
     }
 });
 

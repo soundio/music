@@ -133,6 +133,21 @@
             stroke-width: 3px;
             opacity: 1;
         }
+
+        .midi-monitor {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: auto;
+            height: auto;
+            max-height: 100vh;
+            font-family: 'FiraMono', AndaleMono, monospace;
+            font-size: 0.875rem;
+            text-align: right;
+            white-space: pre;
+            color: #999999;
+            z-index: 0;
+        }
     </style>
 
     <script type="module">
@@ -457,5 +472,6 @@
         <footer>
             <event-midi-output></event-midi-output>
         </footer>
+        <div class="midi-monitor" id="midi-monitor"></div>
     </section>
 </body>

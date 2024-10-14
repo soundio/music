@@ -1,11 +1,13 @@
-import delegate       from 'dom/delegate.js';
+import create         from 'dom/create.js';
 import events         from 'dom/events.js';
 import Data           from 'fn/data.js';
 import get            from 'fn/get.js';
-import Stream         from 'fn/stream/stream.js';
 import overload       from 'fn/overload.js';
+import Signal         from 'fn/signal.js';
+import truncate       from 'fn/truncate.js';
 import element        from 'dom/element.js';
 import { toNoteName } from 'midi/note.js';
+import { MIDIInputs } from 'midi/ports.js';
 import Event          from '../../../soundstage/modules/event.js';
 import { lifecycle, properties } from '../stage-node/module.js';
 import EventsMIDIInput from '../../modules/events-midi-input.js';
@@ -23,6 +25,9 @@ export default element('<event-midi-input>', {
     shadow: `
         <link rel="stylesheet" href="${ window.midiInputStylesheet || import.meta.url.replace(/js$/, 'css') }"/>
         <h4>MIDI</h4>
+        <select id="input-port">
+            <option value selected disabled>Ports</option>
+        </select>
         <svg class="outputs-svg" viewbox="0 0 12 18" width="12" height="16">
             <defs>
                 <g id="output-g">
@@ -34,12 +39,30 @@ export default element('<event-midi-input>', {
     `,
 
     construct: function(shadow, internals) {
+        const select = internals.select = shadow.getElementById('input-port');
+
         // Is this the best place to do this?
         this.node = new EventsMIDIInput();
         lifecycle.construct.apply(this, arguments);
+
+        MIDIInputs.each((port) => {
+            const option = shadow.getElementById('input-port-' + port.id);
+
+            if (option) option.disabled = port.state !== 'connected';
+            else select.appendChild(create('option', {
+                id:       'input-port-' + port.id,
+                disabled: port.state !== 'connected',
+                value:    port.id,
+                html:     port.name
+            }));
+        });
+
+        events('change', select).each((e) => this.node.data.port = select.value);
     },
 
-    connect: function() {
+    connect: function(shadow, internals) {
+        const { select } = internals;
         lifecycle.connect.apply(this, arguments);
+        return [Signal.frame(() => select.value = this.node.data.port)];
     }
 }, properties);
