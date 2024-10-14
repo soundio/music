@@ -1,7 +1,9 @@
 
+@import '../stage-node/module.css';
+
 :host {
     grid-template-columns: 1fr;
-    grid-template-rows: 1.125rem 0.5625rem;
+    grid-template-rows: 1.125rem 1.125rem;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
 }
@@ -10,6 +12,6 @@
     display: none;
 }
 
-:host > .outputs-ol {
+:host > .outputs-svg {
     grid-row: 2;
 }

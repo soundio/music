@@ -15,14 +15,14 @@ const defaults = {};
 
 /* MIDIOutputNode() */
 
-export default function MIDIOutputNode(data = defaults) {
+export default function MIDIOutput(data = defaults) {
     const inputs  = { size: 16 };
     const outputs = { size: 0 };
     EventsNode.call(this, inputs, outputs);
     this.data = data;
 }
 
-assign(MIDIOutputNode.prototype, EventsNode.prototype, {
+assign(MIDIOutput.prototype, EventsNode.prototype, {
     input: function(n = 0) {
         if (n >= this.inputs.size) {
             throw new Error('GraphNode attempt to get .output(' + o + '), node has ' + this.outputs.size + ' outputs');

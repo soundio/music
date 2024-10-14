@@ -1,7 +1,7 @@
 :host {
     display: grid;
     grid-template-columns: auto 1fr auto;
-    grid-template-rows: 1.125rem 1fr auto 0.5625rem;
+    grid-template-rows: 1.125rem 1fr auto 1.125rem;
     column-gap: 0.375em;
     width: 600px;
     height: auto;
@@ -20,7 +20,7 @@
     width: 100%;
 }
 
-:host > .outputs-ol {
+:host > .outputs-svg {
     grid-row: 4;
 }
 

@@ -1,14 +1,12 @@
 
-import FileMenu from 'form/file-menu/module.js';
 
-import delegate         from 'dom/delegate.js';
-import events           from 'dom/events.js';
-import Data             from 'fn/data.js';
-import get              from 'fn/get.js';
-import Stream           from 'fn/stream/stream.js';
-import overload         from 'fn/overload.js';
-import element, { getInternals, render }  from 'dom/element-2.js';
-import { dragstart, dragend } from '../../../bolt/attributes/data-draggable.js';
+import 'form/file-menu/module.js';
+
+import Signal  from 'fn/signal.js';
+import events  from 'dom/events.js';
+import element from 'dom/element.js';
+import createObjectProperty from 'dom/element/create-object-property.js';
+import { dragstart, dragend }        from '../../../bolt/attributes/data-draggable.js';
 import { dragenter, dragover, drop } from '../../../bolt/attributes/data-droppable.js';
 import { nodes }        from '../../modules/events-node.js';
 
@@ -24,17 +22,31 @@ export const lifecycle = {
     shadow: `
         <link rel="stylesheet" href="${ window.stageNodeStylesheet || import.meta.url.replace(/js$/, 'css') }"/>
         <h4></h4>
-        <ul class="inputs-ol"></ul>
-        <ul class="outputs-ol"></ul>
+        <svg class="inputs-svg" viewbox="0 0 12 18" width="12" height="18">
+            <defs>
+                <g id="input-g">
+                    <circle cx="6" cy="9" r="4"></circle>
+                    <line x1="6" y1="13" x2="6" y2="18"></line>
+                </g>
+            </defs>
+        </svg>
+        <svg class="outputs-svg" viewbox="0 0 12 18" width="12" height="18">
+            <defs>
+                <g id="output-g">
+                    <circle cx="6" cy="9" r="4"></circle>
+                    <line x1="6" y1="0" x2="6" y2="5"></line>
+                </g>
+            </defs>
+        </svg>
         <file-menu prefix="harmoniser/" title="Settings"></file-menu>
     `,
 
     construct: function(shadow, internals) {
-        const title     = shadow.querySelector('h4');
-        const menu      = shadow.querySelector('file-menu');
-        const inputsOl  = shadow.querySelector('.inputs-ol');
-        const outputsOl = shadow.querySelector('.outputs-ol');
-        const node      = this.node;
+        const title      = shadow.querySelector('h4');
+        const menu       = shadow.querySelector('file-menu');
+        const inputsSVG  = shadow.querySelector('.inputs-svg');
+        const outputsSVG = shadow.querySelector('.outputs-svg');
+        const node       = this.node;
 
         if (node.inputs.size) {
             events('dragenter', shadow).each(dragenter);
@@ -42,17 +54,17 @@ export const lifecycle = {
             events('drop', shadow).each(drop);
             events('dropped', shadow).each((e) => {
                 const data = e.detail;
-                if (!data) throw new Error('Dropped data has no data');
+                if (!data) throw new Error('Drop event has no data');
                 const node = nodes.find((node) => node.id === data.node);
                 if (!node) throw new Error('Dropped data has no .node id, or id is not in nodes registry');
-                const output = node.output(data.output);
+                const output = node.output(data.index);
                 if (!output) throw new Error('Dropped data has no .output index, or index is not in node.output(index)');
                 const input = this.node.input(e.target.dataset.index);
                 if (!input) throw new Error('Drop target has no input at index ' + e.target.dataset.index);
 
                 // Pipe output t't'input
                 output.pipe(input);
-                console.log('Piped node ' + node.id + ' output ' + data.output + ' to node ' + this.node.id + ' input ' + e.target.dataset.index);
+                console.log('Piped node ' + node.id + ' output ' + data.index + ' to node ' + this.node.id + ' input ' + e.target.dataset.index);
             });
         }
 
@@ -62,56 +74,67 @@ export const lifecycle = {
         }
 
         /* Set node as this.node */
-        render(() => {
+        Signal.frame(() => {
             const node = this.node;
             if (!node) return;
 
             title.textContent = node.constructor.name;
-            menu.prefix = node.constructor.name;
-            menu.data   = node.data;
 
-            let i = -1;
-            let html = '';
-            while (++i < node.inputs.size) html += `<li class="input-li" draggable="false" data-droppable="application/json" part="input-${ i }" data-node="${ node.id }" data-index="${ i }" title="Input ${ i }">${ i }</li>`;
-            inputsOl.innerHTML = html;
+            if (menu) {
+                menu.prefix = node.constructor.name;
+                menu.data   = node.data;
+            }
 
-            let o = -1;
-            html = '';
-            while (++o < node.outputs.size) html += `<li class="output-li" draggable="true" data-draggable='application/json:{"type":"output","node":${ node.id },"output":${ o }};' part="output-${ o }" data-node="${ node.id }" data-index="${ o }" title="Output ${ o }">${ o }</li>`;
-            outputsOl.innerHTML = html;
+            if (inputsSVG) {
+                let i = -1;
+                let html = '';
+                while (++i < node.inputs.size) html += `<use href="#input-g" x="${ i * 12 }" y="0" part="input-${ i }" draggable="false" data-input-id="${ node.id }" data-input-index="${ i }" title="Output ${ i }" data-droppable="application/json">
+                    <title>Input ${ i }</title>
+                </use>`;
+                inputsSVG.setAttribute('width', i * 12);
+                inputsSVG.setAttribute('viewBox', `0 0 ${ i * 12 } 18`);
+                inputsSVG.innerHTML += html;
+            }
+
+            if (outputsSVG) {
+                let o = -1;
+                let html = '';
+                while (++o < node.outputs.size) html += `<use href="#output-g" x="${ o * 12 }" y="0" part="output-${ o }" draggable="true" data-output-id="${ node.id }" data-output-index="${ o }" title="Output ${ o }" data-draggable='application/json:{"type":"output","node":${ node.id },"index":${ o }};'>
+                    <title>Output ${ o }</title>
+                </use>`;
+                outputsSVG.setAttribute('width', o * 12);
+                outputsSVG.setAttribute('viewBox', `0 0 ${ o * 12 } 18`);
+                outputsSVG.innerHTML += html;
+            }
         });
 
-        render(() => {
-            const node = this.node;
-            if (!node) return;
-            if (!menu.data) return;
-            node.data = menu.data;
-        });
+        if (menu) {
+            Signal.frame(() => {
+                const node = this.node;
+                if (!node) return;
+                if (!menu.data) return;
+                node.data = menu.data;
+            });
+        }
     },
 
     connect: function(shadow, internals, data) {
         return [
-            render(() => this.dataset.node = this.node.id)
+            Signal.tick(() => this.dataset.node = this.node.id)
         ];
     }
 };
 
 export const properties = {
-    input: {
-        value: function(i = 0) {
-            return this.node.input(i);
-        }
+    input: function(i = 0) {
+        return this.node.input(i);
     },
 
-    output: {
-        value: function(o = 0) {
-            return this.node.output(o);
-        }
+    output: function(o = 0) {
+        return this.node.output(o);
     },
 
-    node: {
-        type: 'property'
-    }
+    node: createObjectProperty()
 };
 
 export default element('<stage-node>', lifecycle, properties);

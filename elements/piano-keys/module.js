@@ -10,7 +10,7 @@ import Signal           from 'fn/signal.js';
 import Stream           from 'fn/stream/stream.js';
 import overload         from 'fn/overload.js';
 import toCartesian      from 'fn/vector/to-cartesian-2d.js';
-import element, { getInternals, render }  from 'dom/element-2.js';
+import element, { getInternals }  from 'dom/element.js';
 import { frequencyToFloat }       from 'midi/frequency.js';
 import { int7ToFloat }            from 'midi/maths.js';
 import { toRootName, toNoteName } from 'midi/note.js';
@@ -125,9 +125,9 @@ export default element('piano-keys', {
         const svg = shadow.querySelector('svg');
 
         return [
-            render(() => svg.setAttribute('viewBox', `0 0 ${ this.max - this.min } 10`)),
-            render(() => input.value = this.transpose),
-            render(() => {
+            Signal.frame(() => svg.setAttribute('viewBox', `0 0 ${ this.max - this.min } 10`)),
+            Signal.frame(() => input.value = this.transpose),
+            Signal.frame(() => {
                 // Read signals
                 const min       = this.min;
                 const range     = this.max - min;

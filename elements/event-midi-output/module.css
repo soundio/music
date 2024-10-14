@@ -3,7 +3,7 @@
 
 :host {
     grid-template-columns: 1fr;
-    grid-template-rows: 1.125rem;
+    grid-template-rows: 1.125rem 1.125rem;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
 }
@@ -12,6 +12,6 @@
     display: none;
 }
 
-:host > .outputs-ol {
+:host > .outputs-svg {
     display: none;
 }

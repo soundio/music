@@ -1,6 +1,6 @@
 
 :host {
-    grid-template-rows: 1.125rem auto auto 0.5625rem;
+    grid-template-rows: 1.125rem auto auto 1.125rem;
 }
 
 :host > button {
@@ -12,7 +12,7 @@
     grid-row: 3;
 }
 
-:host > .outputs-ol {
+:host > .outputs-svg {
     grid-row: 4;
 }
 

@@ -22,16 +22,17 @@
     display: none;
 }
 
-:host > .inputs-ol {
+:host > .inputs-svg {
     margin-left: auto;
     margin-right: auto;
 }
 
+/*
 .inputs-ol > li {
-    /* Put input in the centre */
     margin-left: auto;
     margin-right: auto;
 }
+*/
 
 svg  {
     overflow: visible;

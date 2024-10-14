@@ -2,9 +2,10 @@ import delegate         from 'dom/delegate.js';
 import events           from 'dom/events.js';
 import Data             from 'fn/data.js';
 import get              from 'fn/get.js';
+import Signal           from 'fn/signal.js';
 import Stream           from 'fn/stream/stream.js';
 import overload         from 'fn/overload.js';
-import element, { getInternals, render }  from 'dom/element-2.js';
+import element          from 'dom/element.js';
 import { toNoteName }   from 'midi/note.js';
 import Event            from '../../../soundstage/modules/event.js';
 import { lifecycle, properties } from '../stage-node/module.js';
@@ -168,7 +169,7 @@ export default element('<event-transform>', {
 
         return [
             // Render filter fields
-            render(() => {
+            Signal.frame(() => {
                 const { filter } = Data.of(this.node.data);
                 if (filter[1]) update(filter1, filter[1].type);
                 if (filter[2]) update(filter2, filter[2].type);
@@ -176,7 +177,7 @@ export default element('<event-transform>', {
             }),
 
             // Render transform fields
-            render(() => {
+            Signal.frame(() => {
                 const { transform } = Data.of(this.node.data);
                 if (transform[0]) update(transform0, transform[0].type === 'fix' ? transform[0].data[0] : transform[0].type);
                 if (transform[1]) update(transform1, transform[1].type === 'fix' ? transform[1].data[0] : transform[1].type);
@@ -185,8 +186,8 @@ export default element('<event-transform>', {
             }),
 
             // Render fieldsets
-            render(() => renderFieldset(transform2Fieldset, 2)),
-            render(() => renderFieldset(transform3Fieldset, 3))
+            Signal.frame(() => renderFieldset(transform2Fieldset, 2)),
+            Signal.frame(() => renderFieldset(transform3Fieldset, 3))
         ];
     }
 }, properties);

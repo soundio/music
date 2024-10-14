@@ -7,7 +7,7 @@
     display: grid;
     font-family: system-ui, sans-serif;
     grid-template-columns: auto 1fr 6rem;
-    grid-template-rows: 1.125rem auto 0.5625rem;
+    grid-template-rows: 1.125rem auto 0.75rem;
     column-gap: 0.375rem;
     width: fit-content;
     background-color: rgba(180,180,180,0.2);
@@ -22,24 +22,25 @@
     display: block;
 }
 
-:host > .inputs-ol,
-:host > .outputs-ol {
+:host > .inputs-svg,
+:host > .outputs-svg {
     width: fit-content;
+    height: 1.125rem;
     grid-column: 1;
     margin-left: 0.5625em;
     margin-right: 0.5625rem;
 }
 
-:host > .inputs-ol {
+:host > .inputs-svg {
     grid-column: 1;
     grid-row: 1;
-    align-self: stretch;
+    align-self: end;
 }
 
-:host > .outputs-ol {
+:host > .outputs-svg {
     grid-column: 1 / span 3;
     grid-row: 3;
-    align-self: end;
+    align-self: start;
     margin-bottom: -0.1875rem;
 }
 
@@ -72,28 +73,19 @@
     background-color: #dddddd;
 }
 
-.inputs-ol,
-.outputs-ol {
-    display: flex;
-    list-style: none;
-    align-items: center;
-    column-gap: 0.1875rem;
+.inputs-svg,
+.outputs-svg {
+    width: auto;
+    height: 1.125rem;
+    stroke: #666666;
+    stroke-width: 1.5px;
+    fill: white;
 }
 
-.input-li,
-.output-li {
-    position: relative;
-    width: 0.5625rem;
-    height: 0.5625rem;
-    padding-left: 0.3125rem;
-    overflow: hidden;
-    border: 2px solid #444444;
-    border-radius: 50%;
-    background: white;
-}
-
-.output-li {
-    cursor: pointer;
+.inputs-svg > use:hover,
+.outputs-svg > use:hover {
+    stroke: lightseagreen;
+    stroke-width: 3px;
 }
 
 file-menu {

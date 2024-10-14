@@ -3,9 +3,10 @@ import create           from 'dom/create.js';
 import Data             from 'fn/data.js';
 import get              from 'fn/get.js';
 import overload         from 'fn/overload.js';
+import Signal           from 'fn/signal.js';
 import Stream           from 'fn/stream/stream.js';
 import toCartesian      from 'fn/vector/to-cartesian-2d.js';
-import element, { getInternals, render } from 'dom/element-2.js';
+import element, { getInternals } from 'dom/element.js';
 import { frequencyToFloat }       from 'midi/frequency.js';
 import { int7ToFloat }            from 'midi/maths.js';
 import { toRootName, toNoteName } from 'midi/note.js';
@@ -311,7 +312,7 @@ export default element('note-radar', {
         const notesData = Data.of(notes);
 
         return [
-            render(() => {
+            Signal.frame(() => {
                 notesData.length;
                 svgRegions.querySelectorAll('.highlight').forEach((node) => node.classList.remove('highlight'));
                 notes.forEach((note) => svgRegions.querySelector('[data-pitch="' + toNoteName(Math.round(note.pitch)).replace(/\d/, ($0) => '-' + $0) + '"]').classList.add('highlight'));

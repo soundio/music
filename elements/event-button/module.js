@@ -2,9 +2,10 @@ import delegate         from 'dom/delegate.js';
 import events           from 'dom/events.js';
 import Data             from 'fn/data.js';
 import get              from 'fn/get.js';
+import Signal           from 'fn/signal.js';
 import Stream           from 'fn/stream/stream.js';
 import overload         from 'fn/overload.js';
-import element, { getInternals, render }  from 'dom/element-2.js';
+import element          from 'dom/element.js';
 import { toNoteName }   from 'midi/note.js';
 import Event            from '../../../soundstage/modules/event.js';
 import { lifecycle, properties } from '../stage-node/module.js';
@@ -103,7 +104,7 @@ export default element('<event-button>', {
 
         return [
             // Render transform fields
-            render(() => {
+            Signal.frame(() => {
                 const { pointerdown, pointerup } = Data.of(this.node.data);
                 if (pointerdown[1]) update(down1, pointerdown[1]);
                 if (pointerdown[2]) update(down2, pointerdown[2]);

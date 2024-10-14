@@ -3,14 +3,14 @@ import create           from 'dom/create.js';
 import delegate         from 'dom/delegate.js';
 import events           from 'dom/events.js';
 import keyboard         from 'dom/keyboard.js';
-import Renderer         from 'dom/element/renderer.js';
 import Data             from 'fn/data.js';
 import get              from 'fn/get.js';
 import Signal           from 'fn/signal.js';
 import Stream           from 'fn/stream/stream.js';
 import overload         from 'fn/overload.js';
 import toCartesian      from 'fn/vector/to-cartesian-2d.js';
-import element, { getInternals, render }  from 'dom/element-2.js';
+import element          from 'dom/element.js';
+import createNumberProperty from 'dom/element/create-number-property.js';
 import { frequencyToFloat }       from 'midi/frequency.js';
 import { int7ToFloat }            from 'midi/maths.js';
 import { toRootName, toNoteName } from 'midi/note.js';
@@ -77,7 +77,7 @@ export default element('<event-harmoniser>', {
         this.node = new EventsHarmoniser();
         lifecycle.construct.apply(this, arguments);
 
-        const svg = shadow.querySelector('svg');
+        const svg = shadow.getElementById('svg');
 
         internals.events = [];
 
@@ -142,16 +142,16 @@ console.log(number);
         const min       = shadow.querySelector('[name="min"]');
         const max       = shadow.querySelector('[name="max"]');
         const transpose = shadow.querySelector('[name="transpose"]');
-        const svg       = shadow.querySelector('svg');
+        const svg       = shadow.getElementById('svg');
 
         return [
-            render(() => {
+            Signal.frame(() => {
                 min.value = this.min;
                 max.value = this.max;
                 svg.setAttribute('viewBox', `0 0 ${ this.max - this.min } 10`);
             }),
-            render(() => transpose.value = this.transpose),
-            render(() => {
+            Signal.frame(() => transpose.value = this.transpose),
+            Signal.frame(() => {
                 // Read signals
                 const min       = this.min;
                 const range     = this.max - min;
@@ -169,27 +169,7 @@ console.log(number);
         ];
     }
 }, assign({
-    min:       { type: 'number', min: 0,   max: 128, default: 24 },
-    max:       { type: 'number', min: 0,   max: 128, default: 96 },
-    transpose: { type: 'number', min: -12, max: 12,  default: 0 },
-
-    /*
-    data: {
-        get: function() {
-            const signal = this[symbol] || (this[symbol] = Signal.of());
-            return signal.value;
-        },
-
-        set: function(value) {
-            const signal = this[symbol] || (this[symbol] = Signal.of());
-            signal.value = value;
-
-            // TEMP
-            const { harmonies, shadowRoot } = getInternals(this);
-            const svg = shadowRoot.querySelector('svg');
-            const currentNote = harmonies ? harmonies[0] : 69;
-            selectHarmonies(this, svg, harmonies, currentNote);
-        }
-    }
-    */
+    min:       createNumberProperty(0, 128, 24),
+    max:       createNumberProperty(0, 128, 96),
+    transpose: createNumberProperty(-12, 12, 0)
 }, properties), 'piano-keyboard');

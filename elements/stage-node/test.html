@@ -121,10 +121,17 @@
             stroke: lightseagreen;
             stroke-width: 3px;
             cursor: pointer;
+            cursor: crosshair;
         }
 
         .dragging {
             opacity: 0.5;
+        }
+
+        .cable-path.dragging {
+            stroke: lightseagreen;
+            stroke-width: 3px;
+            opacity: 1;
         }
     </style>
 
@@ -144,6 +151,8 @@
         import Transformer     from '../../modules/events-transform.js';
 
         import clamp    from 'fn/clamp.js';
+        import matches  from 'fn/matches.js';
+        import Stream   from 'fn/stream/stream.js';
         import create   from 'dom/create.js';
         import delegate from 'dom/delegate.js';
         import events   from 'dom/events.js';
@@ -178,8 +187,31 @@
         MIDIInputElement.output(12).pipe(harmoniserElement.input(0));
         harmoniserElement.output(1).pipe(MIDIOutputElement.input(12));
 
-        /* Test buttons */
-        //transformer.output(1).each((event) => console.log('output', event[0].toFixed(3), event[1], event[2], event[3], event[4] || ''));
+
+        /* Transparent 1px canvas for overriding drag image. Must be in the DOM
+           on dragstart. */
+        const pxCanvas = create('canvas', { class: 'px-canvas', width: 1, height: 1 });
+        const ctx      = pxCanvas.getContext('2d');
+        ctx.fillStyle = "rgba(0,0,0,0.01)";
+        ctx.fillRect(0, 0, 1, 1);
+        document.body.appendChild(pxCanvas);
+
+
+        function findNode(id) {
+            return nodes.find(matches({ id: parseInt(id, 10) }));
+        }
+
+        function getOutputFromDataset(element) {
+            const { outputId, outputIndex } = element.dataset;
+            const outputNode = findNode(outputId);
+            return outputNode.output(outputIndex);
+        }
+
+        function getInputFromDataset(element) {
+            const { inputId, inputIndex } = element.dataset;
+            const inputNode  = findNode(inputId);
+            return inputNode.input(inputIndex);
+        }
 
         /* Drag n drop */
         let dragGhost, dragOffset;
@@ -187,14 +219,18 @@
         events('dragstart', document.body).each((e) => {
             const path = e.composedPath();
 
+            if (e.altKey) console.log('TODO: copy');
+
             // Ignore gestures in form controls
             if (path[0].closest('[draggable="false"]') || path[0].form || ('name' in path[0] && 'value' in path[0])) {
+                console.log('No drag');
                 // TODO: Does this stop drags from internal things tho? Like outputs?
                 e.preventDefault();
                 return;
             }
 
             const element = path.find((node) => node.getAttribute && node.getAttribute('draggable'));
+
 /*
             if (element.getRootNode() !== document) {
                 // TODO: Does this stop drags from internal things tho? Like outputs?
@@ -203,21 +239,87 @@
             }
 */
 
+            if (element.dataset.outputIndex) {
+                // Hide drag image
+                e.dataTransfer.setDragImage(pxCanvas, 1, 1);
+
+                // Dragging a cable
+                if (element.matches('.cable-path')) {
+                    const output = getOutputFromDataset(element);
+                    const input  = getInputFromDataset(element);
+
+                    // Disconnect input from output
+                    Stream.unpipe(output, input);
+                    delete element.dataset.inputId;
+                    delete element.dataset.inputIndex;
+
+                    dragGhost = element;
+                    return;
+                }
+
+                // Dragging an output contact, create a cable path
+                const json = e.dataTransfer.getData('application/json');
+                if (!json) return;
+
+                const data       = JSON.parse(json);
+                const outputNode = nodes.find(matches({ id: data.node }));
+                const outputBox  = nodePartToBox(graph, outputNode, 'output-' + data.index);
+                const outputX    = outputBox.left + 0.5 * outputBox.width;
+                const outputY    = outputBox.top + outputBox.height;
+                const diffY      = e.pageY - outputY;
+
+                // Dragging a contact
+                dragGhost = create('path', {
+                    class: 'cable-path',
+
+                    d: 'M' + outputX + ',' + outputY
+                        + 'C' + outputX + ',' + (outputY + Math.max(diffY * 0.666667, 30))
+                        + ',' + e.pageX + ',' + (e.pageY - Math.max(diffY * 0.666667, 30))
+                        + ',' + e.pageX + ',' + e.pageY,
+
+                    draggable: 'true',
+
+                    data: {
+                        draggable:   'application/json:' + JSON.stringify(data),
+                        outputId:    data.node,
+                        outputIndex: data.index
+                    }
+                });
+
+                cablesElement.appendChild(dragGhost);
+                return;
+            }
+
+            // Dragging a node UI
             const box = rect(element);
             dragOffset = { x: e.clientX - box.left, y: e.clientY - box.top };
             dragGhost  = element;
         });
 
-        events('dragend', document.body).each((e) => {
-            dragOffset = undefined;
-            dragGhost  = undefined;
-
-            requestAnimationFrame(updateCables);
-        });
-
         events('dragover', graph).each((e) => {
-            if (!dragGhost) return;//dragGhost = graph.querySelector('.dragging') || create('div', { class: 'dragging ghost' });
+            //const data = e.dataTransfer.getData('text/plain');
+            //console.log('dragover', data);
+            if (!dragGhost) return;
 
+            if (dragGhost.dataset.outputId) {
+                // Dragging an output path or connect, which was given a path
+                // in dragstart
+                const box   = rect(graph);
+                const d     = dragGhost.getAttribute('d').split(',');
+                const y1    = parseFloat(d[1]);
+                const y2    = e.pageY;
+                const diffY = y2 - y1;
+
+                d[3] = d[5] = e.pageX;
+                d[2] = y1 + Math.max(diffY * 0.666667, 30);
+                d[4] = y2 - Math.max(diffY * 0.666667, 30);
+                d[6] = y2;
+
+                dragGhost.setAttribute('d', d.join(','));
+                return;
+            }
+
+            // Dragging a node UI
             const box   = rect(graph);
             const xgap  = style('column-gap', graph);
             const ygap  = style('row-gap', graph);
@@ -230,6 +332,12 @@
             requestAnimationFrame(updateCables);
         });
 
+        events('dragend', document.body).each((e) => {
+            dragOffset = undefined;
+            dragGhost  = undefined;
+            requestAnimationFrame(updateCables);
+        });
+
 
 
         function clearCables() {
@@ -238,13 +346,13 @@
 
         function nodePartToBox(parent, node, part) {
             const element = parent.querySelector('[data-node="' + node.id + '"]:not(.cable-path)');
-            if (!element) return console.log('Node element does not exist', node.id);
+            if (!element) throw new Error('Node element data-node="' + node.id + '" does not exist');
 
             const shadow = element.shadowRoot;
-            if (!shadow) return console.log('Node shadow does not exist', element);
+            if (!shadow) throw new Error('Node shadow does not exist', element);
 
             const elem = shadow.querySelector('[part="' + part + '"]');
-            if (!elem) return console.log('Node part="' + part + '" does not exist', element);
+            if (!elem) throw new Error('Node part="' + part + '" does not exist', element);
 
             return rect(elem);
         }
@@ -269,17 +377,36 @@
                 let index;
                 for (index in inputs) if (inputs[index] === output[o]) break;
 
-                const targetBox = nodePartToBox(element, output[o].node, 'input-' + index);
-                const targetX = targetBox.left + 0.5 * targetBox.width;
-                const targetY = targetBox.top;
-                const diffX   = targetX - sourceX;
-                const diffY   = targetY - sourceY;
+                const target    = output[o].node;
+                const targetBox = nodePartToBox(element, target, 'input-' + index);
+                const targetX   = targetBox.left + 0.5 * targetBox.width;
+                const targetY   = targetBox.top;
+                const diffX     = targetX - sourceX;
+                const diffY     = targetY - sourceY;
+
                 const d = 'M' + sourceX + ',' + sourceY
                     + 'C' + sourceX + ',' + (sourceY + Math.max(diffY * 0.666667, 30))
                     + ',' + targetX + ',' + (targetY - Math.max(diffY * 0.666667, 30))
                     + ',' + targetX + ',' + targetY ;
 
-                cablesElement.appendChild(create('path', { class: 'cable-path', d, draggable: 'true', data: { draggable: 'application/json:' + JSON.stringify({ type: 'output', node: source.id, index: n }) } }));
+                cablesElement.appendChild(
+                    create('path', {
+                        class: 'cable-path',
+                        d,
+                        draggable: 'true',
+                        data: {
+                            draggable: 'application/json:' + JSON.stringify({
+                                type:  'output',
+                                node:  source.id,
+                                index: n
+                            }),
+                            outputId:    source.id,
+                            outputIndex: n,
+                            inputId:     target.id,
+                            inputIndex:  index
+                        }
+                    })
+                );
             }
         }
 
@@ -291,7 +418,7 @@
             for (n in outputs) {
                 // Ignore inputs or outputs size property - TODO: make it unenumerable
                 if (n === 'size') continue;
-                drawCables(parent, outputs[n], n);
+                drawCables(parent, outputs[n], parseInt(n, 10));
             }
         }
 
@@ -307,6 +434,8 @@
         }
 
         requestAnimationFrame(updateCables);
+
+        events('resize', window).each(updateCables);
     </script>
 </head>
 
