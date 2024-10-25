@@ -3,23 +3,28 @@ import Stream from 'fn/stream/stream.js';
 
 
 const assign = Object.assign;
+const define = Object.defineProperties;
 
 let id = 0;
 
 export const nodes = [];
 
+function generateId() {
+    let id = 0;
+    while (++id && nodes.find((node) => node.id === id));
+    return id;
+}
 
 /** EventsNode() **/
 
-export default function EventsNode(inputs = { size: 1 }, outputs = { size: 1 }) {
-    this.id      = ++id;
+export default function EventsNode(id = generateId(), inputs = { size: 1 }, outputs = { size: 1 }) {
+    this.id      = id;
     this.inputs  = inputs;
     this.outputs = outputs;
 
     // Give inputs and outputs a reference to node
     let i = -1;
     while (inputs[++i]) inputs[i].node = this;
-
     let o = -1;
     while (outputs[++o]) outputs[i].node = this;
 
@@ -64,6 +69,9 @@ assign(EventsNode.prototype, {
                 let o = -1, input;
                 while (input = output[++o]) {
                     const node = input.node;
+
+                    console.log('NODE', input, node);
+
                     let inputIndex;
                     for (inputIndex in node.inputs) if (node.inputs[inputIndex] === input) break;
                     /*pipes.push({
@@ -76,5 +84,13 @@ assign(EventsNode.prototype, {
                 return pipes;
             }, [])
         };
+    }
+});
+
+define(EventsNode.prototype, {
+    type: {
+        get: function() {
+            return this.constructor.name.toLowerCase();
+        }
     }
 });

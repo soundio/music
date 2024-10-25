@@ -10,7 +10,7 @@ import Stream           from 'fn/stream/stream.js';
 import overload         from 'fn/overload.js';
 import toCartesian      from 'fn/vector/to-cartesian-2d.js';
 import element          from 'dom/element.js';
-import createNumberProperty from 'dom/element/create-number-property.js';
+import { createNumberAttribute } from 'dom/element/create-attribute.js';
 import { frequencyToFloat }       from 'midi/frequency.js';
 import { int7ToFloat }            from 'midi/maths.js';
 import { toRootName, toNoteName } from 'midi/note.js';
@@ -73,8 +73,6 @@ export default element('<event-harmoniser>', {
     `,
 
     construct: function(shadow, internals) {
-        // Is this the best place to do this?
-        this.node = new EventsHarmoniser();
         lifecycle.construct.apply(this, arguments);
 
         const svg = shadow.getElementById('svg');
@@ -139,6 +137,9 @@ console.log(number);
     connect: function(shadow, internals, data) {
         lifecycle.connect.apply(this, arguments);
 
+        // Is this the best place to do this?
+        //this.node = new EventsHarmoniser();
+
         const min       = shadow.querySelector('[name="min"]');
         const max       = shadow.querySelector('[name="max"]');
         const transpose = shadow.querySelector('[name="transpose"]');
@@ -169,7 +170,7 @@ console.log(number);
         ];
     }
 }, assign({
-    min:       createNumberProperty(0, 128, 24),
-    max:       createNumberProperty(0, 128, 96),
-    transpose: createNumberProperty(-12, 12, 0)
+    min:       createNumberAttribute('min', 24, 0, 128),
+    max:       createNumberAttribute('max', 96, 0, 128),
+    transpose: createNumberAttribute('transpose', 0, -12, 12)
 }, properties), 'piano-keyboard');

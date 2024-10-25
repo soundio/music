@@ -2,15 +2,18 @@
 import Data                 from 'fn/data.js';
 import get                  from 'fn/get.js';
 import overload             from 'fn/overload.js';
+import Signal               from 'fn/signal.js';
 import { frequencyToFloat } from 'midi/frequency.js';
 import { int7ToFloat }      from 'midi/maths.js';
 import { toRootName, toNoteName } from 'midi/note.js';
 import { isNoteOn, isControl, toChannel, toType, toSignedFloat } from 'midi/message.js';
-import MIDIEvents from 'midi/events.js';
-import EventsNode from './events-node.js';
+import { MIDIInputs }       from 'midi/ports.js';
+import MIDIEvents           from 'midi/events.js';
+import mix                  from './mix.js';
+import EventsNode           from './events-node.js';
 
-
-const assign   = Object.assign;
+const create = Object.create;
+const assign = Object.assign;
 const defaults = {};
 
 const toEvent = overload(toType, {
@@ -26,22 +29,42 @@ const toEvent = overload(toType, {
     default: (message) => console.log('Unhandled MIDI message', message)
 });
 
+const names = Array.from({ length: 16 }, (n, i) => 'Channel ' + (i + 1));
 
-function updateOutputs() {
-    console.log('TODO?');
+function updateOutputs(outputs, port) {
+    let i;
+    for (i in outputs) {
+        if (!/^\d/.test(i)) continue;
+        outputs[i].port = port;
+    }
 }
 
-/* MIDIInput() */
+/* MIDIIn() */
 
-export default function MIDIInput(data = defaults) {
+export default function MIDIIn(id, data = {}) {
+    const ports   = {};
     const inputs  = { size: 0 };
-    const outputs = { size: 16 };
-    EventsNode.call(this, inputs, outputs);
+    const outputs = { size: 16, names };
+    EventsNode.call(this, id, inputs, outputs);
     this.data = Data.of(data);
+
+    Signal.tick(() => {
+        const id = this.data.port;
+        this.port = ports[id];
+        updateOutputs(this.inputs, this.port);
+    });
+
+    MIDIInputs.each((port) => {
+        ports[port.id] = port;
+        if (this.data.id === port.id) {
+            this.port = port;
+            updateOutputs(this.outputs, this.port);
+        }
+    });
 }
 
-assign(MIDIInput.prototype, EventsNode.prototype, {
-    output: function(n = 0) {
+assign(mix(MIDIIn.prototype, EventsNode.prototype), {
+    output: function ARSE(n = 0) {
         if (n >= this.outputs.size) {
             throw new Error('GraphNode attempt to get .output(' + o + '), node has ' + this.outputs.size + ' outputs');
         }
@@ -51,22 +74,5 @@ assign(MIDIInput.prototype, EventsNode.prototype, {
             MIDIEvents({ channel: n + 1 }).map(toEvent),
             { node: this }
         ));
-
-        this.data = Data.of(data);
-
-        Signal.tick(() => {
-            const id = this.data.port;
-            this.port = ports[id];
-            updateOutputs(this.inputs, this.port);
-        });
-
-        MIDIOutputs.each((port) => {
-            ports[port.id] = port;
-            if (this.data.id === port.id) {
-                this.port = port;
-                updateOutputs(this.inputs, this.port);
-            }
-        });
     }
 });
-

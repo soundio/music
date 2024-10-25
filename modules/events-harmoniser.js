@@ -2,6 +2,7 @@ import get        from 'fn/get.js';
 import overload   from 'fn/overload.js';
 import Stream     from 'fn/stream/stream.js';
 import Event      from '../../soundstage/modules/event.js';
+import mix        from './mix.js';
 import EventsNode from './events-node.js';
 
 
@@ -11,7 +12,7 @@ const defaults = {};
 
 /* Harmoniser */
 
-export default function Harmoniser(data = defaults) {
+export default function Harmoniser(id, data = {}) {
     const inputs = {
         0: new Stream.Each(overload(get(1), {
             noteon: function(noteon) {
@@ -80,16 +81,9 @@ export default function Harmoniser(data = defaults) {
     const outputs = { size: 8 };
 
     // extends EventsNode
-    EventsNode.call(this, inputs, outputs);
+    EventsNode.call(this, id, inputs, outputs);
 
     this.data = data;
 }
 
-assign(Harmoniser.prototype, EventsNode.prototype);
-
-
-
-
-
-
-
+mix(Harmoniser.prototype, EventsNode.prototype);

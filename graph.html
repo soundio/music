@@ -1,0 +1,259 @@
+<head>
+    <meta charset="utf-8" />
+    <meta name="author" content="@stephband" />
+    <meta name="description" content="TODO" />
+    <meta name="viewport" content="width=device-width" />
+
+    <script>
+        window.DEBUG = true;
+    </script>
+
+    <script type="importmap">{
+        "imports": {
+            "dom/":        "../dom/modules/",
+            "fn/":         "../fn/modules/",
+            "form/":       "../form-elements/",
+            "literal/":    "../literal/",
+            "midi/":       "../midi/modules/",
+            "soundstage/": "../soundstage/modules/"
+        }
+    }</script>
+
+    <link rel="stylesheet" href="../bolt/elements/html.css" />
+    <link rel="stylesheet" href="../bolt/elements/table.css" />
+    <link rel="stylesheet" href="../bolt/elements/label.css" />
+    <link rel="stylesheet" href="../bolt/elements/form.css" />
+    <link rel="stylesheet" href="../bolt/elements/svg.css" />
+    <link rel="stylesheet" href="../bolt/classes/block.css" />
+    <link rel="stylesheet" href="../bolt/classes/button.css" />
+
+    <style>
+        html {
+            background-color: white;
+        }
+
+        body {
+            padding: 3.75rem 1.875rem;
+        }
+
+        body > header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            text-align: right;
+        }
+
+        .graph {
+            display: grid;
+            grid-auto-columns: 0rem;
+            grid-auto-rows: 0rem;
+            column-gap: 1.5rem;
+            row-gap: 1.5rem;
+            min-height: calc(100vh - 6rem);
+        }
+
+        .graph > * {
+            z-index: 2;
+        }
+
+        .graph > header,
+        .graph > footer {
+            position: absolute;
+            grid-column: auto;
+            grid-row: auto;
+            left: 1.875rem;
+        }
+
+        .graph > header {
+            top: 0;
+        }
+
+        .graph > footer {
+            bottom: 0;
+        }
+
+        .graph > svg {
+            position: absolute;
+            grid-column: auto;
+            grid-row: auto;
+            top: 0;
+            left: 0;
+            width: 1px;
+            height: 1px;
+            z-index: 1;
+            stroke: #999999;
+            stroke-width: 1.5px;
+        }
+
+        .graph > event-midi-input {
+            grid-column-end: span 6;
+            grid-row-end: span 2;
+        }
+
+        .graph > event-midi-output {
+            grid-column-end: span 6;
+            grid-row-end: span 2;
+        }
+
+        .graph > event-harmoniser {
+            grid-column-end: span 10;
+            grid-row-end: span 8;
+        }
+
+        .graph > event-button {
+            grid-column-end: span 8;
+            grid-row-end: span 6;
+        }
+
+        .graph > event-transform {
+            grid-column-end: span 15;
+            grid-row-end: span 6;
+        }
+
+        .graph > note-radar {
+            grid-column-end: span 15;
+            grid-row-end: span 15;
+        }
+
+        .cable-path:hover {
+            stroke: lightseagreen;
+            stroke-width: 3px;
+            cursor: pointer;
+            cursor: crosshair;
+        }
+
+        .dragging {
+            opacity: 0.5;
+        }
+
+        .cable-path.dragging {
+            stroke: lightseagreen;
+            stroke-width: 3px;
+            opacity: 1;
+        }
+
+        .midi-monitor {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: auto;
+            height: auto;
+            max-height: 100vh;
+            font-family: 'FiraMono', AndaleMono, monospace;
+            font-size: 0.875rem;
+            text-align: right;
+            white-space: pre;
+            color: #999999;
+            z-index: 0;
+        }
+    </style>
+
+    <script type="module">
+        import LiteralHTML from 'literal/literal-html/module.js';
+        import FileMenu    from 'form/file-menu/module.js';
+
+        import NodeGraph   from './elements/node-graph/module.js';
+        import MIDIIn      from './elements/event-midi-input/module.js';
+        import MIDIOut     from './elements/event-midi-output/module.js';
+        import Transform   from './elements/event-transform/module.js';
+        import Harmoniser  from './elements/event-harmoniser/module.js';
+        import Button      from './elements/event-button/module.js';
+
+        import Data        from 'fn/data.js';
+        import delegate    from 'dom/delegate.js';
+        import events      from 'dom/events.js';
+        import Graph       from './modules/graph.js';
+
+        // TODO: move this to literal scope
+        window.headerTypes = ['midiin'];
+        window.footerTypes = ['midiout'];
+
+        function setupStage(data) {
+            const graph = new Graph(data.nodes, data.pipes);
+            fileMenu.data = graph;
+            Data.of(window).graph = graph;
+        }
+
+        const fileMenu = document.getElementById('stage-file-menu');
+
+        events('change', document).each(delegate({
+            '#stage-file-menu': (element, e) => setupStage(element.data)
+        }));
+
+        setupStage({
+            nodes: [
+                { id: 1, type: 'midiin' },
+                { id: 2, type: 'midiout' },
+                { id: 3, type: 'button' },
+                { id: 4, type: 'transform' },
+                { id: 5, type: 'harmoniser' }
+            ],
+
+            pipes: [
+                1, 0, 2, 0,
+                3, 0, 2, 12,
+                //1, 8, 4, 0,
+                4, 0, 2, 3,
+                5, 1, 4, 0
+            ]
+        });
+    </script>
+
+    <template id="midiin">
+        <event-midi-input node="${ Data.objectOf(data) }"></event-midi-input>
+    </template>
+
+    <template id="midiout">
+        <event-midi-output node="${ Data.objectOf(data) }"></event-midi-output>
+        <div class="midi-monitor" id="midi-monitor"></div>
+    </template>
+
+    <template id="button">
+        <event-button node="${ Data.objectOf(data) }" draggable="true" data-draggable='application/json:{"type":"node","id":${ data.id }}'></event-button>
+    </template>
+
+    <template id="harmoniser">
+        <event-harmoniser node="${ Data.objectOf(data) }" draggable="true" data-draggable='application/json:{"type":"node","id":${ data.id }}'></event-harmoniser>
+    </template>
+
+    <template id="transform">
+        <event-transform node="${ Data.objectOf(data) }" draggable="true" data-draggable='application/json:{"type":"node","id":${ data.id }}'></event-transform>
+    </template>
+
+    <!--template id="radar">
+        <note-radar draggable="true" data-draggable='application/json:{"type":"node","id":0}'></note-radar>
+    </template-->
+
+    <template id="graph">
+        <header>
+            <h2>Stage</h2>
+            ${ data.nodes
+                .filter((node) => headerTypes.includes(node.type))
+                .map((node) => include('#' + node.type, node)) }
+        </header>
+        <section class="graph">
+            ${ data.nodes
+                .filter((node) => !headerTypes.includes(node.type) && !footerTypes.includes(node.type))
+                .map((node) => include('#' + node.type, node)) }
+        </section>
+        <footer>
+            ${ data.nodes
+                .filter((node) => footerTypes.includes(node.type))
+                .map((node) => include('#' + node.type, node)) }
+        </footer>
+    </template>
+</head>
+
+<body>
+    <header>
+        <file-menu prefix="stage/" id="stage-file-menu" title="Documents"></file-menu>
+    </header>
+
+    <node-graph>
+        <template is="literal-html">
+            ${ Data.of(window).graph ? include('#graph', window.graph) : '' }
+        </template>
+    </node-graph>
+</body>

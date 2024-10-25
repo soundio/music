@@ -2,10 +2,11 @@
 
 import 'form/file-menu/module.js';
 
+import Data    from 'fn/data.js';
 import Signal  from 'fn/signal.js';
 import events  from 'dom/events.js';
 import element from 'dom/element.js';
-import createObjectProperty from 'dom/element/create-object-property.js';
+import { createProperty } from 'dom/element/create-attribute.js';
 import { dragstart, dragend }        from '../../../bolt/attributes/data-draggable.js';
 import { dragenter, dragover, drop } from '../../../bolt/attributes/data-droppable.js';
 import { nodes }        from '../../modules/events-node.js';
@@ -48,32 +49,42 @@ export const lifecycle = {
         const outputsSVG = shadow.querySelector('.outputs-svg');
         const node       = this.node;
 
-        if (node.inputs.size) {
-            events('dragenter', shadow).each(dragenter);
-            events('dragover', shadow).each(dragover);
-            events('drop', shadow).each(drop);
-            events('dropped', shadow).each((e) => {
-                const data = e.detail;
-                if (!data) throw new Error('Drop event has no data');
-                const node = nodes.find((node) => node.id === data.node);
-                if (!node) throw new Error('Dropped data has no .node id, or id is not in nodes registry');
-                const output = node.output(data.index);
-                if (!output) throw new Error('Dropped data has no .output index, or index is not in node.output(index)');
-                const input = this.node.input(e.target.dataset.index);
-                if (!input) throw new Error('Drop target has no input at index ' + e.target.dataset.index);
-
-                // Pipe output t't'input
-                output.pipe(input);
-                console.log('Piped node ' + node.id + ' output ' + data.index + ' to node ' + this.node.id + ' input ' + e.target.dataset.index);
-            });
-        }
-
-        if (node.outputs.size) {
-            events('dragstart', shadow).each(dragstart);
-            events('dragend', shadow).each(dragend);
-        }
+        const $node = internals.$node = Signal.of();
 
         /* Set node as this.node */
+        Signal.observe(internals.$node, (node) => {
+            if (!node) return;
+
+            this.dataset.node = this.node.id;
+
+            // TODO: if node is changed (it isn't, but if it is) more handlers
+            // will be registered
+            if (node && node.inputs.size) {
+                events('dragenter', shadow).each(dragenter);
+                events('dragover', shadow).each(dragover);
+                events('drop', shadow).each(drop);
+                events('dropped', shadow).each((e) => {
+                    const data = e.detail;
+                    if (!data) throw new Error('Drop event has no data');
+                    const node = nodes.find((node) => node.id === data.node);
+                    if (!node) throw new Error('Dropped data has no .node id, or id is not in nodes registry');
+                    const output = node.output(data.index);
+                    if (!output) throw new Error('Dropped data has no .output index, or index is not in node.output(index)');
+                    const input = this.node.input(e.target.dataset.inputIndex);
+                    if (!input) throw new Error('Drop target has no input at index ' + e.target.dataset.inputIndex);
+
+                    // Pipe output t't'input
+                    output.pipe(input);
+console.log('Piped node ' + node.id + ' output ' + data.index + ' to node ' + this.node.id + ' input ' + e.target.dataset.inputIndex);
+                });
+            }
+
+            if (node && node.outputs.size) {
+                events('dragstart', shadow).each(dragstart);
+                events('dragend', shadow).each(dragend);
+            }
+        });
+
         Signal.frame(() => {
             const node = this.node;
             if (!node) return;
@@ -89,7 +100,7 @@ export const lifecycle = {
                 let i = -1;
                 let html = '';
                 while (++i < node.inputs.size) html += `<use href="#input-g" x="${ i * 12 }" y="0" part="input-${ i }" draggable="false" data-input-id="${ node.id }" data-input-index="${ i }" title="Output ${ i }" data-droppable="application/json">
-                    <title>Input ${ i }</title>
+                    <title>${ node.inputs.names ? node.inputs.names[i] : 'Input ' + i }</title>
                 </use>`;
                 inputsSVG.setAttribute('width', i * 12);
                 inputsSVG.setAttribute('viewBox', `0 0 ${ i * 12 } 18`);
@@ -100,7 +111,7 @@ export const lifecycle = {
                 let o = -1;
                 let html = '';
                 while (++o < node.outputs.size) html += `<use href="#output-g" x="${ o * 12 }" y="0" part="output-${ o }" draggable="true" data-output-id="${ node.id }" data-output-index="${ o }" title="Output ${ o }" data-draggable='application/json:{"type":"output","node":${ node.id },"index":${ o }};'>
-                    <title>Output ${ o }</title>
+                    <title>${ node.outputs.names ? node.outputs.names[o] : 'Output ' + o }</title>
                 </use>`;
                 outputsSVG.setAttribute('width', o * 12);
                 outputsSVG.setAttribute('viewBox', `0 0 ${ o * 12 } 18`);
@@ -119,22 +130,26 @@ export const lifecycle = {
     },
 
     connect: function(shadow, internals, data) {
-        return [
-            Signal.tick(() => this.dataset.node = this.node.id)
-        ];
+
     }
 };
 
 export const properties = {
-    input: function(i = 0) {
-        return this.node.input(i);
+    input: {
+        value: function(i = 0) {
+            if (!this.node) throw new Error('Element has no graph node');
+            return this.node.input(i);
+        }
     },
 
-    output: function(o = 0) {
-        return this.node.output(o);
+    output: {
+        value: function(o = 0) {
+            if (!this.node) throw new Error('Element has no graph node');
+            return this.node.output(o);
+        }
     },
 
-    node: createObjectProperty()
+    node: createProperty('node', undefined, Data.objectOf)
 };
 
 export default element('<stage-node>', lifecycle, properties);

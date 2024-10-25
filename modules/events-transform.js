@@ -2,6 +2,7 @@ import get        from 'fn/get.js';
 import overload   from 'fn/overload.js';
 import Stream     from 'fn/stream/stream.js';
 import Event      from '../../soundstage/modules/event.js';
+import mix        from './mix.js';
 import EventsNode from './events-node.js';
 
 
@@ -47,7 +48,7 @@ function transformEvent(setting, event) {
 
 /* Transform */
 
-export default function Transform(data = defaults) {
+export default function Transform(id, data = assign({}, defaults)) {
     const inputs = {
         0: new Stream.Each((event) => {
             const { filter, transform } = this.data;
@@ -68,9 +69,9 @@ export default function Transform(data = defaults) {
     const outputs = { size: 2 };
 
     // extends EventsNode
-    EventsNode.call(this, inputs, outputs);
+    EventsNode.call(this, id, inputs, outputs);
 
     this.data = data;
 }
 
-assign(Transform.prototype, EventsNode.prototype);
+mix(Transform.prototype, EventsNode.prototype);

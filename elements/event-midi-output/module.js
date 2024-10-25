@@ -9,7 +9,6 @@ import overload       from 'fn/overload.js';
 import postpad        from 'fn/postpad.js';
 import truncate       from 'fn/truncate.js';
 import element        from 'dom/element.js';
-import createStringProperty from 'dom/element/create-string-property.js';
 import { toNoteName } from 'midi/note.js';
 import { toChannel, toType } from 'midi/message.js';
 import { MIDIOutputs } from 'midi/ports.js';
@@ -46,12 +45,6 @@ export default element('<event-midi-output>', {
     construct: function(shadow, internals) {
         const select = internals.select = shadow.getElementById('output-port');
 
-        this.node = new EventsMIDIOutput({}, (message) => {
-            const monitor = document.getElementById('midi-monitor');
-            monitor.innerHTML += `\n ${ this.node.port.name }  ${ postpad(' ', 3, toChannel(message)) } ${ postpad(' ', 8, toType(message)) } ${ postpad(' ', 4, toType(message).startsWith('note') ? toNoteName(message[1]) : message[1]) } ${ postpad(' ', 3, message[2]) } `;
-            monitor.scrollTop = 10000000;
-        });
-
         lifecycle.construct.apply(this, arguments);
 
         MIDIOutputs.each((port) => {
@@ -70,8 +63,20 @@ export default element('<event-midi-output>', {
     },
 
     connect: function(shadow, internals) {
-        const { select } = internals;
+        const { select, $node } = internals;
         lifecycle.connect.apply(this, arguments);
-        return [Signal.frame(() => select.value = this.node.data.port)];
+
+        /*
+        this.node = new EventsMIDIOutput(undefined, {}, (message) => {
+            const monitor = document.getElementById('midi-monitor');
+            monitor.innerHTML += `\n ${ this.node.port.name }  ${ postpad(' ', 3, toChannel(message)) } ${ postpad(' ', 8, toType(message)) } ${ postpad(' ', 4, toType(message).startsWith('note') ? toNoteName(message[1]) : message[1]) } ${ postpad(' ', 3, message[2]) } `;
+            monitor.scrollTop = 10000000;
+        });
+        */
+
+        return [Signal.observe($node, (node) => {
+            if (!node) return;
+            select.value = node.data.port;
+        })];
     }
 }, properties);

@@ -101,8 +101,6 @@ export default element('<event-transform>', {
     `,
 
     construct: function(shadow, internals) {
-        // Is this the best place to do this?
-        this.node = new EventsTransform();
         lifecycle.construct.apply(this, arguments);
 
         events('input', shadow).each(delegate({
@@ -148,6 +146,9 @@ export default element('<event-transform>', {
 
     connect: function(shadow, internals, data) {
         lifecycle.connect.apply(this, arguments);
+
+        // Is this the best place to do this?
+        //this.node = new EventsTransform();
 
         const filter1 = shadow.querySelector('[name="filter-1"]');
         const filter2 = shadow.querySelector('[name="filter-2"]');

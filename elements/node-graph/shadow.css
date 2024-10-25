@@ -1,0 +1,40 @@
+@import '../../../bolt/elements/html.css';
+@import '../../../bolt/elements/type.css';
+@import '../../../bolt/elements/form.css';
+@import '../../../bolt/elements/focus.css';
+@import '../../../bolt/elements/svg.css';
+
+:host {
+    display: block;
+    background-color: #aaaaaa;
+}
+
+:host > svg {
+    position: absolute;
+    grid-column: auto;
+    grid-row: auto;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    z-index: 1;
+    stroke: #999999;
+    stroke-width: 1.5px;
+}
+
+.cable-path:hover {
+    stroke: lightseagreen;
+    stroke-width: 3px;
+    cursor: pointer;
+    cursor: crosshair;
+}
+
+.dragging {
+    opacity: 0.5;
+}
+
+.cable-path.dragging {
+    stroke: lightseagreen;
+    stroke-width: 3px;
+    opacity: 1;
+}

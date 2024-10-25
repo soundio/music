@@ -64,13 +64,6 @@ export default element('<event-button>', {
 
     construct: function(shadow, internals) {
         const button = shadow.querySelector('button');
-
-        // Is this the best place to do this?
-        this.node = new EventsButton({
-            pointerdown: { 1: "start", 2: 60, 3: 0.5 },
-            pointerup:   { 1: "stop", 2: 60 }
-        });
-
         lifecycle.construct.apply(this, arguments);
 
         events('input', shadow).each(delegate({
@@ -94,6 +87,12 @@ export default element('<event-button>', {
 
     connect: function(shadow, internals, data) {
         lifecycle.connect.apply(this, arguments);
+
+        // Is this the best place to do this?
+        /*this.node = new EventsButton(undefined, {
+            pointerdown: { 1: "start", 2: 60, 3: 0.5 },
+            pointerup:   { 1: "stop", 2: 60 }
+        });*/
 
         const down1 = shadow.querySelector('[name="pointerdown-1"]');
         const down2 = shadow.querySelector('[name="pointerdown-2"]');

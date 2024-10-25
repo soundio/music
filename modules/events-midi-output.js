@@ -9,16 +9,17 @@ import { int7ToFloat }      from 'midi/maths.js';
 import { toRootName, toNoteName } from 'midi/note.js';
 import { isNoteOn, isControl, toChannel, toType, toSignedFloat } from 'midi/message.js';
 import { MIDIOutputs } from 'midi/ports.js';
-import MIDIOut from 'midi/output.js';
+import MIDIOutput from 'midi/output.js';
+import mix        from './mix.js';
 import EventsNode from './events-node.js';
 
 
 const assign   = Object.assign;
 const defaults = {};
-
+const names = Array.from({ length: 16 }, (n, i) => 'Channel ' + (i + 1));
 
 /*
-MIDIOutputNode()
+MIDIOut()
 
 Schema:
 
@@ -34,16 +35,16 @@ Schema:
 function updateInputs(inputs, port) {
     let i;
     for (i in inputs) {
-        if (i === 'size') continue;
+        if (!/^\d/.test(i)) continue;
         inputs[i].port = port;
     }
 }
 
-export default function MIDIOutput(data = defaults, logFn) {
+export default function MIDIOut(id, data = {}, logFn) {
     const ports   = {};
-    const inputs  = { size: 16 };
+    const inputs  = { size: 16, names };
     const outputs = { size: 0 };
-    EventsNode.call(this, inputs, outputs);
+    EventsNode.call(this, id, inputs, outputs);
 
     this.data  = Data.of(data);
     this.logFn = logFn;
@@ -63,7 +64,7 @@ export default function MIDIOutput(data = defaults, logFn) {
     });
 }
 
-assign(MIDIOutput.prototype, EventsNode.prototype, {
+assign(mix(MIDIOut.prototype, EventsNode.prototype), {
     input: function(n = 0) {
         if (n >= this.inputs.size) {
             throw new Error('GraphNode attempt to get .output(' + o + '), node has ' + this.outputs.size + ' outputs');
@@ -71,7 +72,7 @@ assign(MIDIOutput.prototype, EventsNode.prototype, {
 
         const inputs = this.inputs;
         return inputs[n] || (inputs[n] = assign(
-            MIDIOut({ channel: n + 1 }, this.logFn),
+            MIDIOutput({ channel: n + 1 }, this.logFn),
             { node: this }
         ));
     }

@@ -42,7 +42,6 @@ export default element('<event-midi-input>', {
         const select = internals.select = shadow.getElementById('input-port');
 
         // Is this the best place to do this?
-        this.node = new EventsMIDIInput();
         lifecycle.construct.apply(this, arguments);
 
         MIDIInputs.each((port) => {
@@ -61,8 +60,15 @@ export default element('<event-midi-input>', {
     },
 
     connect: function(shadow, internals) {
-        const { select } = internals;
+        const { select, $node } = internals;
         lifecycle.connect.apply(this, arguments);
-        return [Signal.frame(() => select.value = this.node.data.port)];
+
+        // ??????
+        //this.node = new EventsMIDIInput();
+
+        return [Signal.observe($node, (node) => {
+            if (!node) return;
+            select.value = node.data.port;
+        })];
     }
 }, properties);
