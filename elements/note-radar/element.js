@@ -12,7 +12,7 @@ import { int7ToFloat }            from 'midi/maths.js';
 import { toRootName, toNoteName } from 'midi/note.js';
 import { isNoteOn, isControl, toChannel, toType, toSignedFloat } from 'midi/message.js';
 import { lifecycle, properties } from '../stage-node/module.js';
-import EventsNode from '../../modules/events-node.js';
+import StageNode from '../../modules/graph-node.js';
 
 
 const assign = Object.assign;
@@ -222,7 +222,7 @@ export default element('note-radar', {
         const outputs = { size: 0 };
 
         // Is this the best place to do this?
-        this.node = new EventsNode(inputs, outputs);
+        this.node = new StageNode(inputs, outputs);
 
         lifecycle.construct.apply(this, arguments);
 

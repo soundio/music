@@ -9,7 +9,7 @@ import element          from 'dom/element.js';
 import { toNoteName }   from 'midi/note.js';
 import Event            from '../../../soundstage/modules/event.js';
 import { lifecycle, properties } from '../stage-node/module.js';
-import EventsButton from '../../modules/events-button.js';
+import EventsButton from '../../modules/button-node.js';
 import typeOptions from '../html/type-options.js';
 
 
@@ -27,7 +27,7 @@ function update(element, value) {
     element.value = value;
 }
 
-export default element('<event-button>', {
+export default element('<stage-button>', {
     mode: 'open',
 
     shadow: lifecycle.shadow + `

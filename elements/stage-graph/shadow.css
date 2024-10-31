@@ -5,8 +5,8 @@
 @import '../../../bolt/elements/svg.css';
 
 :host {
+    position: relative;
     display: block;
-    background-color: #aaaaaa;
 }
 
 :host > svg {
@@ -18,8 +18,10 @@
     width: 1px;
     height: 1px;
     z-index: 1;
+    overflow: visible;
     stroke: #999999;
     stroke-width: 1.5px;
+    background-color: orange;
 }
 
 .cable-path:hover {

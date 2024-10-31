@@ -10,7 +10,7 @@ import { isNoteOn, isControl, toChannel, toType, toSignedFloat } from 'midi/mess
 import { MIDIInputs }       from 'midi/ports.js';
 import MIDIEvents           from 'midi/events.js';
 import mix                  from './mix.js';
-import EventsNode           from './events-node.js';
+import StageNode           from './graph-node.js';
 
 const create = Object.create;
 const assign = Object.assign;
@@ -45,7 +45,7 @@ export default function MIDIIn(id, data = {}) {
     const ports   = {};
     const inputs  = { size: 0 };
     const outputs = { size: 16, names };
-    EventsNode.call(this, id, inputs, outputs);
+    StageNode.call(this, id, inputs, outputs);
     this.data = Data.of(data);
 
     Signal.tick(() => {
@@ -63,10 +63,10 @@ export default function MIDIIn(id, data = {}) {
     });
 }
 
-assign(mix(MIDIIn.prototype, EventsNode.prototype), {
+assign(mix(MIDIIn.prototype, StageNode.prototype), {
     output: function ARSE(n = 0) {
         if (n >= this.outputs.size) {
-            throw new Error('GraphNode attempt to get .output(' + o + '), node has ' + this.outputs.size + ' outputs');
+            throw new Error('StageNode attempt to get .output(' + o + '), node has ' + this.outputs.size + ' outputs');
         }
 
         const outputs = this.outputs;

@@ -33,7 +33,7 @@
         }
 
         body {
-            padding: 3.75rem 1.875rem;
+            padding: 1.875rem 1.5rem;
         }
 
         body > header {
@@ -51,63 +51,77 @@
             grid-auto-rows: 0rem;
             column-gap: 1.5rem;
             row-gap: 1.5rem;
-            min-height: calc(100vh - 6rem);
+            min-height: 6rem;
         }
 
         .graph > * {
             z-index: 2;
         }
 
-        .graph > header,
-        .graph > footer {
-            position: absolute;
-            grid-column: auto;
-            grid-row: auto;
-            left: 1.875rem;
+        stage-graph {
+            position: relative;
+            background-color: #eeeeee;
         }
 
-        .graph > header {
+        stage-graph > header,
+        stage-graph > footer,
+        stage-graph > section {
+            width: 100%;
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+
+        stage-graph > header,
+        stage-graph > footer {
+            display: flex;
+            height: 1.875rem;
+            background-color: #dddddd;
+        }
+
+        stage-graph > header {
             top: 0;
+            align-items: start;
         }
 
-        .graph > footer {
+        stage-graph > header > h2 {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        stage-graph > header + section {
+            margin-top: 2.625rem;
+        }
+
+        stage-graph > footer {
             bottom: 0;
+            align-items: end;
         }
 
-        .graph > svg {
-            position: absolute;
-            grid-column: auto;
-            grid-row: auto;
-            top: 0;
-            left: 0;
-            width: 1px;
-            height: 1px;
-            z-index: 1;
-            stroke: #999999;
-            stroke-width: 1.5px;
+        stage-graph > * + footer {
+            margin-top: 2.625rem;
         }
 
-        .graph > event-midi-input {
+        .graph > stage-midi-in {
             grid-column-end: span 6;
             grid-row-end: span 2;
         }
 
-        .graph > event-midi-output {
+        .graph > stage-midi-out {
             grid-column-end: span 6;
             grid-row-end: span 2;
         }
 
-        .graph > event-harmoniser {
+        .graph > stage-harmoniser {
             grid-column-end: span 10;
             grid-row-end: span 8;
         }
 
-        .graph > event-button {
+        .graph > stage-button {
             grid-column-end: span 8;
             grid-row-end: span 6;
         }
 
-        .graph > event-transform {
+        .graph > stage-transform {
             grid-column-end: span 15;
             grid-row-end: span 6;
         }
@@ -115,23 +129,6 @@
         .graph > note-radar {
             grid-column-end: span 15;
             grid-row-end: span 15;
-        }
-
-        .cable-path:hover {
-            stroke: lightseagreen;
-            stroke-width: 3px;
-            cursor: pointer;
-            cursor: crosshair;
-        }
-
-        .dragging {
-            opacity: 0.5;
-        }
-
-        .cable-path.dragging {
-            stroke: lightseagreen;
-            stroke-width: 3px;
-            opacity: 1;
         }
 
         .midi-monitor {
@@ -154,12 +151,12 @@
         import LiteralHTML from 'literal/literal-html/module.js';
         import FileMenu    from 'form/file-menu/module.js';
 
-        import NodeGraph   from './elements/node-graph/module.js';
-        import MIDIIn      from './elements/event-midi-input/module.js';
-        import MIDIOut     from './elements/event-midi-output/module.js';
-        import Transform   from './elements/event-transform/module.js';
-        import Harmoniser  from './elements/event-harmoniser/module.js';
-        import Button      from './elements/event-button/module.js';
+        import NodeGraph   from './elements/stage-graph/module.js';
+        import MIDIIn      from './elements/stage-midi-in/module.js';
+        import MIDIOut     from './elements/stage-midi-out/module.js';
+        import Transform   from './elements/stage-transform/module.js';
+        import Harmoniser  from './elements/stage-harmoniser/module.js';
+        import Button      from './elements/stage-button/module.js';
 
         import Data        from 'fn/data.js';
         import delegate    from 'dom/delegate.js';
@@ -174,6 +171,7 @@
             const graph = new Graph(data.nodes, data.pipes);
             fileMenu.data = graph;
             Data.of(window).graph = graph;
+            window.graph = graph;
         }
 
         const fileMenu = document.getElementById('stage-file-menu');
@@ -192,9 +190,9 @@
             ],
 
             pipes: [
-                1, 0, 2, 0,
+                1, 0, 2, 3,
                 3, 0, 2, 12,
-                //1, 8, 4, 0,
+                1, 8, 4, 0,
                 4, 0, 2, 3,
                 5, 1, 4, 0
             ]
@@ -202,24 +200,24 @@
     </script>
 
     <template id="midiin">
-        <event-midi-input node="${ Data.objectOf(data) }"></event-midi-input>
+        <stage-midi-in node="${ Data.objectOf(data) }"></stage-midi-in>
     </template>
 
     <template id="midiout">
-        <event-midi-output node="${ Data.objectOf(data) }"></event-midi-output>
+        <stage-midi-out node="${ Data.objectOf(data) }"></stage-midi-out>
         <div class="midi-monitor" id="midi-monitor"></div>
     </template>
 
     <template id="button">
-        <event-button node="${ Data.objectOf(data) }" draggable="true" data-draggable='application/json:{"type":"node","id":${ data.id }}'></event-button>
+        <stage-button node="${ Data.objectOf(data) }" style="${ data.style }" draggable="true" data-draggable='application/json:{"type":"node","id":${ data.id }}'></stage-button>
     </template>
 
     <template id="harmoniser">
-        <event-harmoniser node="${ Data.objectOf(data) }" draggable="true" data-draggable='application/json:{"type":"node","id":${ data.id }}'></event-harmoniser>
+        <stage-harmoniser node="${ Data.objectOf(data) }" style="${ data.style }" draggable="true" data-draggable='application/json:{"type":"node","id":${ data.id }}'></stage-harmoniser>
     </template>
 
     <template id="transform">
-        <event-transform node="${ Data.objectOf(data) }" draggable="true" data-draggable='application/json:{"type":"node","id":${ data.id }}'></event-transform>
+        <stage-transform node="${ Data.objectOf(data) }" style="${ console.log('STYLE', data.style), data.style }" draggable="true" data-draggable='application/json:{"type":"node","id":${ data.id }}'></stage-transform>
     </template>
 
     <!--template id="radar">
@@ -228,10 +226,10 @@
 
     <template id="graph">
         <header>
-            <h2>Stage</h2>
             ${ data.nodes
                 .filter((node) => headerTypes.includes(node.type))
                 .map((node) => include('#' + node.type, node)) }
+            <h2>Stage</h2>
         </header>
         <section class="graph">
             ${ data.nodes
@@ -251,9 +249,9 @@
         <file-menu prefix="stage/" id="stage-file-menu" title="Documents"></file-menu>
     </header>
 
-    <node-graph>
+    <stage-graph>
         <template is="literal-html">
             ${ Data.of(window).graph ? include('#graph', window.graph) : '' }
         </template>
-    </node-graph>
+    </stage-graph>
 </body>

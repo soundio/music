@@ -1,6 +1,6 @@
 
-import mix        from './mix.js';
-import EventsNode from './events-node.js';
+import mix       from './mix.js';
+import GraphNode from './graph-node.js';
 
 const assign   = Object.assign;
 const defaults = {
@@ -14,10 +14,10 @@ export default function Button(id, data = assign({}, defaults)) {
     const inputs  = { size: 0 };
     const outputs = { size: 1 };
 
-    // extends EventsNode
-    EventsNode.call(this, id, inputs, outputs);
+    // extends StageNode
+    GraphNode.call(this, id, inputs, outputs);
 
     this.data = data;
 }
 
-mix(Button.prototype, EventsNode.prototype);
+mix(Button.prototype, GraphNode.prototype);

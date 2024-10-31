@@ -9,7 +9,7 @@ import element          from 'dom/element.js';
 import { toNoteName }   from 'midi/note.js';
 import Event            from '../../../soundstage/modules/event.js';
 import { lifecycle, properties } from '../stage-node/module.js';
-import EventsTransform  from '../../modules/events-transform.js';
+import EventsTransform  from '../../modules/transform-node.js';
 
 
 const assign = Object.assign;
@@ -26,7 +26,7 @@ function update(element, value) {
     element.value = value;
 }
 
-export default element('<event-transform>', {
+export default element('<stage-transform>', {
     mode: 'open',
 
     shadow: lifecycle.shadow + `

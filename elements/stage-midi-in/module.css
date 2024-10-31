@@ -3,9 +3,13 @@
 
 :host {
     grid-template-columns: 1fr;
-    grid-template-rows: 1.125rem 1.125rem;
+    grid-template-rows: 1.875rem 1.125rem;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
+}
+
+:host > select {
+    align-self: center;
 }
 
 :host > file-menu {
@@ -13,5 +17,6 @@
 }
 
 :host > .outputs-svg {
+    grid-column: 1 / span 2;
     grid-row: 2;
 }

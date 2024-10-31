@@ -16,7 +16,7 @@ import { int7ToFloat }            from 'midi/maths.js';
 import { toRootName, toNoteName } from 'midi/note.js';
 import Event, { isNoteStart, isNoteStop } from '../../../soundstage/modules/event.js';
 import { lifecycle, properties } from '../stage-node/module.js';
-import EventsHarmoniser  from '../../modules/events-harmoniser.js';
+import EventsHarmoniser  from '../../modules/harmoniser-node.js';
 import notesOptions from '../html/notes-options.js';
 
 const assign = Object.assign;
@@ -56,7 +56,7 @@ function pushToOutputs(outputs, number, i) {
     return outputs;
 }
 
-export default element('<event-harmoniser>', {
+export default element('<stage-harmoniser>', {
     mode: 'open',
 
     shadow: lifecycle.shadow + `

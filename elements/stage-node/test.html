@@ -87,27 +87,27 @@
             stroke-width: 1.5px;
         }
 
-        .graph > event-midi-input {
+        .graph > stage-midi-in {
             grid-column-end: span 6;
             grid-row-end: span 2;
         }
 
-        .graph > event-midi-output {
+        .graph > stage-midi-out {
             grid-column-end: span 6;
             grid-row-end: span 2;
         }
 
-        .graph > event-harmoniser {
+        .graph > stage-harmoniser {
             grid-column-end: span 10;
             grid-row-end: span 8;
         }
 
-        .graph > event-button {
+        .graph > stage-button {
             grid-column-end: span 8;
             grid-row-end: span 6;
         }
 
-        .graph > event-transform {
+        .graph > stage-transform {
             grid-column-end: span 15;
             grid-row-end: span 6;
         }
@@ -153,11 +153,11 @@
     <!--script type="module">
         import Graph from '../../modules/graph.js';
 
-        import EventMIDIInput  from '../event-midi-input/module.js';
-        import EventMIDIOutput from '../event-midi-output/module.js';
-        import EventButton     from '../event-button/module.js';
-        import EventTransform  from '../event-transform/module.js';
-        import EventHarmoniser from '../event-harmoniser/module.js';
+        import EventMIDIInput  from '../stage-midi-in/module.js';
+        import EventMIDIOutput from '../stage-midi-out/module.js';
+        import EventButton     from '../stage-button/module.js';
+        import EventTransform  from '../stage-transform/module.js';
+        import EventHarmoniser from '../stage-harmoniser/module.js';
         import NoteRadar       from '../note-radar/element.js';
 
         const constructors = {
@@ -205,15 +205,15 @@
         import '../../../bolt/attributes/data-droppable.js';
 
         import StageNode       from './module.js';
-        import EventMIDIInput  from '../event-midi-input/module.js';
-        import EventMIDIOutput from '../event-midi-output/module.js';
-        import EventButton     from '../event-button/module.js';
-        import EventTransform  from '../event-transform/module.js';
-        import EventHarmoniser from '../event-harmoniser/module.js';
+        import EventMIDIInput  from '../stage-midi-in/module.js';
+        import EventMIDIOutput from '../stage-midi-out/module.js';
+        import EventButton     from '../stage-button/module.js';
+        import EventTransform  from '../stage-transform/module.js';
+        import EventHarmoniser from '../stage-harmoniser/module.js';
         import NoteRadar       from '../note-radar/element.js';
 
-        import { nodes }       from '../../modules/events-node.js';
-        import Transformer     from '../../modules/events-transform.js';
+        import { nodes }       from '../../modules/graph-node.js';
+        import Transformer     from '../../modules/transform-node.js';
 
         import clamp    from 'fn/clamp.js';
         import matches  from 'fn/matches.js';
@@ -230,12 +230,12 @@
         const fileMenu          = document.getElementById('stage-file-menu');
         const graph             = document.querySelector('.graph');
         const cablesElement     = document.getElementById('cables');
-        const buttonElement     = document.querySelector('event-button');
-        const transformElement  = document.querySelector('event-transform');
-        const harmoniserElement = document.querySelector('event-harmoniser');
+        const buttonElement     = document.querySelector('stage-button');
+        const transformElement  = document.querySelector('stage-transform');
+        const harmoniserElement = document.querySelector('stage-harmoniser');
         const noteRadar         = document.querySelector('note-radar');
-        const MIDIInputElement  = document.querySelector('event-midi-input');
-        const MIDIOutputElement = document.querySelector('event-midi-output');
+        const MIDIInputElement  = document.querySelector('stage-midi-in');
+        const MIDIOutputElement = document.querySelector('stage-midi-out');
 
 
 
@@ -509,17 +509,17 @@
 
     <section class="graph" data-droppable="application/json" hidden>
         <header>
-            <event-midi-input></event-midi-input>
+            <stage-midi-in></stage-midi-in>
         </header>
         <svg viewbox="0 0 1 1" width="1" height="1">
             <g id="cables"></g>
         </svg>
-        <event-button draggable="true" data-draggable='application/json:{"type":"node","id":0}'></event-button>
-        <event-harmoniser draggable="true" data-draggable='application/json:{"type":"node","id":0}'></event-harmoniser>
-        <event-transform draggable="true" data-draggable='application/json:{"type":"node","id":0}'></event-transform>
+        <stage-button draggable="true" data-draggable='application/json:{"type":"node","id":0}'></stage-button>
+        <stage-harmoniser draggable="true" data-draggable='application/json:{"type":"node","id":0}'></stage-harmoniser>
+        <stage-transform draggable="true" data-draggable='application/json:{"type":"node","id":0}'></stage-transform>
         <note-radar draggable="true" data-draggable='application/json:{"type":"node","id":0}'></note-radar>
         <footer>
-            <event-midi-output></event-midi-output>
+            <stage-midi-out></stage-midi-out>
         </footer>
         <div class="midi-monitor" id="midi-monitor"></div>
     </section>

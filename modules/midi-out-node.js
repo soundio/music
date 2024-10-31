@@ -11,7 +11,7 @@ import { isNoteOn, isControl, toChannel, toType, toSignedFloat } from 'midi/mess
 import { MIDIOutputs } from 'midi/ports.js';
 import MIDIOutput from 'midi/output.js';
 import mix        from './mix.js';
-import EventsNode from './events-node.js';
+import StageNode from './graph-node.js';
 
 
 const assign   = Object.assign;
@@ -44,7 +44,7 @@ export default function MIDIOut(id, data = {}, logFn) {
     const ports   = {};
     const inputs  = { size: 16, names };
     const outputs = { size: 0 };
-    EventsNode.call(this, id, inputs, outputs);
+    StageNode.call(this, id, inputs, outputs);
 
     this.data  = Data.of(data);
     this.logFn = logFn;
@@ -64,10 +64,10 @@ export default function MIDIOut(id, data = {}, logFn) {
     });
 }
 
-assign(mix(MIDIOut.prototype, EventsNode.prototype), {
+assign(mix(MIDIOut.prototype, StageNode.prototype), {
     input: function(n = 0) {
         if (n >= this.inputs.size) {
-            throw new Error('GraphNode attempt to get .output(' + o + '), node has ' + this.outputs.size + ' outputs');
+            throw new Error('StageNode attempt to get .output(' + o + '), node has ' + this.outputs.size + ' outputs');
         }
 
         const inputs = this.inputs;

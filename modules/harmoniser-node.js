@@ -3,7 +3,7 @@ import overload   from 'fn/overload.js';
 import Stream     from 'fn/stream/stream.js';
 import Event      from '../../soundstage/modules/event.js';
 import mix        from './mix.js';
-import EventsNode from './events-node.js';
+import StageNode from './graph-node.js';
 
 
 const assign   = Object.assign;
@@ -80,10 +80,10 @@ export default function Harmoniser(id, data = {}) {
 
     const outputs = { size: 8 };
 
-    // extends EventsNode
-    EventsNode.call(this, id, inputs, outputs);
+    // extends StageNode
+    StageNode.call(this, id, inputs, outputs);
 
     this.data = data;
 }
 
-mix(Harmoniser.prototype, EventsNode.prototype);
+mix(Harmoniser.prototype, StageNode.prototype);

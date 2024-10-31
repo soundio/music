@@ -3,15 +3,24 @@
 
 :host {
     grid-template-columns: 1fr;
-    grid-template-rows: 1.125rem 1.125rem;
+    grid-template-rows: 1.125rem 1.875rem;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
+}
+
+:host > select {
+    align-self: center;
+    grid-row: 2;
 }
 
 :host > file-menu {
     display: none;
 }
 
-:host > .outputs-svg {
-    display: none;
+:host > h4 {
+    grid-row: 2;
+}
+
+:host > .inputs-svg {
+    grid-column: 1 / span 2;
 }

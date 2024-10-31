@@ -2,14 +2,16 @@
 
 import 'form/file-menu/module.js';
 
-import Data    from 'fn/data.js';
-import Signal  from 'fn/signal.js';
-import events  from 'dom/events.js';
-import element from 'dom/element.js';
+import Data     from 'fn/data.js';
+import get      from 'fn/get.js';
+import overload from 'fn/overload.js';
+import Signal   from 'fn/signal.js';
+import events   from 'dom/events.js';
+import element  from 'dom/element.js';
 import { createProperty } from 'dom/element/create-attribute.js';
 import { dragstart, dragend }        from '../../../bolt/attributes/data-draggable.js';
 import { dragenter, dragover, drop } from '../../../bolt/attributes/data-droppable.js';
-import { nodes }        from '../../modules/events-node.js';
+import { nodes }        from '../../modules/graph-node.js';
 
 
 const assign = Object.assign;
@@ -39,7 +41,11 @@ export const lifecycle = {
                 </g>
             </defs>
         </svg>
-        <file-menu prefix="harmoniser/" title="Settings"></file-menu>
+        <file-menu prefix="harmoniser/" title="Settings">
+            <hr/>
+            <option value disabled>Actions</option>
+            <option value="$remove">Remove</option>
+        </file-menu>
     `,
 
     construct: function(shadow, internals) {
@@ -47,15 +53,27 @@ export const lifecycle = {
         const menu       = shadow.querySelector('file-menu');
         const inputsSVG  = shadow.querySelector('.inputs-svg');
         const outputsSVG = shadow.querySelector('.outputs-svg');
-        const node       = this.node;
+        //const node       = this.node;
 
         const $node = internals.$node = Signal.of();
+
+        if (menu) {
+            // This is a bit of a dodgy way of adding actions, it may
+            // change in file-menu element
+            menu.actions = {
+                $remove: () => {
+                    this.node.stop();
+                    this.remove();
+                }
+            };
+        }
 
         /* Set node as this.node */
         Signal.observe(internals.$node, (node) => {
             if (!node) return;
 
             this.dataset.node = this.node.id;
+            this.node.style = this.style;
 
             // TODO: if node is changed (it isn't, but if it is) more handlers
             // will be registered
