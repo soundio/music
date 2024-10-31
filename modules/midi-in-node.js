@@ -64,7 +64,7 @@ export default function MIDIIn(id, data = {}) {
 }
 
 assign(mix(MIDIIn.prototype, StageNode.prototype), {
-    output: function ARSE(n = 0) {
+    output: function(n = 0) {
         if (n >= this.outputs.size) {
             throw new Error('StageNode attempt to get .output(' + o + '), node has ' + this.outputs.size + ' outputs');
         }

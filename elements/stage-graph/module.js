@@ -21,6 +21,7 @@ import { nodes }        from '../../modules/graph-node.js';
 
 
 const assign = Object.assign;
+let mousepos = '';
 
 
 /*
@@ -251,6 +252,10 @@ export const lifecycle = {
             //const data = e.dataTransfer.getData('text/plain');
             //console.log('dragover', data);
             if (!dragGhost) return;
+
+            // dragover fires continuously, even if the mouse has not moved
+            if (e.clientX + ',' + e.clientY === mousepos) return;
+            mousepos = e.clientX + ',' + e.clientY;
 
             if (dragGhost.dataset.outputId) {
                 // Dragging an output path or connect, which was given a path

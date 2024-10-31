@@ -22,18 +22,17 @@ function generateId() {
 /** StageNode() **/
 
 export default function StageNode(id = generateId(), inputs = { size: 1 }, outputs = { size: 1 }) {
-    this.id      = id;
+    this.id = id;
 
     // Define inputs and outputs
     descriptors.inputs.value  = inputs;
     descriptors.outputs.value = outputs;
     define(this, descriptors);
 
-    // Give inputs and outputs a reference to node
-    let i = -1;
-    while (inputs[++i]) inputs[i].node = this;
-    let o = -1;
-    while (outputs[++o]) outputs[i].node = this;
+    // Give them all a reference to this node
+    let n;
+    for (n in this.inputs)  if (/^\d/.test(n)) this.inputs[n].node  = this;
+    for (n in this.outputs) if (/^\d/.test(n)) this.outputs[n].node = this;
 
     // Maintain a registry of nodes
     nodes.push(this);
@@ -59,29 +58,23 @@ assign(StageNode.prototype, {
         return outputs[o] || (outputs[o] = assign(Stream.of(), { node: this }));
     },
 
-    remove: function() {
-        // NOT USED YET (TODO)
-        console.trace();
-    },
-
     toJSON: function() {
         return assign({}, this, {
             // Because .type is on prototype it does not automatically get added
             // to JSON
             type:  this.type,
             // Style is not really a part of Node, but it may be used by the
-            // stage to maintain a document and this is a Quick and Dirty place
-            // to keep it
+            // stage to maintain a document and this is a Quick and Dirty Place
+            // to Keep It
             style: this.style && this.style.cssText || undefined
         });
     },
 
     stop: function() {
-        let i = -1, input;
-        while (input = this.inputs[++i]) input.stop();
-        let o = -1, output;
-        while (output = this.outputs[++i]) output.stop();
-
+        let n;
+        for (n in this.inputs)  if (/^\d/.test(n)) this.inputs[n].stop();
+        for (n in this.outputs) if (/^\d/.test(n)) this.outputs[n].stop();
+        // Call .done(fn) observer functions
         return Stream.stop(this);
     },
 
