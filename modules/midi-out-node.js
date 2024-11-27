@@ -40,14 +40,14 @@ function updateInputs(inputs, port) {
     }
 }
 
-export default function MIDIOut(id, data = {}, logFn) {
+export default function MIDIOut(id, data = {}) {
     const ports   = {};
     const inputs  = { size: 16, names };
     const outputs = { size: 0 };
+
     StageNode.call(this, id, inputs, outputs);
 
-    this.data  = Data.of(data);
-    this.logFn = logFn;
+    this.data = Data.of(data);
 
     Signal.tick(() => {
         const id = this.data.port;
@@ -72,7 +72,7 @@ assign(mix(MIDIOut.prototype, StageNode.prototype), {
 
         const inputs = this.inputs;
         return inputs[n] || (inputs[n] = assign(
-            MIDIOutput({ channel: n + 1 }, this.logFn),
+            MIDIOutput({ channel: n + 1 }, (event) => console.log(event)),
             { node: this }
         ));
     }

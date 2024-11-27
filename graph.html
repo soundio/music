@@ -25,6 +25,7 @@
     <link rel="stylesheet" href="../bolt/elements/form.css" />
     <link rel="stylesheet" href="../bolt/elements/svg.css" />
     <link rel="stylesheet" href="../bolt/classes/block.css" />
+    <link rel="stylesheet" href="../bolt/classes/atoms.css" />
     <link rel="stylesheet" href="../bolt/classes/button.css" />
 
     <style>
@@ -33,7 +34,7 @@
         }
 
         html {
-            background-color: white;
+            background-color: #646568;
         }
 
         body {
@@ -49,11 +50,40 @@
             width: 100%;
             text-align: right;
             z-index: 2;
+            max-height: 0;
+        }
+
+        body > header > file-menu {
+            margin-top: 0.1875rem;
+            margin-right: 0.375rem;
         }
 
         body > stage-graph {
             height: 100vh;
             overflow: auto;
+        }
+
+        .body-grid {
+            grid-template-columns: 1fr min(33%, 18rem);
+            column-gap: 0;
+            row-gap: 0;
+        }
+
+        .body-grid > header {
+            grid-column: auto;
+            grid-row: auto;
+        }
+
+        .body-grid > .block {
+            padding-top: 3rem;
+        }
+
+        .body-grid > .px-canvas {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            grid-column: auto;
+            grid-row: auto;
         }
 
         .graph {
@@ -164,6 +194,7 @@
         import FileMenu    from 'form/file-menu/module.js';
 
         import NodeGraph   from './elements/stage-graph/module.js';
+        import Monitor     from './elements/stage-monitor/module.js';
         import MIDIIn      from './elements/stage-midi-in/module.js';
         import MIDIOut     from './elements/stage-midi-out/module.js';
         import Transform   from './elements/stage-transform/module.js';
@@ -194,20 +225,25 @@
 
         setupStage({
             nodes: [
-                { id: 1, type: 'midiin' },
-                { id: 2, type: 'midiout' },
+               // { id: 1, type: 'midiin' },
+                //{ id: 2, type: 'midiout' },
                 { id: 3, type: 'button' },
-                { id: 4, type: 'transform' },
-                { id: 5, type: 'harmoniser' }
+                //{ id: 4, type: 'transform' },
+                //{ id: 5, type: 'harmoniser' },
+                { id: 6, type: 'monitor' }
             ],
 
             pipes: [
+                3, 0, 6, 0
+            ]
+
+            /*pipes: [
                 1, 0, 2, 3,
                 3, 0, 2, 12,
                 1, 8, 4, 0,
                 4, 0, 2, 3,
                 5, 1, 4, 0
-            ]
+            ]*/
         });
     </script>
 
@@ -230,6 +266,10 @@
 
     <template id="transform">
         <stage-transform node="${ Data.objectOf(data) }" style="${ console.log('STYLE', data.style), data.style }" draggable="true" data-draggable='application/json:{"type":"node","id":${ data.id }}'></stage-transform>
+    </template>
+
+    <template id="monitor">
+        <stage-monitor node="${ Data.objectOf(data) }" style="${ console.log('STYLE', data.style), data.style }" draggable="true" data-draggable='application/json:{"type":"node","id":${ data.id }}'></stage-monitor>
     </template>
 
     <!--template id="radar">
@@ -256,14 +296,18 @@
     </template>
 </head>
 
-<body>
+<body class="body-grid grid">
     <header>
         <file-menu prefix="stage/" id="stage-file-menu" title="Documents"></file-menu>
     </header>
 
-    <stage-graph>
+    <stage-graph class="x1">
         <template is="literal-html">
             ${ Data.of(window).graph ? include('#graph', window.graph) : '' }
         </template>
     </stage-graph>
+
+    <section class="x2 block">
+        Edit
+    </section>
 </body>

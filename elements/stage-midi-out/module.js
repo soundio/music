@@ -49,7 +49,6 @@ export default element('<stage-midi-out>', {
 
         MIDIOutputs.each((port) => {
             const option = shadow.getElementById('output-port-' + port.id);
-
             if (option) option.disabled = port.state !== 'connected';
             else select.appendChild(create('option', {
                 id:       'output-port-' + port.id,

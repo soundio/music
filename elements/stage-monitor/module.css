@@ -1,0 +1,25 @@
+
+@import '../stage-node/module.css';
+
+:host {
+    grid-template-rows: 1.125rem 1.875rem;
+    height: 30px;
+}
+
+:host > select {
+    align-self: center;
+    grid-row: 2;
+}
+
+:host > file-menu {
+    display: none;
+}
+
+:host > pre {
+    grid-column: 1 / span 3;
+    font-size:   0.75em;
+    white-space: pre;
+    min-height:  3lh;
+    overflow: hidden;
+    background-color: white;
+}

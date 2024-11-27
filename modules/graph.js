@@ -1,12 +1,12 @@
 
 import matches    from 'fn/matches.js';
 
+import Node       from './graph-node.js';
 import Harmoniser from './harmoniser-node.js';
 import MIDIIn     from './midi-in-node.js';
 import MIDIOut    from './midi-out-node.js';
 import Button     from './button-node.js';
 import Transform  from './transform-node.js';
-//import Node       from './graph-node.js';
 
 const assign  = Object.assign;
 const define  = Object.defineProperties;
@@ -22,7 +22,6 @@ register(MIDIIn);
 register(MIDIOut);
 register(Button);
 register(Transform);
-//register(Node);
 
 
 /** Graph() **/
@@ -41,8 +40,23 @@ function remove(nodes, node) {
     return nodes;
 }
 
-function toStageNode(node) {
-    return new constructors[node.type](node.id, node.data);
+function toStageNode(options) {
+    if (constructors[options.type]) {
+        return new constructors[options.type](options.id, options.data);
+    }
+
+    if (window.DEBUG) {
+        console.warn('Constructing node of unregistered type="' + options.type + '"');
+    }
+
+    const node = new Node(options.id, { size: 1 }, { size: 1 });
+    // Override .type, which normally is a lower-cased constructor name, but
+    // here is an unrecognised type on a default GraphNode constructor that we
+    // wish to preserve
+    //node.type = options.type;
+    Object.defineProperty(node, 'type', { value: options.type });
+
+    return node;
 }
 
 function isPipedTo(stream1, stream2) {

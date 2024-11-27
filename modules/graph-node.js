@@ -44,9 +44,10 @@ assign(StageNode.prototype, {
             throw new Error('StageNode attempt to get .input(' + i + '), node has ' + this.inputs.size + ' inputs');
         }
 
-        // Actually I think inputs cannot be created dynamically, while outputs still can
+        // Actually inputs perhaps should not be created dynamically, because if
+        // an input is needed it must do something ... ?
         const inputs = this.inputs;
-        return inputs[i] || (inputs[i] = new Input());
+        return inputs[i] || (inputs[i] = assign(Stream.of(), { node: this }));
     },
 
     output: function(o = 0) {

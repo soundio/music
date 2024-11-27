@@ -107,10 +107,10 @@ console.log('Piped node ' + node.id + ' output ' + data.index + ' to node ' + th
             const node = this.node;
             if (!node) return;
 
-            title.textContent = node.constructor.name;
+            title.textContent = node.type;
 
             if (menu) {
-                menu.prefix = node.constructor.name;
+                menu.prefix = node.type;
                 menu.data   = node.data;
             }
 
