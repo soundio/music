@@ -35,12 +35,6 @@ export function magnitude(a) {
     return Math.sqrt(a[0] * a[0] + a[1] * a[1]);
 }
 
-function rotate180(a) {
-    return a < 0.000000001 ?
-        a + Math.PI :
-        a - Math.PI ;
-}
-
 export function angle(vector) {
-    return rotate180(Math.atan2(vector[0], vector[1]));
+    return Math.atan2(vector[1], vector[0]);
 }

@@ -87,6 +87,7 @@
         import { angle, magnitude } from './modules/vector.js';
         import fft, { ifft } from './modules/fft.js';
         import { eventsToWaveform, waveformToEvents } from './modules/rhythm.js';
+        import { plotYAxis, plot, plotWaveform, plotBuffer } from './modules/canvas.js';
 
         window.delegate = delegate;
         window.events = events;
@@ -100,12 +101,16 @@
         window.denormalise = denormalise;
         window.eventsToWaveform = eventsToWaveform;
         window.waveformToEvents = waveformToEvents;
+        window.plotYAxis = plotYAxis;
+        window.plot = plot;
+        window.plotWaveform = plotWaveform;
+        window.plotBuffer = plotBuffer;
     </script>
 
     <template id="harmonic">
-        <label class="${ 'x' + (DATA.i + 1) } y1 center-align" style="margin-top: 0; padding: 0; min-height: 0; font-family: monospace;">${ DATA.i }</label>
+        <label class="${ 'x' + (DATA.i + 1) } y1 center-align" style="margin-top: 0; padding: 0; min-height: 0; font-family: monospace; ${ DATA.duration === DATA.i ? 'font-weight: bold;' : '' }">${ DATA.i }</label>
         <input class="${ 'x' + (DATA.i + 1) } y2" style="margin: 0 auto; height: 100px; min-height: 100px;" type="range" name="harmonic-${ DATA.i }-magnitude" min="0" max="${ 1 / (DATA.i || 1) }" step="any" value="${ data.magnitudes[DATA.i] }" />
-        <input class="${ 'x' + (DATA.i + 1) } y3" style="margin: 0 auto; height: 100px; min-height: 100px;" type="range" name="harmonic-${ DATA.i }-phase" min="0" max="1" step="any" value="${ data.phases[DATA.i] }" />
+        <input class="${ 'x' + (DATA.i + 1) } y3" style="margin: 0 auto; height: 100px; min-height: 100px;" type="range" name="harmonic-${ DATA.i }-phase" min="-3.141592653589793" max="3.141592653589793" step="any" value="${ data.phases[DATA.i] }" />
     </template>
 
     <template id="scope">
@@ -113,118 +118,33 @@
             const phasors    = data.phasors    = fft(DATA.samples);
             const magnitudes = data.magnitudes = phasors.map(magnitude).map((n) => n / (0.5 * DATA.samples.length));
             // Ignore phase angles where magnitude is insignificant
-            const phases     = data.phases = phasors.map(angle).map((n, i) => magnitudes[i] < 0.000001 ? 0 : n / PI);
-
-            console.table({
-                magnitude: magnitudes.slice(0, 8).map((n) => n.toFixed(2)),
-                phase:     phases.slice(0, 8)
-            });
+            const phases     = data.phases = phasors.map(angle).map((n, i) => magnitudes[i] < 0.000001 ? 0 : n);
         })() }
 
         <canvas width="1024" height="512" class="block">${ ((canvas) => {
-            const ctx = canvas.getContext('2d');
-
             // It's a transform, really, not a box: origin at y, y scale inverted
             const box = [0, 0.5 * canvas.height, canvas.width, -0.4 * canvas.height];
-
-            const axisStyle     = { strokeStyle: "rgba(0,0,0,0.4)", lineWidth: 0.5 };
-            const axisZeroStyle = { strokeStyle: "rgba(0,0,0,1)", lineWidth: 0.5 };
-            function plotYAxis(box, style) {
-                let [x, y, w, h] = box;
-
-                // y lines
-                let n = 2;
-                ctx.beginPath();
-                while ((n /= 2) > 0.008) {
-                    ctx.moveTo(x,     y - n * h);
-                    ctx.lineTo(x + w, y - n * h);
-                    ctx.moveTo(x,     y + n * h);
-                    ctx.lineTo(x + w, y + n * h);
-                }
-                assign(ctx, axisStyle, style);
-                ctx.stroke();
-                ctx.closePath();
-
-                // y=0 line
-                ctx.beginPath();
-                ctx.moveTo(x, y);
-                ctx.lineTo(x + w, y);
-                assign(ctx, axisZeroStyle, style);
-                ctx.stroke();
-                ctx.closePath();
-            }
-
-            const plotStyle     = { strokeStyle: "white", lineWidth: 1 };
-            function plot(box, points, style) {
-                const [x, y, w, h] = box;
-                let n = -1;
-                ctx.beginPath();
-                ctx.moveTo(points[++n] * w + x, points[++n] * h + y);
-                while(points[++n] !== undefined) ctx.lineTo(points[n] * w + x, points[++n] * h + y);
-                assign(ctx, plotStyle, style);
-                ctx.stroke();
-                ctx.closePath();
-            }
-
-            const waveformStyle = { strokeStyle: "white", lineWidth: 1 };
-            function plotWaveform(box, samples, style) {
-                let [x, y, w, h] = box;
-                let dx = w / samples.length;
-                let n = -1;
-                ctx.beginPath();
-                ctx.moveTo(x, samples[++n] * h + y);
-                while(samples[++n] !== undefined) ctx.lineTo(x += dx, samples[n] * h + y);
-                ctx.lineTo(x += dx, samples[0] * h + y);
-                assign(ctx, waveformStyle, style);
-                ctx.stroke();
-                ctx.closePath();
-            }
-
-            function plotBuffer(box, buffer, style) {
-                let n = -1;
-                while(++n < buffer.numberOfChannels) plotWaveform(box, buffer.getChannelData(n), style);
-            }
+            const ctx = canvas.getContext('2d');
 
             function draw() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                plotYAxis(box);
-                plotWaveform(box, DATA.samples, { strokeStyle: "black" });
+                plotYAxis(ctx, box);
+                plotWaveform(ctx, box, DATA.samples, { strokeStyle: "black" });
             }
 
             draw();
 
 
-
-
-
-            //let samples = DATA.samples.slice(0);
-            //let length  = samples.length;
-            //plotWaveform([0, 0.5 * canvas.height, canvas.width, (-0.4/1) * canvas.height], samples, { strokeStyle: "white" });
-
-            //let phasors    = fft(samples);
-            //let magnitudes = data.phasors.map(magnitude).map((n) => n / (0.5 * samples.length));
-
-            //magnitudes.length *= 0.5;
-            //let maxMag      = Math.max.apply(Math, magnitudes);
-            //magnitudes.forEach((n, i, a) => a[i] /= maxMag);
-            plotWaveform([0, 0.9 * canvas.height, canvas.width, (-0.8/1) * canvas.height], data.magnitudes.slice(0, 128), { strokeStyle: "#B2D732" });
-
-            let angles = DATA.phasors
-            .map(angle)
-            // Ignore phase angles where magnitude is insignificant, they are noise
-            .map((n, i) => DATA.magnitudes[i] < 0.000001 ? 0 : n / Math.PI);
-
-            angles.length *= 0.5;
-            plotWaveform([0, 0.5 * canvas.height, canvas.width, (-0.4/1) * canvas.height], angles.slice(0, 128), { strokeStyle: "#617316" });
-
             console.table({
-                magnitude: DATA.magnitudes.slice(0, 8).map((n) => n.toFixed(2)),
-                phase:     angles.slice(0, 8)
+                magnitude: DATA.magnitudes.slice(0, 8).map((n) => n.toFixed(6)),
+                phase:     DATA.phases.slice(0, 8)
             });
+
+            plotWaveform(ctx, [0, 0.9 * canvas.height, canvas.width, (-0.8/1) * canvas.height], data.magnitudes.slice(0, 33),   { strokeStyle: "#B2D732" });
+            plotWaveform(ctx, [0, 0.5 * canvas.height, canvas.width, (-0.4/Math.PI) * canvas.height], data.phases.slice(0, 33), { strokeStyle: "#617316" });
 
             // Do the inverse FFT to check we are recreating the signal properly
             let ss = ifft(DATA.phasors);
-
             // All phases should be 0, or very near 0
             ss.forEach((m) => {
                 if (m[1] < -0.000000001 && m[1] > 0.000000001) {
@@ -232,12 +152,12 @@
                 }
             });
 
-            let mags = ss.map(get(0));
-            plotWaveform([0, 0.5 * canvas.height, canvas.width, (-0.4/1) * canvas.height], mags, { strokeStyle: "white" });
+            const mags = ss.map(get(0));
+            plotWaveform(ctx, [0, 0.5 * canvas.height, canvas.width, (-0.4/1) * canvas.height], mags, { strokeStyle: "white" });
 
             const hits = waveformToEvents(mags);
             hits.forEach((event) => {
-                plot(box, [
+                plot(ctx, box, [
                     // Draw a wee signpost
                     event[0], 0,
                     event[0],         event[3] - 0.02,
@@ -261,20 +181,33 @@
             '[name^="harmonic-"][name$="-magnitude"]': (input, e) => {
                 const harmonic  = parseInt(input.name.slice(9), 10);
                 data.magnitudes[harmonic] = parseFloat(input.value);
-                const values = toCartesian([ data.magnitudes[harmonic], data.phases[harmonic] ]);
-                data.phasors[harmonic][0] = values[0];
-                data.phasors[harmonic][1] = values[1];
+
+                const d = data.magnitudes[harmonic] * 0.5 * DATA.samples.length;
+                const a = angle(data.phasors[harmonic]);
+                const x = Math.cos(a) * d;
+                const y = Math.sin(a) * d;
+
+                DATA.phasors[harmonic][0] = x;
+                DATA.phasors[harmonic][1] = y;
             },
 
             '[name^="harmonic-"][name$="-phase"]': (input, e) => {
                 const harmonic = parseInt(input.name.slice(9), 10);
-                console.log(harmonic, parseFloat(input.value));
+                data.phases[harmonic] = parseFloat(input.value);
+
+                const d = magnitude(DATA.phasors[harmonic]);
+                const a = data.phases[harmonic];
+                const x = Math.cos(a) * d;
+                const y = Math.sin(a) * d;
+
+                DATA.phasors[harmonic][0] = x;
+                DATA.phasors[harmonic][1] = y;
             }
         })) }
     </template>
 </head>
 
-<body class="">
+<body>
     <template is="literal-html" data-length="2048">
         ${ include('#scope', {
             duration: 4,
@@ -286,8 +219,7 @@
                 EVENT.of(0.875, 'start', 0, 0.3333)
             ])
 
-            /*
-            samples: Array.from({ length: data.length }, (n, i) => {
+            /* samples: Array.from({ length: data.length }, (n, i) => {
                 duration: 1,
                 return 0
                     + 1 * sin(PI * 2 * i / data.length)

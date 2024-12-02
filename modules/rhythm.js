@@ -36,9 +36,11 @@ function crossingsToWaveform(crossings, samples = new Float32Array(2048)) {
     // zero crossings. There is nothing 'pure' about this function,
     // It's a best guess approach.
 
-    let n = -1;
-    let cl = crossings[crossings.length - 1];
-    let c1 = { x: cl.x - 1, gradient: cl.gradient };
+    let last = crossings[crossings.length - 1];
+    if (!last) return samples;
+
+    let n    = -1;
+    let c1   = { x: last.x - 1, gradient: last.gradient };
     let c2;
 
     while ((c2 = crossings[++n]) !== undefined) {
@@ -85,6 +87,8 @@ zero-crossings.
 
 function searchUpwardZeroCrossings(samples) {
     const crossings = [];
+    const s0 = samples[0];
+    const s3 = samples[samples.length - 1];
 
     let n = 0;
     while (samples[++n] !== undefined) {
@@ -102,6 +106,15 @@ function searchUpwardZeroCrossings(samples) {
         // Minor optimisation. Sample is above 0 so next iteration
         // cannot be an upward zero crossing, skip an n
         ++n;
+    }
+
+    // Deal with last sample to first sample crossings
+    if (s0 > 0 && s3 <= 0) {
+        // Last sample was -ve or 0, crossing detected
+        crossings.push({
+            x:        (n - 1 + normalise(s3, s0, 0)) / samples.length,
+            gradient: (s0 - s3) * samples.length / (2 * Math.PI)
+        });
     }
 
     return crossings;
