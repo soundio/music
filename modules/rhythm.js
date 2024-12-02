@@ -1,1 +1,116 @@
-import config from './config.js';
+
+import normalise   from 'fn/normalise.js';
+import denormalise from 'fn/denormalise.js';
+import Event       from 'soundstage/event.js';
+import config      from './config.js';
+
+const { ceil, cos, sin, PI } = Math;
+
+
+/**
+eventsToWaveform(events)
+Takes an array of `events` and outputs a 2048-long Float32Array of samples
+describing an oscillating waveform where `'start'` events are encoded as upwards
+zero-crossings.
+
+eventsToWaveform(events, buffer)
+As `eventsToWaveform()`, but outputs `buffer`, a Float32Array that must have a
+`2^n` length such as `512`, `1024`, `2048` or `4096`.
+**/
+
+function eventsToCrossings(events) {
+    return events.reduce((crossings, event) => {
+        if (event[1] === 'start') {
+            crossings.push({
+                x:        event[0],
+                gradient: event[3]
+            });
+        }
+
+        return crossings;
+    }, []);
+}
+
+function crossingsToWaveform(crossings, samples = new Float32Array(2048)) {
+    // Approximate a sinusoidal wave to match a series of
+    // zero crossings. There is nothing 'pure' about this function,
+    // It's a best guess approach.
+
+    let n = -1;
+    let cl = crossings[crossings.length - 1];
+    let c1 = { x: cl.x - 1, gradient: cl.gradient };
+    let c2;
+
+    while ((c2 = crossings[++n]) !== undefined) {
+        const scale = c2.x - c1.x;
+        const s0 = c1.gradient;
+        const s3 = c2.gradient;
+        const n0 = c1.x * samples.length;
+        const n3 = c2.x * samples.length;
+        const n1 = ceil(n0);
+        const n2 = ceil(n3);
+
+        // Fill in samples with one scaled-start, scaled-end sine
+        // cycle
+        let n = n1 - 1;
+        while (++n < n2) {
+            // Progress 0-1 through these samples
+            let p = normalise(n0, n3, n);
+            // Linear scaling over time. TODO: ease scaling
+            // logarithmically, it is essentially tempo info here.
+            // I think. Linear scaling is definitely going to add
+            // harmonics, making this fn lass than ideal. But still
+            // not terrible. It may be good enough.
+            let s = denormalise(s0, s3, p);
+            samples[n < 0 ? samples.length + n : n] = s * scale * sin(p * 2 * PI);
+        }
+
+        c1 = c2;
+    }
+
+    return samples;
+}
+
+export function eventsToWaveform(events, buffer) {
+    const crossings = eventsToCrossings(events);
+    return crossingsToWaveform(crossings, buffer);
+}
+
+
+/**
+waveformToEvents(samples)
+Takes an array of `samples` an array of `'start'` events at upwards
+zero-crossings.
+**/
+
+function searchUpwardZeroCrossings(samples) {
+    const crossings = [];
+
+    let n = 0;
+    while (samples[++n] !== undefined) {
+        // Sample is -ve or 0, it cannot be from an upward 0 crossing
+        if (samples[n] <= 0) continue;
+
+        // Previous sample was -ve or 0, crossing detected
+        if (samples[n - 1] <= 0) {
+            crossings.push({
+                x:        (n - 1 + normalise(samples[n - 1], samples[n], 0)) / samples.length,
+                gradient: (samples[n] - samples[n - 1]) * samples.length / (2 * Math.PI)
+            });
+        }
+
+        // Minor optimisation. Sample is above 0 so next iteration
+        // cannot be an upward zero crossing, skip an n
+        ++n;
+    }
+
+    return crossings;
+}
+
+function crossingToEvent(crossing) {
+    return Event.of(crossing.x, 'start', 0, crossing.gradient);
+}
+
+export function waveformToEvents(samples) {
+    return searchUpwardZeroCrossings(samples).map(crossingToEvent);
+}

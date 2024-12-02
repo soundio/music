@@ -1,0 +1,312 @@
+<head>
+    <meta charset="utf-8" />
+    <meta name="author" content="@stephband" />
+    <meta name="description" content="TODO" />
+    <meta name="viewport" content="width=device-width" />
+
+    <script>
+        window.DEBUG = true;
+    </script>
+
+    <script type="importmap">{
+        "imports": {
+            "dom/":        "../dom/modules/",
+            "fn/":         "../fn/modules/",
+            "form/":       "../form-elements/",
+            "literal/":    "../literal/",
+            "midi/":       "../midi/modules/",
+            "soundstage/": "../soundstage/modules/"
+        }
+    }</script>
+
+    <link rel="stylesheet" href="../bolt/elements/html.css" />
+    <link rel="stylesheet" href="../bolt/elements/table.css" />
+    <link rel="stylesheet" href="../bolt/elements/label.css" />
+    <!--link rel="stylesheet" href="../bolt/elements/form.css" /-->
+    <link rel="stylesheet" href="../bolt/elements/svg.css" />
+    <link rel="stylesheet" href="../bolt/classes/block.css" />
+    <link rel="stylesheet" href="../bolt/classes/atoms.css" />
+    <link rel="stylesheet" href="../bolt/classes/button.css" />
+
+    <style>
+        html, body {
+            height: 100%;
+        }
+
+        html {
+            background-color: #646568;
+        }
+
+        body {
+            padding: 1.875rem 1.5rem;
+            padding: 0;
+        }
+
+        body > header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            text-align: right;
+            z-index: 2;
+            max-height: 0;
+        }
+
+        body > header > file-menu {
+            margin-top: 0.1875rem;
+            margin-right: 0.375rem;
+        }
+
+        body > stage-graph {
+            height: 100vh;
+            overflow: auto;
+        }
+
+        canvas {
+            background-color: rgba(0,0,0,0.2);
+        }
+
+        input[type="range"] {
+            writing-mode: vertical-lr;
+            direction: rtl;
+            appearance: slider-vertical;
+            width: 16px;
+            vertical-align: bottom;
+        }
+    </style>
+
+    <script type="module">
+        import delegate from 'dom/delegate.js';
+        import events from 'dom/events.js';
+        import LiteralHTML from 'literal/literal-html/module.js';
+        import Event from 'soundstage/event.js';
+        import denormalise from 'fn/denormalise.js';
+        import normalise from 'fn/normalise.js';
+        import toCartesian from 'fn/vector/to-cartesian-2d.js';
+        import { angle, magnitude } from './modules/vector.js';
+        import fft, { ifft } from './modules/fft.js';
+        import { eventsToWaveform, waveformToEvents } from './modules/rhythm.js';
+
+        window.delegate = delegate;
+        window.events = events;
+        window.EVENT = Event;
+        window.toCartesian = toCartesian;
+        window.fft = fft;
+        window.ifft = ifft;
+        window.angle = angle;
+        window.magnitude = magnitude;
+        window.normalise = normalise;
+        window.denormalise = denormalise;
+        window.eventsToWaveform = eventsToWaveform;
+        window.waveformToEvents = waveformToEvents;
+    </script>
+
+    <template id="harmonic">
+        <label class="${ 'x' + (DATA.i + 1) } y1 center-align" style="margin-top: 0; padding: 0; min-height: 0; font-family: monospace;">${ DATA.i }</label>
+        <input class="${ 'x' + (DATA.i + 1) } y2" style="margin: 0 auto; height: 100px; min-height: 100px;" type="range" name="harmonic-${ DATA.i }-magnitude" min="0" max="${ 1 / (DATA.i || 1) }" step="any" value="${ data.magnitudes[DATA.i] }" />
+        <input class="${ 'x' + (DATA.i + 1) } y3" style="margin: 0 auto; height: 100px; min-height: 100px;" type="range" name="harmonic-${ DATA.i }-phase" min="0" max="1" step="any" value="${ data.phases[DATA.i] }" />
+    </template>
+
+    <template id="scope">
+        ${ (() => {
+            const phasors    = data.phasors    = fft(DATA.samples);
+            const magnitudes = data.magnitudes = phasors.map(magnitude).map((n) => n / (0.5 * DATA.samples.length));
+            // Ignore phase angles where magnitude is insignificant
+            const phases     = data.phases = phasors.map(angle).map((n, i) => magnitudes[i] < 0.000001 ? 0 : n / PI);
+
+            console.table({
+                magnitude: magnitudes.slice(0, 8).map((n) => n.toFixed(2)),
+                phase:     phases.slice(0, 8)
+            });
+        })() }
+
+        <canvas width="1024" height="512" class="block">${ ((canvas) => {
+            const ctx = canvas.getContext('2d');
+
+            // It's a transform, really, not a box: origin at y, y scale inverted
+            const box = [0, 0.5 * canvas.height, canvas.width, -0.4 * canvas.height];
+
+            const axisStyle     = { strokeStyle: "rgba(0,0,0,0.4)", lineWidth: 0.5 };
+            const axisZeroStyle = { strokeStyle: "rgba(0,0,0,1)", lineWidth: 0.5 };
+            function plotYAxis(box, style) {
+                let [x, y, w, h] = box;
+
+                // y lines
+                let n = 2;
+                ctx.beginPath();
+                while ((n /= 2) > 0.008) {
+                    ctx.moveTo(x,     y - n * h);
+                    ctx.lineTo(x + w, y - n * h);
+                    ctx.moveTo(x,     y + n * h);
+                    ctx.lineTo(x + w, y + n * h);
+                }
+                assign(ctx, axisStyle, style);
+                ctx.stroke();
+                ctx.closePath();
+
+                // y=0 line
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + w, y);
+                assign(ctx, axisZeroStyle, style);
+                ctx.stroke();
+                ctx.closePath();
+            }
+
+            const plotStyle     = { strokeStyle: "white", lineWidth: 1 };
+            function plot(box, points, style) {
+                const [x, y, w, h] = box;
+                let n = -1;
+                ctx.beginPath();
+                ctx.moveTo(points[++n] * w + x, points[++n] * h + y);
+                while(points[++n] !== undefined) ctx.lineTo(points[n] * w + x, points[++n] * h + y);
+                assign(ctx, plotStyle, style);
+                ctx.stroke();
+                ctx.closePath();
+            }
+
+            const waveformStyle = { strokeStyle: "white", lineWidth: 1 };
+            function plotWaveform(box, samples, style) {
+                let [x, y, w, h] = box;
+                let dx = w / samples.length;
+                let n = -1;
+                ctx.beginPath();
+                ctx.moveTo(x, samples[++n] * h + y);
+                while(samples[++n] !== undefined) ctx.lineTo(x += dx, samples[n] * h + y);
+                ctx.lineTo(x += dx, samples[0] * h + y);
+                assign(ctx, waveformStyle, style);
+                ctx.stroke();
+                ctx.closePath();
+            }
+
+            function plotBuffer(box, buffer, style) {
+                let n = -1;
+                while(++n < buffer.numberOfChannels) plotWaveform(box, buffer.getChannelData(n), style);
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                plotYAxis(box);
+                plotWaveform(box, DATA.samples, { strokeStyle: "black" });
+            }
+
+            draw();
+
+
+
+
+
+            //let samples = DATA.samples.slice(0);
+            //let length  = samples.length;
+            //plotWaveform([0, 0.5 * canvas.height, canvas.width, (-0.4/1) * canvas.height], samples, { strokeStyle: "white" });
+
+            //let phasors    = fft(samples);
+            //let magnitudes = data.phasors.map(magnitude).map((n) => n / (0.5 * samples.length));
+
+            //magnitudes.length *= 0.5;
+            //let maxMag      = Math.max.apply(Math, magnitudes);
+            //magnitudes.forEach((n, i, a) => a[i] /= maxMag);
+            plotWaveform([0, 0.9 * canvas.height, canvas.width, (-0.8/1) * canvas.height], data.magnitudes.slice(0, 128), { strokeStyle: "#B2D732" });
+
+            let angles = DATA.phasors
+            .map(angle)
+            // Ignore phase angles where magnitude is insignificant, they are noise
+            .map((n, i) => DATA.magnitudes[i] < 0.000001 ? 0 : n / Math.PI);
+
+            angles.length *= 0.5;
+            plotWaveform([0, 0.5 * canvas.height, canvas.width, (-0.4/1) * canvas.height], angles.slice(0, 128), { strokeStyle: "#617316" });
+
+            console.table({
+                magnitude: DATA.magnitudes.slice(0, 8).map((n) => n.toFixed(2)),
+                phase:     angles.slice(0, 8)
+            });
+
+            // Do the inverse FFT to check we are recreating the signal properly
+            let ss = ifft(DATA.phasors);
+
+            // All phases should be 0, or very near 0
+            ss.forEach((m) => {
+                if (m[1] < -0.000000001 && m[1] > 0.000000001) {
+                    console.log('PHASE NOT 0!!! What gives?');
+                }
+            });
+
+            let mags = ss.map(get(0));
+            plotWaveform([0, 0.5 * canvas.height, canvas.width, (-0.4/1) * canvas.height], mags, { strokeStyle: "white" });
+
+            const hits = waveformToEvents(mags);
+            hits.forEach((event) => {
+                plot(box, [
+                    // Draw a wee signpost
+                    event[0], 0,
+                    event[0],         event[3] - 0.02,
+                    event[0] - 0.004, event[3] - 0.02,
+                    event[0] - 0.004, event[3] + 0.02,
+                    event[0] + 0.004, event[3] + 0.02,
+                    event[0] + 0.004, event[3] - 0.02,
+                    event[0],         event[3] - 0.02
+                ], { strokeStyle: "orange", lineWidth: 2 });
+            });
+        })(element) }</canvas>
+
+        <pre style="margin: -1.5lh 0.5rem 0.5lh; color: white;">${ DATA.samples.length } samples</pre>
+
+        <div class="grid" style="--x-gap: 0.1875rem; --y-gap: 0.1875rem; grid-template-rows: min-content 100px 100px; padding: 0.25rem 0.75rem;">
+            ${ Array.from({ length: 33 }, (v, i) => assign({ i }, DATA)).map(include('#harmonic')) }
+        </div>
+
+        ${ events('input', element).each(delegate({
+            // Placeholder functions for responding to magnitude and phase inputs
+            '[name^="harmonic-"][name$="-magnitude"]': (input, e) => {
+                const harmonic  = parseInt(input.name.slice(9), 10);
+                data.magnitudes[harmonic] = parseFloat(input.value);
+                const values = toCartesian([ data.magnitudes[harmonic], data.phases[harmonic] ]);
+                data.phasors[harmonic][0] = values[0];
+                data.phasors[harmonic][1] = values[1];
+            },
+
+            '[name^="harmonic-"][name$="-phase"]': (input, e) => {
+                const harmonic = parseInt(input.name.slice(9), 10);
+                console.log(harmonic, parseFloat(input.value));
+            }
+        })) }
+    </template>
+</head>
+
+<body class="">
+    <template is="literal-html" data-length="2048">
+        ${ include('#scope', {
+            duration: 4,
+            samples: eventsToWaveform([
+                EVENT.of(0,     'start', 0, 1),
+                EVENT.of(0.5,   'start', 0, 0.5),
+                EVENT.of(0.625, 'start', 0, 0.92),
+                EVENT.of(0.75,  'start', 0, 0.25),
+                EVENT.of(0.875, 'start', 0, 0.3333)
+            ])
+
+            /*
+            samples: Array.from({ length: data.length }, (n, i) => {
+                duration: 1,
+                return 0
+                    + 1 * sin(PI * 2 * i / data.length)
+                    + 0.5 * (1/2) * sin(Math.PI * 4 * i / data.length)
+                    + 0.25 * (1/3) * sin(Math.PI * 6 * i / data.length)
+                    + 0.125 * (1/4) * sin(Math.PI * 8 * i / data.length)
+                    //+ 0.25 * (1/5) * sin(Math.PI * 10 * i / data.length)
+                    //+ 0.5 * (1/6) * sin(Math.PI * 12 * i / data.length)
+                    //+ 0.5 * (1/7) * sin(Math.PI * 14 * i / data.length)
+                    //+ 0.5 * (1/8) * sin(Math.PI * 16 * i / data.length)
+                    //+ 0.5 * (1/9) * sin(Math.PI * 18 * i / data.length)
+                    //+ 0.5 * (1/10) * sin(Math.PI * 20 * i / data.length)
+                    //+ 0.5 * (1/11) * sin(Math.PI * 22 * i / data.length)
+                    //+ 0.5 * (1/12) * sin(Math.PI * 24 * i / data.length)
+                    //+ 0.5 * (1/13) * sin(Math.PI * 26 * i / data.length)
+                    //+ 0.5 * (1/14) * sin(Math.PI * 28 * i / data.length)
+                    //+ 0.5 * (1/15) * sin(Math.PI * 30 * i / data.length)
+                    //+ 0.5 * (1/16) * sin(Math.PI * 32 * i / data.length) ;
+            })*/
+        }) }
+    </template>
+</body>
