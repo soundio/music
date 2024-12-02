@@ -17,7 +17,7 @@
 
 :host > pre {
     grid-column: 1 / span 3;
-    font-size:   0.75em;
+    font-size:   0.6875em;
     white-space: pre;
     min-height:  3lh;
     overflow: hidden;

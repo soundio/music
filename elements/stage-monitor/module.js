@@ -9,6 +9,7 @@ import truncate       from 'fn/truncate.js';
 import element        from 'dom/element.js';
 import { toNoteName } from 'midi/note.js';
 import Event          from '../../../soundstage/modules/event.js';
+import GraphNode      from '../../modules/graph-node.js';
 import { lifecycle, properties } from '../stage-node/module.js';
 import typeOptions from '../html/type-options.js';
 
@@ -24,7 +25,7 @@ export default element('<stage-monitor>', {
     shadow: `
         <link rel="stylesheet" href="${ window.midiInputStylesheet || import.meta.url.replace(/js$/, 'css') }"/>
         <h4>Monitor</h4>
-        <pre></pre>
+        <pre>\n\n\n\n</pre>
         <svg class="inputs-svg" viewbox="0 0 12 18" width="12" height="18">
             <defs>
                 <g id="input-g">
@@ -38,21 +39,24 @@ export default element('<stage-monitor>', {
     construct: function(shadow, internals) {
         const pre = internals.pre = shadow.querySelector('pre');
         lifecycle.construct.apply(this, arguments);
+
+        let observer;
+        Signal.observe(internals.$node, (node) => {
+            if (observer) observer.stop();
+            if (!node) return;
+            observer = node.inputs[0].each((event) => {
+                pre.innerHTML =
+                    (pre.innerHTML + `\n ${ event[0].toFixed(3) } ${ postpad(' ', 8, event[1]) } ${ event[2] } ${ event[3] || '' } ${ event[4] || '' }`)
+                    .slice(-96);
+                pre.scrollTop = pre.scrollHeight;
+            });
+        });
     },
 
     connect: function(shadow, internals) {
-        const pre = shadow.querySelector('pre');
-
         lifecycle.connect.apply(this, arguments);
 
-        if (!this.node.inputs[0]) throw new Error('HELP');
-
-        this.node.inputs[0].each((event) => {
-            console.log(event);
-            pre.innerHTML =
-                (pre.innerHTML + `\n ${ event[0].toFixed(3) } ${ postpad(' ', 8, event[1]) } ${ event[2] } ${ event[3] || '' } ${ event[4] || '' }`)
-                .slice(-96);
-            pre.scrollTop = pre.scrollHeight;
-        });
+        // Where node is not yet defined give StageMonitor a generic GraphNode
+        if (!this.node) this.node = new GraphNode();
     }
 }, properties);

@@ -53,7 +53,6 @@ export const lifecycle = {
         const menu       = shadow.querySelector('file-menu');
         const inputsSVG  = shadow.querySelector('.inputs-svg');
         const outputsSVG = shadow.querySelector('.outputs-svg');
-        //const node       = this.node;
 
         const $node = internals.$node = Signal.of();
 
