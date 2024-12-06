@@ -262,7 +262,6 @@ assign(Graph.constructors, {
 });
 
 
-
         const audio = new window.AudioContext();
         const drum = new Instrument(audio, {
             voice: {
@@ -475,6 +474,7 @@ assign(Graph.constructors, {
                 const a = data.polars[i0 + 1];
                 const x = Math.cos(a) * d;
                 const y = Math.sin(a) * d;
+
                 DATA.vectors[i0]     = x;
                 DATA.vectors[i0 + 1] = y;
                 DATA.vectors[i2]     = x;
@@ -494,6 +494,7 @@ assign(Graph.constructors, {
                 const a = data.polars[i0 + 1];
                 const x = Math.cos(a) * d;
                 const y = Math.sin(a) * d;
+
                 DATA.vectors[i0]     = x;
                 DATA.vectors[i0 + 1] = y;
                 DATA.vectors[i2]     = x;
@@ -531,6 +532,7 @@ assign(Graph.constructors, {
                     const a = data.polars[i * 2 + 1] = 0;
                     const x = Math.cos(a) * d;
                     const y = Math.sin(a) * d;
+
                     DATA.vectors[i * 2]     = x;
                     DATA.vectors[i * 2 + 1] = y;
                 }
