@@ -124,6 +124,8 @@ function crossingToEvent(crossing) {
     return Event.of(crossing.x, 'start', 0, crossing.gradient);
 }
 
-export function waveformToEvents(samples) {
-    return searchUpwardZeroCrossings(samples).map(crossingToEvent);
+export function waveformToEvents(samples, pitch) {
+    const events = searchUpwardZeroCrossings(samples).map(crossingToEvent);
+    events.forEach((event) => event[2] = pitch);
+    return events;
 }

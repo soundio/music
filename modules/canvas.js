@@ -1,7 +1,7 @@
 
 const assign        = Object.assign;
 const axisStyle     = { strokeStyle: "rgba(0,0,0,0.4)", lineWidth: 0.5 };
-const axisZeroStyle = { strokeStyle: "rgba(0,0,0,1)", lineWidth: 0.5 };
+const axisZeroStyle = { strokeStyle: "black", lineWidth: 1 };
 const plotStyle     = { strokeStyle: "white", lineWidth: 1 };
 const waveformStyle = { strokeStyle: "white", lineWidth: 1 };
 
@@ -48,7 +48,22 @@ export function plotWaveform(ctx, box, samples, style) {
     ctx.beginPath();
     ctx.moveTo(x, samples[++n] * h + y);
     while(samples[++n] !== undefined) ctx.lineTo(x += dx, samples[n] * h + y);
+    // Return to y=samples[0] at the end, as waveform is a repeating series
     ctx.lineTo(x += dx, samples[0] * h + y);
+    assign(ctx, waveformStyle, style);
+    ctx.stroke();
+    ctx.closePath();
+}
+
+export function plotSamples(ctx, box, samples, style) {
+    let [x, y, w, h] = box;
+    let dx = w / samples.length;
+    let n = -1;
+    ctx.beginPath();
+    ctx.moveTo(x, samples[++n] * h + y);
+    while(samples[++n] !== undefined) ctx.lineTo(x += dx, samples[n] * h + y);
+    // Return to y=0 at the end
+    ctx.lineTo(x += dx, 0 * h + y);
     assign(ctx, waveformStyle, style);
     ctx.stroke();
     ctx.closePath();
@@ -57,4 +72,17 @@ export function plotWaveform(ctx, box, samples, style) {
 export function plotBuffer(ctx, box, buffer, style) {
     let n = -1;
     while(++n < buffer.numberOfChannels) plotWaveform(ctx, box, buffer.getChannelData(n), style);
+}
+
+export function plotSignpost(ctx, box, x, y, style) {
+    plot(ctx, box, [
+        // Draw a wee signpost
+        x, 0,
+        x,         y - 0.02,
+        x - 0.004, y - 0.02,
+        x - 0.004, y + 0.02,
+        x + 0.004, y + 0.02,
+        x + 0.004, y - 0.02,
+        x,         y - 0.02
+    ], style);
 }

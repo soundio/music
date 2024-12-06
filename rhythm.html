@@ -22,7 +22,7 @@
     <link rel="stylesheet" href="../bolt/elements/html.css" />
     <link rel="stylesheet" href="../bolt/elements/table.css" />
     <link rel="stylesheet" href="../bolt/elements/label.css" />
-    <!--link rel="stylesheet" href="../bolt/elements/form.css" /-->
+    <link rel="stylesheet" href="../bolt/elements/form.css" />
     <link rel="stylesheet" href="../bolt/elements/svg.css" />
     <link rel="stylesheet" href="../bolt/classes/block.css" />
     <link rel="stylesheet" href="../bolt/classes/atoms.css" />
@@ -38,6 +38,7 @@
         }
 
         body {
+            font-family: var(--system-font);
             padding: 1.875rem 1.5rem;
             padding: 0;
         }
@@ -64,35 +65,232 @@
         }
 
         canvas {
-            background-color: rgba(0,0,0,0.2);
+            background-color: rgba(0,0,0,0.1);
         }
 
         input[type="range"] {
             writing-mode: vertical-lr;
             direction: rtl;
             appearance: slider-vertical;
-            width: 16px;
             vertical-align: bottom;
+        }
+
+        .events-block {
+            width: 100%;
+            height: 25vw;
+        }
+
+        .events-block > .point-input {
+            position: absolute;
+            top: 0;
+            margin-top: 0;
+            margin-bottom: calc(-0.5 * var(--handle-size));
+            margin-right: 0;
+            margin-left: -0.375rem;
+            height: calc(100% + 0.5 * var(--handle-size));
+        }
+
+        .harmonics-grid {
+            column-gap: 0;
+            row-gap: 0;
+        }
+
+        .harmonics-grid > * {
+            grid-column : 1;
+            grid-row: 1;
+            z-index: 1;
+        }
+
+        .harmonics-grid > pre {
+            align-self: start;
+            justify-self: start;
+            z-index: 2;
+            color: white;
+        }
+
+        .harmonics-grid > canvas {
+            justify-self: stretch;
+            width: 100%;
+            margin: 0;
+        }
+
+        .harmonics-grid > .grid {
+            align-self: start;
+            margin-top: 25vw;
+            z-index: 2;
+        }
+
+        .point-input {
+            --handle-size: 0.625rem;
+
+            cursor: pointer;
+            width: 0.75rem;
+
+            -webkit-appearance: none !important;
+            background-color: transparent;
+            border-width: 0;
+
+            /*required for proper track sizing in FF*/
+            /*width: 100%;
+            height: 100%;*/
+
+            cursor: pointer;
+            cursor: ns-resize;
+
+            background-image: linear-gradient(to top,
+                transparent      0%,
+                transparent      calc(0.5 * var(--handle-size)),
+                currentcolor     calc(0.5 * var(--handle-size)),
+                currentcolor     calc((100% - var(--handle-size)) * var(--normal-value, 0) + 1px),
+                transparent calc((100% - var(--handle-size)) * var(--normal-value, 0) + 1px),
+                transparent 100%
+            );
+
+            background-size: 2px 100%;
+            background-position: center center;
+        }
+
+        .point-input::-webkit-slider-runnable-track {
+            background: transparent;
+            border-width: 0;
+        }
+
+        .point-input:hover,
+        .point-input:focus-visible {
+            background-color: rgba(0,0,0,0.04);
+        }
+
+        .point-input::-webkit-slider-thumb {
+            -webkit-appearance: none !important;
+
+            cursor: pointer;
+            cursor: ns-resize;
+
+            width: var(--handle-size, 0.6875rem);
+            height: var(--handle-size, var(--handle-size, 0.6875rem));
+
+            background: transparent;
+            border: 2px solid currentcolor;
+            border-radius: 50%;
+
+            /* Increase hit zone */
+            outline: 0.25rem solid transparent;
+        }
+
+        .square-point-input {
+            --handle-size: 0.5625rem;
+        }
+
+        .square-point-input::-webkit-slider-thumb {
+            border-radius: 0.125rem;
+        }
+
+        .point-input::-moz-range-thumb {
+            cursor: pointer;
+            cursor: ns-resize;
+
+            width: var(--handle-width, 0.875rem);
+            height: var(--handle-height, var(--handle-width, 0.875rem));
+            margin-top: calc(0.5 * (var(--track-height, 0.75rem) - var(--handle-height, var(--handle-width, 0.875rem))));
+            border: var(--handle-border, none);
+            border-radius: 50%;
+            background: #B6B2B0;
+            background: var(--handle-background, linear-gradient(rgb(247,247,247), rgb(140,140,140)));
+        }
+
+
+
+        [type="range"]::-moz-range-track {
+            height: var(--track-height, 0.75rem);
+            background: var(--track-background, #2B3134);
+            border: var(--track-background, none);
+            border-radius: var(--track-radius, calc(0.5 * var(--track-height, 0.75rem)));
+            box-shadow: var(--track-shadow);
+        }
+
+        [type="range"]::-moz-range-progress {
+            height: var(--track-height, 0.75rem);
+            background: var(--track-background, #2B3134);
+            border-radius: var(--track-radius, calc(0.5 * var(--track-height, 0.75rem)));
+            box-shadow: var(--track-shadow);
+        }
+
+        :root {
+            --system-font: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            --lime: #B2D732;
+            --darklime: #98b046;
+            --yellow: rgb(207, 176, 45);
+        }
+
+        .lime-fg { color: var(--lime); stroke: var(--lime); }
+        .darklime-fg { color: var(--darklime); stroke: var(--darklime); }
+        .yellow-fg { color: var(--yellow); stroke: var(--yellow); }
+
+        .text-10 {
+            font-family: sans-serif;
+            font-size: 0.6875rem;
         }
     </style>
 
     <script type="module">
         import delegate from 'dom/delegate.js';
         import events from 'dom/events.js';
-        import LiteralHTML from 'literal/literal-html/module.js';
-        import Event from 'soundstage/event.js';
         import denormalise from 'fn/denormalise.js';
         import normalise from 'fn/normalise.js';
-        import toCartesian from 'fn/vector/to-cartesian-2d.js';
+        import LiteralHTML from 'literal/literal-html/module.js';
+        import Event from 'soundstage/event.js';
+        import { dB24, dB60, dB96 } from 'soundstage/constants.js';
         import { angle, magnitude } from './modules/vector.js';
-        import fft, { ifft } from './modules/fft.js';
+        import { vectorsToPolars } from './modules/spectrum.js';
+        import { fft, ifft } from './modules/fft.js';
         import { eventsToWaveform, waveformToEvents } from './modules/rhythm.js';
-        import { plotYAxis, plot, plotWaveform, plotBuffer } from './modules/canvas.js';
+        import { plotYAxis, plot, plotWaveform, plotBuffer, plotSignpost, plotSamples } from './modules/canvas.js';
+        import { getScale } from 'form/modules/scales.js';
 
+
+// Setup voice. TODO: All this faff really should not be necessary.
+import Envelope   from '../soundstage/nodes/envelope.js';
+import Mix        from '../soundstage/nodes/mix.js';
+import Sample     from '../soundstage/nodes/sample-set.js';
+import Graph      from '../soundstage/nodes/graph.js';
+import Instrument from '../soundstage/nodes/instrument.js';
+const assign = Object.assign;
+assign(Graph.constructors, {
+    envelope: Envelope,
+    sample:   Sample,
+    mix:      Mix
+});
+
+
+
+        const audio = new window.AudioContext();
+        const drum = new Instrument(audio, {
+            voice: {
+                nodes: {
+                    osc:    { type: 'tone', data: { type: 'sine', detune: 0 } },
+                    mix:    { type: 'mix',  data: { gain: 0.9, pan: 0 }},
+                    output: { type: 'gain', data: { gain: 1 }}
+                },
+
+                connects: [
+                    'osc', 'mix',
+                    'mix', 'output'
+                ],
+
+                commands: [{
+                    target: 'osc'
+                }]
+            }
+        });
+
+        drum.connect(audio.destination);
+
+        window.law      = getScale('log-36dB');
         window.delegate = delegate;
         window.events = events;
         window.EVENT = Event;
-        window.toCartesian = toCartesian;
+        window.dB60 = dB60;
+        window.dB96 = dB96;
         window.fft = fft;
         window.ifft = ifft;
         window.angle = angle;
@@ -105,135 +303,236 @@
         window.plot = plot;
         window.plotWaveform = plotWaveform;
         window.plotBuffer = plotBuffer;
+        window.plotSignpost = plotSignpost;
+        window.plotSamples = plotSamples;
+        window.vectorsToPolars = vectorsToPolars;
+
+        window.drum  = drum;
     </script>
 
     <template id="harmonic">
-        <label class="${ 'x' + (DATA.i + 1) } y1 center-align" style="margin-top: 0; padding: 0; min-height: 0; font-family: monospace; ${ DATA.duration === DATA.i ? 'font-weight: bold;' : '' }">${ DATA.i }</label>
-        <input class="${ 'x' + (DATA.i + 1) } y2" style="margin: 0 auto; height: 100px; min-height: 100px;" type="range" name="harmonic-${ DATA.i }-magnitude" min="0" max="${ 1 / (DATA.i || 1) }" step="any" value="${ data.magnitudes[DATA.i] }" />
-        <input class="${ 'x' + (DATA.i + 1) } y3" style="margin: 0 auto; height: 100px; min-height: 100px;" type="range" name="harmonic-${ DATA.i }-phase" min="-3.141592653589793" max="3.141592653589793" step="any" value="${ data.phases[DATA.i] }" />
+        <label class="y2 center-align text-10 darklime-fg" for="harmonic-${ DATA.n }-magnitude" style="grid-column: ${ DATA.n + 1 }; margin-top: 0; padding: 0; min-height: 0; ${ DATA.duration === DATA.n ? 'font-weight: bold;' : '' } color: ${ data.polars[2 * DATA.n] / DATA.max <= data.data.gate ? 'black' : 'var(--darklime)' };">${ DATA.n }</label>
+        <input class="y1 point-input" type="range" name="harmonic-${ DATA.n }-magnitude" min="0" max="1" step="any" value="${ law.normalise(0, DATA.max, data.polars[2 * DATA.n]) }" title="${ (data.polars[2 * DATA.n] / DATA.max) < dB96 ? 0 : (data.polars[2 * DATA.n] / DATA.max).toPrecision(3) }" id="harmonic-${ DATA.n }-magnitude" style="grid-column: ${ DATA.n + 1 }; margin: 0 auto; --normal-value: ${ law.normalise(0, DATA.max, data.polars[2 * DATA.n]) }; color: ${ data.polars[2 * DATA.n] / DATA.max <= data.data.gate ? 'black' : 'var(--lime)' };" />
+        <input class="y3" style="margin: 0 auto; height: 100px; min-height: 100px; grid-column: ${ DATA.n + 1 };" type="range" name="harmonic-${ DATA.n }-phase" min="-3.141592653589793" max="3.141592653589793" step="any" value="${ data.polars[2 * DATA.n + 1] }" hidden="${ data.polars[2 * DATA.n] === 0 }" />
+    </template>
+
+    <template id="event-signpost">
+        <input class="y1 square-point-input point-input yellow-fg" type="range" name="event-${ data.i }-gain" min="0" max="1.2" step="any" title="${ law.normalise(0, 1, data.event[3]) }" value="${ law.normalise(0, 1, data.event[3]) }" id="event-${ data.i }-gain" style="left: calc(100% * ${ data.event[0] }); --normal-value: ${ law.normalise(0, 1, data.event[3]) * 5 / 6 };" />
     </template>
 
     <template id="scope">
         ${ (() => {
-            const phasors    = data.phasors    = fft(DATA.samples);
-            const magnitudes = data.magnitudes = phasors.map(magnitude).map((n) => n / (0.5 * DATA.samples.length));
+            const samples = eventsToWaveform(DATA.events);
+            const vectors = fft(samples);
+
+            DATA.samples = samples;
+            DATA.vectors = vectors;
+            DATA.polars  = vectorsToPolars(vectors);
+
             // Ignore phase angles where magnitude is insignificant
-            const phases     = data.phases = phasors.map(angle).map((n, i) => magnitudes[i] < 0.000001 ? 0 : n);
-        })() }
-
-        <canvas width="1024" height="512" class="block">${ ((canvas) => {
-            // It's a transform, really, not a box: origin at y, y scale inverted
-            const box = [0, 0.5 * canvas.height, canvas.width, -0.4 * canvas.height];
-            const ctx = canvas.getContext('2d');
-
-            function draw() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                plotYAxis(ctx, box);
-                plotWaveform(ctx, box, DATA.samples, { strokeStyle: "black" });
-            }
-
-            draw();
-
+            //DATA.phases = vectors.map(angle).map((n, i) => magnitudes[i] < 0.000001 ? 0 : n);
 
             console.table({
-                magnitude: DATA.magnitudes.slice(0, 8).map((n) => n.toFixed(6)),
-                phase:     DATA.phases.slice(0, 8)
+                magnitude: DATA.polars.filter((n, i) => i % 2 === 0).slice(0, 8).map((n) => n.toFixed(6)),
+                phase:     DATA.polars.filter((n, i) => i % 2 !== 0).slice(0, 8)
             });
 
-            plotWaveform(ctx, [0, 0.9 * canvas.height, canvas.width, (-0.8/1) * canvas.height], data.magnitudes.slice(0, 33),   { strokeStyle: "#B2D732" });
-            plotWaveform(ctx, [0, 0.5 * canvas.height, canvas.width, (-0.4/Math.PI) * canvas.height], data.phases.slice(0, 33), { strokeStyle: "#617316" });
+            const duration = 1.2;
 
-            // Do the inverse FFT to check we are recreating the signal properly
-            let ss = ifft(DATA.phasors);
-            // All phases should be 0, or very near 0
-            ss.forEach((m) => {
-                if (m[1] < -0.000000001 && m[1] > 0.000000001) {
-                    console.log('PHASE NOT 0!!! What gives?');
+            function cue() {
+                const t0 = duration * Math.ceil(drum.context.currentTime / duration);
+
+                DATA.events.forEach((event) => { event[1] === 'start' && drum
+                    .start(t0 + event[0] * duration, event[2], event[3])
+                    .stop(t0 + event[0] * duration + 0.1)
+                });
+
+                setTimeout(cue, (t0 + 0.75 * duration - drum.context.currentTime) * 1000);
+            }
+
+            cue();
+        })() }
+
+        <canvas width="1024" height="512" class="block"
+            data-setup="${ ((canvas) => {
+                // Set constants on DATA. This function is never reevaluated,
+                // (it does not observe `data` - important!).
+                // Box is a transform, really, not a box: origin at y, y scale inverted.
+                DATA.box = [0, 0.5 * canvas.height, canvas.width, -0.4 * canvas.height];
+                DATA.ctx = canvas.getContext('2d');
+            })(element) }"
+
+            data-draw="${ ((canvas) => {
+                // Get constants from DATA
+                const { box, ctx, samples, vectors, polars } = DATA;
+                const { width, height } = canvas;
+
+                // Get data from the 0th and the first 32 harmonics
+                const length = 33;
+                const magnitudes = new Float32Array(length);
+                const angles     = new Float32Array(length);
+
+                let n = length;
+                while (n--) {
+                    angles[n]     = data.polars[n * 2 + 1];
+                    magnitudes[n] = data.polars[n * 2];
                 }
-            });
 
-            const mags = ss.map(get(0));
-            plotWaveform(ctx, [0, 0.5 * canvas.height, canvas.width, (-0.4/1) * canvas.height], mags, { strokeStyle: "white" });
+                ctx.clearRect(0, 0, width, height);
 
-            const hits = waveformToEvents(mags);
-            hits.forEach((event) => {
-                plot(ctx, box, [
-                    // Draw a wee signpost
-                    event[0], 0,
-                    event[0],         event[3] - 0.02,
-                    event[0] - 0.004, event[3] - 0.02,
-                    event[0] - 0.004, event[3] + 0.02,
-                    event[0] + 0.004, event[3] + 0.02,
-                    event[0] + 0.004, event[3] - 0.02,
-                    event[0],         event[3] - 0.02
-                ], { strokeStyle: "orange", lineWidth: 2 });
-            });
-        })(element) }</canvas>
 
-        <pre style="margin: -1.5lh 0.5rem 0.5lh; color: white;">${ DATA.samples.length } samples</pre>
+                // Plot phase angles
+                plotWaveform(ctx, [0, 0.5 * height, width, (-0.4/Math.PI) * height], angles, { strokeStyle: '#617316' });
+                // Plot graph
+                plotYAxis(ctx, box);
+                // Plot waveform
+                plotWaveform(ctx, box, samples, { strokeStyle: 'black' });
 
-        <div class="grid" style="--x-gap: 0.1875rem; --y-gap: 0.1875rem; grid-template-rows: min-content 100px 100px; padding: 0.25rem 0.75rem;">
-            ${ Array.from({ length: 33 }, (v, i) => assign({ i }, DATA)).map(include('#harmonic')) }
-            <label class="x34 y1 center-align" style="margin-top: 0; padding: 0; min-height: 0; font-family: monospace;">All</label>
-            <button class="x34 y2" name="harmonics-gain" value="0">Zero</button>
-            <button class="x34 y3" name="harmonics-phase" value="0">Zero</button>
+
+                // Plot magnitudes
+                //plotSamples(ctx, [0, 0.9 * height, width, (-0.8 * 2 / data.polars.length) * height], magnitudes, { strokeStyle: '#B2D732' });
+
+
+                // Reject vectors below gate threshold
+                const gatedVectors = new vectors.constructor(vectors.length);
+                let j = gatedVectors.length / 4, j1, j2, max, mag, gain;
+                while (j--) {
+                    j1 = j * 2;
+                    j2 = (0.5 * DATA.polars.length - j) * 2;
+                    max  = j ? 0.25 * DATA.polars.length / j : 0.5 * DATA.polars.length ;
+                    mag  = DATA.polars[2 * j];
+                    gain = mag / max;
+                    if (gain > data.gate) {
+                        gatedVectors[j1]     = vectors[j1];
+                        gatedVectors[j1 + 1] = vectors[j1 + 1];
+                        gatedVectors[j2]     = vectors[j2];
+                        gatedVectors[j2 + 1] = vectors[j2 + 1];
+                    }
+                }
+
+
+                // Do the inverse FFT to print the output signal. THIS SHOULD BE
+                // IN A SEPARATE RENDER FN SOMEWHERE. It's only here because
+                // this is where updates happen, for now.
+                const output = DATA.output = ifft(gatedVectors);
+
+                let i = output.length, x, y;
+                while (i) {
+                    y = output[--i];
+                    x = output[--i];
+                    // All imaginary parts should be 0, or very near 0
+                    if (y < -0.000000001 && y > 0.000000001) console.log('PHASE NOT 0!!! What gives?');
+                    // Real parts are the samples, write them back to the samples buffer
+                    samples[i / 2] = x;
+                }
+
+                plotWaveform(ctx, box, samples, { strokeStyle: 'white' });
+
+                const events = waveformToEvents(samples, 60);
+                events.forEach((event) => {
+                    if (event[1] !== 'start') return;
+                    //plotSignpost(ctx, box, event[0], law.normalise(0, 1, event[3]), { strokeStyle: 'orange', lineWidth: 2 });
+                });
+
+                data.events = events;
+            })(element) }"
+        ></canvas>
+
+        <pre>${ DATA.samples.length } samples</pre>
+
+        <div class="events-block block" style="padding: 0; position:relative;">
+            ${ data.events.map((event, i) => include('#event-signpost', { i, event })) }
+        </div>
+
+        <div class="grid" style="--x-gap: 0.1875rem; --y-gap: 0.1875rem; grid-template-rows: 20vw min-content 30px; padding: 0.25rem 0.25rem;">
+            ${ Array.from({ length: 33 }, (v, n) => assign({
+                n, data,
+                max: n ? 0.25 * data.polars.length / n : 0.5 * data.polars.length
+            }, DATA)).map(include('#harmonic')) }
+
+            <label class="y2 center-align text-10" for="gate-magnitude" style="grid-column: 34; margin-top: 0; padding: 0; min-height: 0; color: black;">Gate</label>
+            <input class="y1 point-input" type="range" name="gate-magnitude" min="0" max="1" step="any" value="${ law.normalise(0, 1, data.gate) }" style="grid-column: 34; margin: 0 auto; height: 100%; min-height: 100%; --normal-value: ${ law.normalise(0, 1, data.gate) }; color: black;" id="gate-magnitude" />
+
+            <label class="x34 y1 center-align" style="margin-top: 0; padding: 0; min-height: 0; font-family: sans-serif;">All</label>
+            <button class="x34 y2 button" type="button" name="harmonics-gain" value="0">Zero</button>
+            <button class="x34 y3 button" type="button" name="harmonics-phase" value="0">Zero</button>
         </div>
 
         ${ events('input', element).each(delegate({
             // Placeholder functions for responding to magnitude and phase inputs
             '[name^="harmonic-"][name$="-magnitude"]': (input, e) => {
-                const harmonic  = parseInt(input.name.slice(9), 10);
-                data.magnitudes[harmonic] = parseFloat(input.value);
+                const n  = parseInt(input.name.slice(9), 10);
+                const i0 = n * 2;
+                const i2 = (0.5 * DATA.polars.length - n) * 2;
+                const max = n ? 0.25 * DATA.polars.length / n : 0.5 * DATA.polars.length;
+                const normal = parseFloat(input.value);
+                const value = law.denormalise(0, max, normal);
 
-                const d = data.magnitudes[harmonic] * 0.5 * DATA.samples.length;
-                const a = angle(data.phasors[harmonic]);
+                data.polars[i0] = parseFloat(value);
+                data.polars[i2] = parseFloat(value);
+
+                const d = data.polars[i0];
+                const a = data.polars[i0 + 1];
                 const x = Math.cos(a) * d;
                 const y = Math.sin(a) * d;
-
-                DATA.phasors[harmonic][0] = x;
-                DATA.phasors[harmonic][1] = y;
+                DATA.vectors[i0]     = x;
+                DATA.vectors[i0 + 1] = y;
+                DATA.vectors[i2]     = x;
+                DATA.vectors[i2 + 1] = -y;
             },
 
             '[name^="harmonic-"][name$="-phase"]': (input, e) => {
-                const harmonic = parseInt(input.name.slice(9), 10);
-                data.phases[harmonic] = parseFloat(input.value);
+                const n = parseInt(input.name.slice(9), 10);
+                const i0 = n * 2;
+                const i2 = (0.5 * DATA.polars.length - n) * 2;
 
-                const d = magnitude(DATA.phasors[harmonic]);
-                const a = data.phases[harmonic];
+                data.polars[i0 + 1] = parseFloat(input.value);
+                // This has GOT to be wrong. This angle should be a reflection of angle over the x axis ???
+                data.polars[i2 + 1] = parseFloat(input.value);
+
+                const d = data.polars[i0];
+                const a = data.polars[i0 + 1];
                 const x = Math.cos(a) * d;
                 const y = Math.sin(a) * d;
+                DATA.vectors[i0]     = x;
+                DATA.vectors[i0 + 1] = y;
+                DATA.vectors[i2]     = x;
+                DATA.vectors[i2 + 1] = -y;
+            },
 
-                DATA.phasors[harmonic][0] = x;
-                DATA.phasors[harmonic][1] = y;
+            '[name="gate-magnitude"]': (input, e) => {
+                const normal = parseFloat(input.value);
+                const value  = law.denormalise(0, 1, normal);
+                data.gate    = parseFloat(value);
+            },
+
+            '[name^="event-"][name$="-gain"]': (input, e) => {
+                const i      = parseInt(input.name.slice(6), 10);
+                const normal = parseFloat(input.value);
+                const value  = law.denormalise(0, 1, normal);
+                data.events[i][3] = value;
             }
         })) }
 
         ${ events('click', element).each(delegate({
             '[name^="harmonics-gain"]': (input, e) => {
-                const length = data.magnitudes.length;
-
-                let n = -1;
-                while (++n < length) {
-                    data.magnitudes[n] = 0;
-                    DATA.phasors[n][0] = 0;
-                    DATA.phasors[n][1] = 0;
+                let i = data.polars.length / 2;
+                while (i--) {
+                    data.polars[i * 2] = 0;
+                    DATA.vectors[i * 2]     = 0;
+                    DATA.vectors[i * 2 + 1] = 0;
                 }
             },
 
             '[name^="harmonics-phase"]': (input, e) => {
-                const length = data.magnitudes.length;
-
-                let n = -1;
-                while (++n < length) {
-                    data.phases[n] = 0;
-
-                    const d = magnitude(DATA.phasors[n]);
-                    const a = 0;
+                let i = data.polars.length / 2;
+                while (i--) {
+                    const d = data.polars[i * 2];
+                    const a = data.polars[i * 2 + 1] = 0;
                     const x = Math.cos(a) * d;
                     const y = Math.sin(a) * d;
-
-                    DATA.phasors[n][0] = x;
-                    DATA.phasors[n][1] = y;
+                    DATA.vectors[i * 2]     = x;
+                    DATA.vectors[i * 2 + 1] = y;
                 }
             }
         })) }
@@ -242,15 +541,76 @@
 
 <body>
     <template is="literal-html" data-length="2048">
+        <form class="harmonics-grid grid">
         ${ include('#scope', {
             duration: 4,
-            samples: eventsToWaveform([
-                EVENT.of(0,     'start', 0, 1),
-                EVENT.of(0.5,   'start', 0, 0.5),
-                EVENT.of(0.625, 'start', 0, 0.92),
-                EVENT.of(0.75,  'start', 0, 0.25),
-                EVENT.of(0.875, 'start', 0, 0.3333)
-            ])
+            gate: 0,
+/*            events: [
+                EVENT.of(0,      'start', 80, 1),
+                EVENT.of(0.5,    'start', 80, 0.5),
+                EVENT.of(0.625,  'start', 80, 0.92),
+                EVENT.of(0.75,   'start', 80, 0.25),
+                EVENT.of(0.8125, 'start', 80, 1),
+                EVENT.of(0.875,  'start', 80, 0.3333)
+            ]
+
+            name: 'Ting Ting-ke',
+            events: [
+                // Ting te ting
+                EVENT.of(0,           'start', 80, 0.5),
+                EVENT.of(0.5,         'start', 80, 1),
+                EVENT.of(0.833333333, 'start', 80, 0.3)
+            ]
+
+            name: 'Son Clave',
+            events: [
+                // Clave
+                EVENT.of(0,      'start', 80, 1),
+                EVENT.of(0.1875, 'start', 80, 1),
+                EVENT.of(0.375,  'start', 80, 1),
+                EVENT.of(0.625,  'start', 80, 1),
+                EVENT.of(0.75,   'start', 80, 1)
+            ]
+*/
+            name: 'Rumba Clave',
+            events: [
+                // Clave
+                EVENT.of(0,      'start', 80, 1),
+                EVENT.of(0.1875, 'start', 80, 0.5),
+                EVENT.of(0.4375, 'start', 80, 1),
+                EVENT.of(0.625,  'start', 80, 0.25),
+                EVENT.of(0.75,   'start', 80, 0.8)
+            ]
+/*
+            name: 'Bell Clave',
+            events: [
+                // Clave
+                EVENT.of(0,      'start', 80, 1),
+                EVENT.of(0.1875, 'start', 80, 1),
+                EVENT.of(0.375,  'start', 80, 1),
+                EVENT.of(0.4375, 'start', 80, 1),
+                EVENT.of(0.625,  'start', 80, 1),
+                EVENT.of(0.75,   'start', 80, 1),
+                EVENT.of(0.9375, 'start', 80, 1)
+            ]
+
+            name: 'Bossa Nova Clave',
+            events: [
+                // Clave
+                EVENT.of(0,      'start', 80, 1),
+                EVENT.of(0.1875, 'start', 80, 1),
+                EVENT.of(0.375,  'start', 80, 1),
+                EVENT.of(0.625,  'start', 80, 1),
+                EVENT.of(0.8125, 'start', 80, 1)
+            ]
+/*
+            name: 'Tresillo',
+            events: [
+                // Clave
+                EVENT.of(0,     'start', 80, 1),
+                EVENT.of(0.375, 'start', 80, 1),
+                EVENT.of(0.75,  'start', 80, 1)
+            ]
 
             /* samples: Array.from({ length: data.length }, (n, i) => {
                 duration: 1,
@@ -273,5 +633,6 @@
                     //+ 0.5 * (1/16) * sin(Math.PI * 32 * i / data.length) ;
             })*/
         }) }
+        </form>
     </template>
 </body>
