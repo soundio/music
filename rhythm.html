@@ -239,12 +239,12 @@
         import normalise from 'fn/normalise.js';
         import LiteralHTML from 'literal/literal-html/module.js';
         import Event from 'soundstage/event.js';
-        import { dB24, dB60, dB96 } from 'soundstage/constants.js';
         import { angle, magnitude } from './modules/vector.js';
         import { vectorsToPolars } from './modules/spectrum.js';
         import { fft, ifft } from './modules/fft.js';
         import { eventsToWaveform, waveformToEvents } from './modules/rhythm.js';
         import { plotYAxis, plot, plotWaveform, plotBuffer, plotSignpost, plotSamples } from './modules/canvas.js';
+        import { dB12, dB24, dB60, dB96 } from 'form/modules/constants.js';
         import { getScale } from 'form/modules/scales.js';
 
 
@@ -284,7 +284,7 @@ assign(Graph.constructors, {
 
         drum.connect(audio.destination);
 
-        window.law      = getScale('log-36dB');
+        window.law      = getScale('log-12dB');
         window.delegate = delegate;
         window.events = events;
         window.EVENT = Event;
@@ -386,6 +386,13 @@ assign(Graph.constructors, {
                 plotYAxis(ctx, box);
                 // Plot waveform
                 plotWaveform(ctx, box, samples, { strokeStyle: 'black' });
+
+
+
+                plotWaveform(ctx, [0, 0.9 * height, width, -0.4 * height], Array.from({ length: 100 }, (n, i) => law.normalise(0, 1, i / 99)), { lineWidth: 3, strokeStyle: 'black' });
+                plotWaveform(ctx, [0, 0.9 * height, width, -0.4 * height], Array.from({ length: 100 }, (n, i) => law.denormalise(0, 1, i / 99)), { lineWidth: 3, strokeStyle: 'black' });
+
+
 
 
                 // Plot magnitudes
