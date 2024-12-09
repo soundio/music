@@ -1,25 +1,51 @@
-import create   from 'dom/create.js';
-import delegate from 'dom/delegate.js';
-import element  from 'dom/element.js';
-import events   from 'dom/events.js';
-import Data     from 'fn/data.js';
-import Signal   from 'fn/signal.js';
-import Event    from 'soundstage/event.js';
+/** <stage-rhythm-synth> **/
+
+import create      from 'dom/create.js';
+import delegate    from 'dom/delegate.js';
+import element     from 'dom/element.js';
+import events      from 'dom/events.js';
+import Data        from 'fn/data.js';
+import Signal      from 'fn/signal.js';
+import Literal     from 'literal/module.js';
+import Event       from 'soundstage/event.js';
+import setupDataLawAttribute from 'bolt/attributes/data-law.js';
 import RhythmSynth from './module.js';
-import presets  from './presets.js';
+import presets     from './presets.js';
 import { shadow, construct, connect, properties } from '../stage-node/module.js';
 import { plotYAxis, plot, plotWaveform, plotBuffer, plotSignpost, plotSamples, plotMeter } from '../../modules/canvas.js';
 
 
-import Renderer       from 'literal/modules/template.js';
-import { printError } from 'literal/modules/print.js';
-
-
-// data-law attribute for input[type="range"]
-import 'bolt/attributes/data-law.js';
-
-
 const assign = Object.assign;
+
+const eventInput = Literal.compileHTML('event-input', `
+    <input class="y1 square-point-input point-input yellow-fg" type="range" name="event-$\{ data.i }-gain" min="0" max="1.2" step="any" title="$\{ law.normalise(0, 1, data.event[3]) }" value="$\{ law.normalise(0, 1, data.event[3]) }" id="event-$\{ data.i }-gain" style="left: calc(100% * $\{ data.event[0] }); --normal-value: $\{ law.normalise(0, 1, data.event[3]) * 5 / 6 };" />
+`, {});
+
+const eventsBlock = Literal.compileHTML('events', `
+    <div class="events-block block">
+        $\{ data.events.map((event, i) => include('event-input', { i, event })) }
+        <!--label class="y2 center-align text-10" for="gate-magnitude" style="grid-column: 34; margin-top: 0; padding: 0; min-height: 0; color: black;">Gate</label>
+        <input class="y1 post-input" type="range" name="gate-magnitude" min="0" max="1" step="any" value="$\{ law.normalise(0, 1, data.gate) }" style="grid-column: 34; margin: 0 auto; height: 100%; min-height: 100%; --normal-value: $\{ law.normalise(0, 1, data.gate) }; color: black;" id="gate-magnitude" />
+        <label class="x34 y1 center-align" style="margin-top: 0; padding: 0; min-height: 0; font-family: sans-serif;">All</label>
+        <button class="x34 y2 button" type="button" name="harmonics-gain" value="0">Zero</button>
+        <button class="x34 y3 button" type="button" name="harmonics-phase" value="0">Zero</button-->
+    </div>
+`, {});
+
+const harmonic = Literal.compileHTML('harmonic', `
+    <label class="y2 center-align text-10 darklime-fg" for="harmonic-$\{ DATA.n }-magnitude" style="grid-column: $\{ DATA.n + 1 }; margin-top: 0; padding: 0; min-height: 0; $\{ DATA.sequence.duration === DATA.n ? 'font-weight: bold;' : '' } color: $\{ data.phasors[2 * DATA.n] / DATA.max <= data.data.gate ? 'black' : 'var(--darklime)' };">$\{ DATA.n }</label>
+    <input class="y1 post-input" type="range" name="harmonic-$\{ DATA.n }-magnitude" min="0" max="1" data-law="log-24db" step="any" value="$\{ law.normalise(0, DATA.max, data.phasors[2 * DATA.n]) }" title="$\{ (data.phasors[2 * DATA.n] / DATA.max) < dB96 ? 0 : (data.phasors[2 * DATA.n] / DATA.max).toPrecision(3) }" id="harmonic-$\{ DATA.n }-magnitude" style="grid-column: $\{ DATA.n + 1 }; margin: 0 auto; --normal-value: $\{ law.normalise(0, DATA.max, data.phasors[2 * DATA.n]) }; color: $\{ data.phasors[2 * DATA.n] / DATA.max <= data.data.gate ? 'black' : 'var(--lime)' };" />
+    <input class="y3" style="margin: 0 auto; height: 100px; min-height: 100px; grid-column: $\{ DATA.n + 1 };" type="range" name="harmonic-$\{ DATA.n }-phase" min="-3.141592653589793" max="3.141592653589793" step="any" value="$\{ data.phasors[2 * DATA.n + 1] }" hidden="$\{ data.phasors[2 * DATA.n] === 0 }" />
+`, {});
+
+const harmonics = Literal.compileHTML('harmonics', `
+    <div class="harmonics-grid grid" style="--x-gap: 0.1875rem; --y-gap: 0.1875rem; grid-template-rows: 20vw min-content 30px; padding: 0.25rem 0.25rem;">
+        $\{ Array.from({ length: 33 }, (v, n) => assign({
+            n, data,
+            max: n ? 0.25 * data.waveform.phasors.length / n : 0.5 * data.waveform.phasors.length
+        }, DATA)).map(include('harmonic')) }
+    </div>
+`, {});
 
 
 function draw(canvas, ctx, box, node, samples, data, waveform) {
@@ -88,52 +114,15 @@ function vectorsToSamples(vectors, samples = new vectors.constructor(vectors.len
     return samples;
 }
 
-
-
-/** <stage-rhythm-synth> **/
-
 export default element('<stage-rhythm-synth>', {
     mode: 'open',
-
-    templates: {
-        harmonic: `
-            <label class="y2 center-align text-10 darklime-fg" for="harmonic-$\{ DATA.n }-magnitude" style="grid-column: $\{ DATA.n + 1 }; margin-top: 0; padding: 0; min-height: 0; $\{ DATA.sequence.duration === DATA.n ? 'font-weight: bold;' : '' } color: $\{ data.phasors[2 * DATA.n] / DATA.max <= data.data.gate ? 'black' : 'var(--darklime)' };">$\{ DATA.n }</label>
-            <input class="y1 post-input" type="range" name="harmonic-$\{ DATA.n }-magnitude" min="0" max="1" data-law="log-24db" step="any" value="$\{ law.normalise(0, DATA.max, data.phasors[2 * DATA.n]) }" title="$\{ (data.phasors[2 * DATA.n] / DATA.max) < dB96 ? 0 : (data.phasors[2 * DATA.n] / DATA.max).toPrecision(3) }" id="harmonic-$\{ DATA.n }-magnitude" style="grid-column: $\{ DATA.n + 1 }; margin: 0 auto; --normal-value: $\{ law.normalise(0, DATA.max, data.phasors[2 * DATA.n]) }; color: $\{ data.phasors[2 * DATA.n] / DATA.max <= data.data.gate ? 'black' : 'var(--lime)' };" />
-            <input class="y3" style="margin: 0 auto; height: 100px; min-height: 100px; grid-column: $\{ DATA.n + 1 };" type="range" name="harmonic-$\{ DATA.n }-phase" min="-3.141592653589793" max="3.141592653589793" step="any" value="$\{ data.phasors[2 * DATA.n + 1] }" hidden="$\{ data.phasors[2 * DATA.n] === 0 }" />
-        `,
-
-        'event-input': `
-            <input class="y1 square-post-input post-input yellow-fg" type="range" name="event-$\{ data.i }-gain" min="0" max="1.2" step="any" title="$\{ law.normalise(0, 1, data.event[3]) }" value="$\{ law.normalise(0, 1, data.event[3]) }" id="event-$\{ data.i }-gain" style="left: calc(100% * $\{ data.event[0] }); --normal-value: $\{ law.normalise(0, 1, data.event[3]) * 5 / 6 };" />
-        `
-    },
 
     shadow: shadow + `
         <link rel="stylesheet" href="${ window.rhythmSynthStylesheet || import.meta.url.replace(/js$/, 'css') }"/>
         <h4>Rhythm Synth</h4>
-
-        <canvas width="1024" height="512" class="block"></canvas>
-
-
-
-        <!--pre>$\{ DATA.samples.length } samples</pre-->
-
-        <!--div class="events-block block" style="padding: 0; position:relative;">
-            $\{ data.sequence.events.map((event, i) => include('#event-input', { i, event })) }
+        <div class="ui-block block">
+            <canvas width="1024" height="512" class="block"></canvas>
         </div>
-
-        <div class="grid" style="--x-gap: 0.1875rem; --y-gap: 0.1875rem; grid-template-rows: 20vw min-content 30px; padding: 0.25rem 0.25rem;">
-            $\{ Array.from({ length: 33 }, (v, n) => assign({
-                n, data,
-                max: n ? 0.25 * data.phasors.length / n : 0.5 * data.phasors.length
-            }, DATA)).map(include('#harmonic')) }
-
-            <label class="y2 center-align text-10" for="gate-magnitude" style="grid-column: 34; margin-top: 0; padding: 0; min-height: 0; color: black;">Gate</label>
-            <input class="y1 post-input" type="range" name="gate-magnitude" min="0" max="1" step="any" value="$\{ law.normalise(0, 1, data.gate) }" style="grid-column: 34; margin: 0 auto; height: 100%; min-height: 100%; --normal-value: $\{ law.normalise(0, 1, data.gate) }; color: black;" id="gate-magnitude" />
-
-            <label class="x34 y1 center-align" style="margin-top: 0; padding: 0; min-height: 0; font-family: sans-serif;">All</label>
-            <button class="x34 y2 button" type="button" name="harmonics-gain" value="0">Zero</button>
-            <button class="x34 y3 button" type="button" name="harmonics-phase" value="0">Zero</button>
-        </div-->
     `,
 
     construct: function(shadow, internals) {
@@ -142,14 +131,17 @@ export default element('<stage-rhythm-synth>', {
         const menu = shadow.querySelector('file-menu');
         presets.forEach((preset) => menu.createPreset(preset.name, preset));
 
+        const ui     = shadow.querySelector('.ui-block');
         const canvas = shadow.querySelector('canvas');
         const ctx    = canvas.getContext('2d');
 
+        internals.ui     = ui;
         internals.canvas = canvas;
         internals.ctx    = ctx;
         internals.pushed = false;
         internals.data   = Signal.of();
 
+        setupDataLawAttribute(shadow);
 
         events('input', shadow).each(delegate({
             // Placeholder functions for responding to magnitude and phase inputs
@@ -233,21 +225,6 @@ export default element('<stage-rhythm-synth>', {
             }
         }));
 
-
-/*
-        let observer;
-        Signal.observe(internals.$node, (node) => {
-            if (observer) observer.stop();
-            if (!node) return;
-            observer = node.inputs[0].each((event) => {
-                pre.innerHTML =
-                    (pre.innerHTML + `\n ${ event[0].toFixed(3) } ${ postpad(' ', 8, event[1]) } ${ event[2] } ${ event[3] || '' } ${ event[4] || '' }`)
-                    .slice(-96);
-                pre.scrollTop = pre.scrollHeight;
-            });
-        });
-*/
-
 /* TEMP PLAYBACK
             const duration = 1.2;
 
@@ -264,75 +241,40 @@ export default element('<stage-rhythm-synth>', {
 
             cue();
 */
-
-
-
-        // If already initialised do nothing
-        if (internals.renderer) { return; }
-        //internals.renderer = new Renderer(shadow, this);
-
-        // Observe signal listens to signal value changes and calls fn()
-        // immediately if signal already value, then on next tick after signal
-        // mutates
-        Signal.frame((data) => {
-/*            const { renderer } = internals;
-
-            if (!data) return;
-            const fragment = renderer.push(data);
-
-            // Replace DOM content on first push
-            if (internals.pushed) return;
-            internals.pushed = true;
-            // EXPERIMENTAL! This is problematic, as replacing
-            // this.parentElement means `element` inside the template will
-            // no longer refer to its real parent
-            const parent = this.parentElement;
-            // Remove this template
-            this.remove();
-            // Extract the parent's contents to a fragment
-            const range = new Range();
-            range.selectNodeContents(parent);
-            const dom = range.extractContents();
-            // The parent can only be given a shadow if it is re-parsed
-            // with a declarative shadow root. We may as well use this
-            // template to parse HTML, it's here, and now not doing anything.
-            this.setHTMLUnsafe(parent.outerHTML.replace('></', '><template shadowrootmode="open"></template></'));
-            const element = this.content.children[0];
-            const shadow  = element.shadowRoot;
-            // Give the recreated element the original's children
-            element.append(dom);
-            // Give the recreated element's shadow the renderer content
-            shadow.append(fragment);
-            // Replace parent in the DOM with it's freshly shadowed copy
-            parent.replaceWith(element);
-*/
-        });
     },
 
-    connect: function(shadow, { canvas, ctx }) {
+    connect: function(shadow, { canvas, ctx, renderers, ui }) {
         connect.apply(this, arguments);
 
         // Where node is not yet defined give element node
         if (!this.node) this.node = new RhythmSynth(0, {
             gate: 0,
             sequence: {
-                duration: 1,
+                duration: 7,
                 events: [
+                    [0,      'meter', 3, 1],
                     [0,      'start', 80, 1],
                     [0.1875, 'start', 80, 1],
                     [0.375,  'start', 80, 1],
                     [0.4375, 'start', 80, 1],
                     [0.625,  'start', 80, 1],
                     [0.75,   'start', 80, 1],
-                    [0.9375, 'start', 80, 1]
+                    [0.9375, 'start', 80, 1],
+                    [4,      'meter', 4, 1]
                 ]
             }
         });
 
-        const node = Data.of(this.node);
-        const box = [0, 0.5 * canvas.height, canvas.width, -0.4 * canvas.height];
+        const node   = Data.of(this.node);
+        const box    = [0, 0.5 * canvas.height, canvas.width, -0.4 * canvas.height];
+        const consts = { host: this, shadow };
+        const a      = eventsBlock.render(shadow, consts, this.node);
+        const b      = harmonics.render(shadow, consts, this.node);
 
-        return [Signal.frame(() => {
+        ui.append(a.content);
+        ui.append(b.content);
+
+        return [a, b, Signal.frame(() => {
             const samples = this.node.waveform.samples;
             draw(canvas, ctx, box, node, samples, this.node, this.node.waveform);
         })];

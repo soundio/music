@@ -2,6 +2,9 @@
 @import '../../../bolt/elements/type.css';
 @import '../../../bolt/elements/form.css';
 @import '../../../bolt/elements/focus.css';
+@import '../../../bolt/classes/block.css';
+@import '../../../bolt/classes/atoms.css';
+@import '../../classes/color.css';
 
 :host {
     display: grid;

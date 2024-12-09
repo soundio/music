@@ -1,0 +1,12 @@
+@import '../../bolt/classes/color.css';
+
+:root,
+:host {
+    --lime: #B2D732;
+    --darklime: #98b046;
+    --yellow: rgb(207, 176, 45);
+}
+
+.lime-fg { color: var(--lime); stroke: var(--lime); }
+.darklime-fg { color: var(--darklime); stroke: var(--darklime); }
+.yellow-fg { color: var(--yellow); stroke: var(--yellow); }

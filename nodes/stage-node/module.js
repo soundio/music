@@ -30,6 +30,10 @@ export const lifecycle = {
                     <circle cx="6" cy="9" r="4"></circle>
                     <line x1="6" y1="13" x2="6" y2="18"></line>
                 </g>
+            </defs>
+        </svg>
+        <svg class="outputs-svg" viewbox="0 0 12 18" width="12" height="18">
+            <defs>
                 <g id="output-g">
                     <circle cx="6" cy="9" r="4"></circle>
                     <line x1="6" y1="0" x2="6" y2="5"></line>
