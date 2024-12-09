@@ -29,7 +29,7 @@ export default function StageNode(id = generateId(), inputs = { size: 1 }, outpu
     descriptors.outputs.value = outputs;
     define(this, descriptors);
 
-    // Give them all a reference to this node
+    // Give them all a reference to this
     let n;
     for (n in this.inputs)  if (/^\d/.test(n)) this.inputs[n].node  = this;
     for (n in this.outputs) if (/^\d/.test(n)) this.outputs[n].node = this;

@@ -10,6 +10,7 @@
 
     <script type="importmap">{
         "imports": {
+            "bolt/":       "../bolt/",
             "dom/":        "../dom/modules/",
             "fn/":         "../fn/modules/",
             "form/":       "../form-elements/",
@@ -233,19 +234,110 @@
     </style>
 
     <script type="module">
-        import delegate from 'dom/delegate.js';
-        import events from 'dom/events.js';
-        import denormalise from 'fn/denormalise.js';
-        import normalise from 'fn/normalise.js';
-        import LiteralHTML from 'literal/literal-html/module.js';
-        import Event from 'soundstage/event.js';
+        import 'bolt/attributes/data-law.js';
+        import 'form/file-menu/module.js';
+
+        import delegate      from 'dom/delegate.js';
+        import events        from 'dom/events.js';
+        import Data          from 'fn/data.js';
+        import denormalise   from 'fn/denormalise.js';
+        import normalise     from 'fn/normalise.js';
+        import LiteralHTML   from 'literal/literal-html/module.js';
+        import Event         from 'soundstage/event.js';
         import { angle, magnitude } from './modules/vector.js';
         import { vectorsToPolars } from './modules/spectrum.js';
         import { fft, ifft } from './modules/fft.js';
-        import { eventsToWaveform, waveformToEvents } from './modules/rhythm.js';
-        import { plotYAxis, plot, plotWaveform, plotBuffer, plotSignpost, plotSamples } from './modules/canvas.js';
+        import { eventsToSamples, samplesToEvents } from './modules/rhythm.js';
+        import { plotYAxis, plot, plotWaveform, plotBuffer, plotSignpost, plotSamples, plotMeter } from './modules/canvas.js';
         import { dB12, dB24, dB60, dB96 } from 'form/modules/constants.js';
-        import { getScale } from 'form/modules/scales.js';
+        import { getScale }  from 'form/modules/scales.js';
+
+const assign = Object.assign;
+
+const presets = [{
+    name: 'Ting ting-ke',
+    duration: 2,
+    events: [
+        [0,           'start', 80, 0.5],
+        [0.5,         'start', 80, 1],
+        [0.833333333, 'start', 80, 0.3]
+    ]
+}, {
+    name: 'Son clave',
+    duration: 8,
+    events: [
+        [0,      'start', 80, 1],
+        [0.1875, 'start', 80, 1],
+        [0.375,  'start', 80, 1],
+        [0.625,  'start', 80, 1],
+        [0.75,   'start', 80, 1]
+    ]
+}, {
+    name: 'Rumba clave',
+    duration: 8,
+    events: [
+        [0,      'meter', 8, 1],
+        [0,      'start', 80, 1],
+        [0.1875, 'start', 80, 0.5],
+        [0.4375, 'start', 80, 1],
+        [0.625,  'start', 80, 0.25],
+        [0.75,   'start', 80, 0.8]
+    ]
+}, {
+    name: 'Bell clave',
+    duration: 8,
+    events: [
+        [0,      'start', 80, 1],
+        [0.1875, 'start', 80, 1],
+        [0.375,  'start', 80, 1],
+        [0.4375, 'start', 80, 1],
+        [0.625,  'start', 80, 1],
+        [0.75,   'start', 80, 1],
+        [0.9375, 'start', 80, 1]
+    ]
+}, {
+    name: 'Bossanova clave',
+    duration: 8,
+    events: [
+        [0,   'start', 80, 1],
+        [1.5, 'start', 80, 1],
+        [3,   'start', 80, 1],
+        [4.5, 'start', 80, 1],
+        [6,   'start', 80, 1]
+    ]
+}, {
+    name: 'Tresillo half clave',
+    duration: 4,
+    events: [
+        [0,     'start', 80, 1],
+        [0.375, 'start', 80, 1],
+        [0.75,  'start', 80, 1]
+    ]
+}];
+
+const menu = document.querySelector('file-menu');
+presets.forEach((data) => menu.createPreset(data.name, data));
+
+const DATA = window.DATA = {
+    gate: 0,
+    sequence: {
+        duration: 1,
+        events: [
+        [0,      'start', 80, 1],
+        [0.1875, 'start', 80, 1],
+        [0.375,  'start', 80, 1],
+        [0.4375, 'start', 80, 1],
+        [0.625,  'start', 80, 1],
+        [0.75,   'start', 80, 1],
+        [0.9375, 'start', 80, 1]
+        ]
+    }
+};
+
+
+events('change', menu).each((e) => {
+    assign(Data.of(DATA.sequence), e.target.data);
+});
 
 
 // Setup voice. TODO: All this faff really should not be necessary.
@@ -254,7 +346,7 @@ import Mix        from '../soundstage/nodes/mix.js';
 import Sample     from '../soundstage/nodes/sample-set.js';
 import Graph      from '../soundstage/nodes/graph.js';
 import Instrument from '../soundstage/nodes/instrument.js';
-const assign = Object.assign;
+
 assign(Graph.constructors, {
     envelope: Envelope,
     sample:   Sample,
@@ -284,7 +376,7 @@ assign(Graph.constructors, {
 
         drum.connect(audio.destination);
 
-        window.law      = getScale('log-12dB');
+        window.law      = getScale('log-18dB');
         window.delegate = delegate;
         window.events = events;
         window.EVENT = Event;
@@ -296,9 +388,10 @@ assign(Graph.constructors, {
         window.magnitude = magnitude;
         window.normalise = normalise;
         window.denormalise = denormalise;
-        window.eventsToWaveform = eventsToWaveform;
-        window.waveformToEvents = waveformToEvents;
+        window.eventsToSamples = eventsToSamples;
+        window.samplesToEvents = samplesToEvents;
         window.plotYAxis = plotYAxis;
+        window.plotMeter = plotMeter;
         window.plot = plot;
         window.plotWaveform = plotWaveform;
         window.plotBuffer = plotBuffer;
@@ -306,12 +399,13 @@ assign(Graph.constructors, {
         window.plotSamples = plotSamples;
         window.vectorsToPolars = vectorsToPolars;
 
-        window.drum  = drum;
+        window.drum = drum;
+        window.$DATA = DATA;
     </script>
 
     <template id="harmonic">
-        <label class="y2 center-align text-10 darklime-fg" for="harmonic-${ DATA.n }-magnitude" style="grid-column: ${ DATA.n + 1 }; margin-top: 0; padding: 0; min-height: 0; ${ DATA.duration === DATA.n ? 'font-weight: bold;' : '' } color: ${ data.polars[2 * DATA.n] / DATA.max <= data.data.gate ? 'black' : 'var(--darklime)' };">${ DATA.n }</label>
-        <input class="y1 point-input" type="range" name="harmonic-${ DATA.n }-magnitude" min="0" max="1" step="any" value="${ law.normalise(0, DATA.max, data.polars[2 * DATA.n]) }" title="${ (data.polars[2 * DATA.n] / DATA.max) < dB96 ? 0 : (data.polars[2 * DATA.n] / DATA.max).toPrecision(3) }" id="harmonic-${ DATA.n }-magnitude" style="grid-column: ${ DATA.n + 1 }; margin: 0 auto; --normal-value: ${ law.normalise(0, DATA.max, data.polars[2 * DATA.n]) }; color: ${ data.polars[2 * DATA.n] / DATA.max <= data.data.gate ? 'black' : 'var(--lime)' };" />
+        <label class="y2 center-align text-10 darklime-fg" for="harmonic-${ DATA.n }-magnitude" style="grid-column: ${ DATA.n + 1 }; margin-top: 0; padding: 0; min-height: 0; ${ DATA.sequence.duration === DATA.n ? 'font-weight: bold;' : '' } color: ${ data.polars[2 * DATA.n] / DATA.max <= data.data.gate ? 'black' : 'var(--darklime)' };">${ DATA.n }</label>
+        <input class="y1 point-input" type="range" name="harmonic-${ DATA.n }-magnitude" min="0" max="1" data-law="log-24db" step="any" value="${ law.normalise(0, DATA.max, data.polars[2 * DATA.n]) }" title="${ (data.polars[2 * DATA.n] / DATA.max) < dB96 ? 0 : (data.polars[2 * DATA.n] / DATA.max).toPrecision(3) }" id="harmonic-${ DATA.n }-magnitude" style="grid-column: ${ DATA.n + 1 }; margin: 0 auto; --normal-value: ${ law.normalise(0, DATA.max, data.polars[2 * DATA.n]) }; color: ${ data.polars[2 * DATA.n] / DATA.max <= data.data.gate ? 'black' : 'var(--lime)' };" />
         <input class="y3" style="margin: 0 auto; height: 100px; min-height: 100px; grid-column: ${ DATA.n + 1 };" type="range" name="harmonic-${ DATA.n }-phase" min="-3.141592653589793" max="3.141592653589793" step="any" value="${ data.polars[2 * DATA.n + 1] }" hidden="${ data.polars[2 * DATA.n] === 0 }" />
     </template>
 
@@ -321,8 +415,11 @@ assign(Graph.constructors, {
 
     <template id="scope">
         ${ (() => {
-            const samples = eventsToWaveform(DATA.events);
-            const vectors = fft(samples);
+            const sequence = data.sequence;
+            console.log('SEQUENCE', sequence);
+
+            const samples  = eventsToSamples(sequence.events, sequence.duration);
+            const vectors  = fft(samples);
 
             DATA.samples = samples;
             DATA.vectors = vectors;
@@ -337,11 +434,11 @@ assign(Graph.constructors, {
             });
 
             const duration = 1.2;
-
+/*
             function cue() {
                 const t0 = duration * Math.ceil(drum.context.currentTime / duration);
 
-                DATA.events.forEach((event) => { event[1] === 'start' && drum
+                sequence.events.forEach((event) => { event[1] === 'start' && drum
                     .start(t0 + event[0] * duration, event[2], event[3])
                     .stop(t0 + event[0] * duration + 0.1)
                 });
@@ -350,6 +447,7 @@ assign(Graph.constructors, {
             }
 
             cue();
+*/
         })() }
 
         <canvas width="1024" height="512" class="block"
@@ -362,12 +460,14 @@ assign(Graph.constructors, {
             })(element) }"
 
             data-draw="${ ((canvas) => {
+                const { width, height } = canvas;
                 // Get constants from DATA
                 const { box, ctx, samples, vectors, polars } = DATA;
-                const { width, height } = canvas;
+                // Listen for changes on data
+                const { sequence } = data;
 
                 // Get data from the 0th and the first 32 harmonics
-                const length = 33;
+                const length     = 33;
                 const magnitudes = new Float32Array(length);
                 const angles     = new Float32Array(length);
 
@@ -384,6 +484,7 @@ assign(Graph.constructors, {
                 plotWaveform(ctx, [0, 0.5 * height, width, (-0.4/Math.PI) * height], angles, { strokeStyle: '#617316' });
                 // Plot graph
                 plotYAxis(ctx, box);
+                plotMeter(ctx, box, 1, 4);
                 // Plot waveform
                 plotWaveform(ctx, box, samples, { strokeStyle: 'black' });
 
@@ -393,10 +494,9 @@ assign(Graph.constructors, {
                 //plotWaveform(ctx, [0, 0.9 * height, width, -0.4 * height], Array.from({ length: 100 }, (n, i) => law.normalise(0, 1, i / 99)), { lineWidth: 3, strokeStyle: 'black' });
                 //plotWaveform(ctx, [0, 0.9 * height, width, -0.4 * height], Array.from({ length: 100 }, (n, i) => law.denormalise(0, 1, i / 99)), { lineWidth: 3, strokeStyle: 'black' });
 
-
-
                 // Plot magnitudes
                 //plotSamples(ctx, [0, 0.9 * height, width, (-0.8 * 2 / data.polars.length) * height], magnitudes, { strokeStyle: '#B2D732' });
+
 
 
                 // Reject vectors below gate threshold
@@ -416,12 +516,10 @@ assign(Graph.constructors, {
                     }
                 }
 
-
                 // Do the inverse FFT to print the output signal. THIS SHOULD BE
                 // IN A SEPARATE RENDER FN SOMEWHERE. It's only here because
                 // this is where updates happen, for now.
                 const output = DATA.output = ifft(gatedVectors);
-
                 let i = output.length, x, y;
                 while (i) {
                     y = output[--i];
@@ -434,20 +532,20 @@ assign(Graph.constructors, {
 
                 plotWaveform(ctx, box, samples, { strokeStyle: 'white' });
 
-                const events = waveformToEvents(samples, 60);
+                const events = samplesToEvents(samples, 60);
                 events.forEach((event) => {
                     if (event[1] !== 'start') return;
                     //plotSignpost(ctx, box, event[0], law.normalise(0, 1, event[3]), { strokeStyle: 'orange', lineWidth: 2 });
                 });
 
-                data.events = events;
+                data.sequence.events = events;
             })(element) }"
         ></canvas>
 
-        <pre>${ DATA.samples.length } samples</pre>
+        <!pre>${ DATA.samples.length } samples</pre!>
 
         <div class="events-block block" style="padding: 0; position:relative;">
-            ${ data.events.map((event, i) => include('#event-signpost', { i, event })) }
+            ${ data.sequence.events.map((event, i) => include('#event-signpost', { i, event })) }
         </div>
 
         <div class="grid" style="--x-gap: 0.1875rem; --y-gap: 0.1875rem; grid-template-rows: 20vw min-content 30px; padding: 0.25rem 0.25rem;">
@@ -518,7 +616,7 @@ assign(Graph.constructors, {
                 const i      = parseInt(input.name.slice(6), 10);
                 const normal = parseFloat(input.value);
                 const value  = law.denormalise(0, 1, normal);
-                data.events[i][3] = value;
+                data.sequence.events[i][3] = value;
             }
         })) }
 
@@ -549,99 +647,10 @@ assign(Graph.constructors, {
 </head>
 
 <body>
-    <template is="literal-html" data-length="2048">
+    <file-menu prefix="groove-synth/" title="Settings" style="position: absolute; top: 0.375rem; left: 0.375rem; z-index: 3;"></file-menu>
+    <template is="literal-html" src="">
         <form class="harmonics-grid grid">
-        ${ include('#scope', {
-            duration: 4,
-            gate: 0,
-/*            events: [
-                EVENT.of(0,      'start', 80, 1),
-                EVENT.of(0.5,    'start', 80, 0.5),
-                EVENT.of(0.625,  'start', 80, 0.92),
-                EVENT.of(0.75,   'start', 80, 0.25),
-                EVENT.of(0.8125, 'start', 80, 1),
-                EVENT.of(0.875,  'start', 80, 0.3333)
-            ]
-
-            name: 'Ting Ting-ke',
-            events: [
-                // Ting te ting
-                EVENT.of(0,           'start', 80, 0.5),
-                EVENT.of(0.5,         'start', 80, 1),
-                EVENT.of(0.833333333, 'start', 80, 0.3)
-            ]
-
-            name: 'Son Clave',
-            events: [
-                // Clave
-                EVENT.of(0,      'start', 80, 1),
-                EVENT.of(0.1875, 'start', 80, 1),
-                EVENT.of(0.375,  'start', 80, 1),
-                EVENT.of(0.625,  'start', 80, 1),
-                EVENT.of(0.75,   'start', 80, 1)
-            ]
-*/
-            name: 'Rumba Clave',
-            events: [
-                // Clave
-                EVENT.of(0,      'start', 80, 1),
-                EVENT.of(0.1875, 'start', 80, 0.5),
-                EVENT.of(0.4375, 'start', 80, 1),
-                EVENT.of(0.625,  'start', 80, 0.25),
-                EVENT.of(0.75,   'start', 80, 0.8)
-            ]
-/*
-            name: 'Bell Clave',
-            events: [
-                // Clave
-                EVENT.of(0,      'start', 80, 1),
-                EVENT.of(0.1875, 'start', 80, 1),
-                EVENT.of(0.375,  'start', 80, 1),
-                EVENT.of(0.4375, 'start', 80, 1),
-                EVENT.of(0.625,  'start', 80, 1),
-                EVENT.of(0.75,   'start', 80, 1),
-                EVENT.of(0.9375, 'start', 80, 1)
-            ]
-
-            name: 'Bossa Nova Clave',
-            events: [
-                // Clave
-                EVENT.of(0,      'start', 80, 1),
-                EVENT.of(0.1875, 'start', 80, 1),
-                EVENT.of(0.375,  'start', 80, 1),
-                EVENT.of(0.625,  'start', 80, 1),
-                EVENT.of(0.8125, 'start', 80, 1)
-            ]
-/*
-            name: 'Tresillo',
-            events: [
-                // Clave
-                EVENT.of(0,     'start', 80, 1),
-                EVENT.of(0.375, 'start', 80, 1),
-                EVENT.of(0.75,  'start', 80, 1)
-            ]
-
-            /* samples: Array.from({ length: data.length }, (n, i) => {
-                duration: 1,
-                return 0
-                    + 1 * sin(PI * 2 * i / data.length)
-                    + 0.5 * (1/2) * sin(Math.PI * 4 * i / data.length)
-                    + 0.25 * (1/3) * sin(Math.PI * 6 * i / data.length)
-                    + 0.125 * (1/4) * sin(Math.PI * 8 * i / data.length)
-                    //+ 0.25 * (1/5) * sin(Math.PI * 10 * i / data.length)
-                    //+ 0.5 * (1/6) * sin(Math.PI * 12 * i / data.length)
-                    //+ 0.5 * (1/7) * sin(Math.PI * 14 * i / data.length)
-                    //+ 0.5 * (1/8) * sin(Math.PI * 16 * i / data.length)
-                    //+ 0.5 * (1/9) * sin(Math.PI * 18 * i / data.length)
-                    //+ 0.5 * (1/10) * sin(Math.PI * 20 * i / data.length)
-                    //+ 0.5 * (1/11) * sin(Math.PI * 22 * i / data.length)
-                    //+ 0.5 * (1/12) * sin(Math.PI * 24 * i / data.length)
-                    //+ 0.5 * (1/13) * sin(Math.PI * 26 * i / data.length)
-                    //+ 0.5 * (1/14) * sin(Math.PI * 28 * i / data.length)
-                    //+ 0.5 * (1/15) * sin(Math.PI * 30 * i / data.length)
-                    //+ 0.5 * (1/16) * sin(Math.PI * 32 * i / data.length) ;
-            })*/
-        }) }
+            ${ include('#scope', window.$DATA) }
         </form>
     </template>
 </body>

@@ -8,21 +8,24 @@ const { ceil, cos, sin, PI } = Math;
 
 
 /**
-eventsToWaveform(events)
+eventsToSamples(events)
 Takes an array of `events` and outputs a 2048-long Float32Array of samples
 describing an oscillating waveform where `'start'` events are encoded as upwards
 zero-crossings.
 
-eventsToWaveform(events, buffer)
-As `eventsToWaveform()`, but outputs `buffer`, a Float32Array that must have a
+eventsToSamples(events, length)
+As `eventsToSamples()`, outputs a buffer of `length` samples.
+
+eventsToSamples(events, buffer)
+As `eventsToSamples()`, but outputs `buffer`, a Float32Array that must have a
 `2^n` length such as `512`, `1024`, `2048` or `4096`.
 **/
 
-function eventsToCrossings(events) {
+function eventsToCrossings(events, duration) {
     return events.reduce((crossings, event) => {
         if (event[1] === 'start') {
             crossings.push({
-                x:        event[0],
+                x:        event[0] / duration,
                 gradient: event[3]
             });
         }
@@ -31,7 +34,11 @@ function eventsToCrossings(events) {
     }, []);
 }
 
-function crossingsToWaveform(crossings, samples = new Float32Array(2048)) {
+function crossingsToWaveform(crossings, lengthOrBuffer = 2048) {
+    const samples = typeof lengthOrBuffer === 'number' ?
+        new Float32Array(lengthOrBuffer) :
+        lengthOrBuffer ;
+
     // Approximate a sinusoidal wave to match a series of
     // zero crossings. There is nothing 'pure' about this function,
     // It's a best guess approach.
@@ -73,14 +80,14 @@ function crossingsToWaveform(crossings, samples = new Float32Array(2048)) {
     return samples;
 }
 
-export function eventsToWaveform(events, buffer) {
-    const crossings = eventsToCrossings(events);
+export function eventsToSamples(events, duration = 1, buffer) {
+    const crossings = eventsToCrossings(events, duration);
     return crossingsToWaveform(crossings, buffer);
 }
 
 
 /**
-waveformToEvents(samples)
+samplesToEvents(samples)
 Takes an array of `samples` an array of `'start'` events at upwards
 zero-crossings.
 **/
@@ -124,7 +131,7 @@ function crossingToEvent(crossing) {
     return Event.of(crossing.x, 'start', 0, crossing.gradient);
 }
 
-export function waveformToEvents(samples, pitch) {
+export function samplesToEvents(samples, pitch) {
     const events = searchUpwardZeroCrossings(samples).map(crossingToEvent);
     events.forEach((event) => event[2] = pitch);
     return events;

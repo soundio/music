@@ -30,6 +30,46 @@ export function plotYAxis(ctx, box, style) {
     ctx.closePath();
 }
 
+export function plotBeats(ctx, box, duration, events, index, style) {
+    let [x, y, w, h] = box;
+    let beat = 0;
+    let div  = 1;
+
+    // x lines
+    ctx.beginPath();
+
+    // Plot lines from
+    let i = -1, event;
+    while (event = events[++i]) if (event[1] === 'meter') {
+        // Draw lines up to and including event time
+        if (div) while ((beat += div) <= event[0] && beat < duration) {
+            ctx.moveTo(w * beat / duration, y + -1.5 * h);
+            ctx.lineTo(w * beat / duration, y + 1.5 * h);
+        }
+
+        // Update position
+        beat = event[0];
+        div  = event[index];
+    }
+
+    // Fill lines to end of duration
+    while ((beat += div) < duration) {
+        ctx.moveTo(w * beat / duration, y + -1.5 * h);
+        ctx.lineTo(w * beat / duration, y + 1.5 * h);
+    }
+
+    assign(ctx, axisStyle, style);
+    ctx.stroke();
+    ctx.closePath();
+}
+
+export function plotMeter(ctx, box, duration, events, index, style) {
+    // Plot division lines
+    plotBeats(ctx, box, duration, events, 3, style);
+    // Plot bar lines
+    plotBeats(ctx, box, duration, events, 2, { strokeStyle: 'rgba(0,0,0,0.5)' });
+}
+
 export function plot(ctx, box, points, style) {
     const [x, y, w, h] = box;
     let n = -1;

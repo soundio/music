@@ -1,0 +1,236 @@
+<head>
+    <meta charset="utf-8" />
+    <meta name="author" content="@stephband" />
+    <meta name="description" content="TODO" />
+    <meta name="viewport" content="width=device-width" />
+
+    <script>
+        window.DEBUG = true;
+    </script>
+
+    <script type="importmap">{
+        "imports": {
+            "bolt/":       "../../bolt/",
+            "dom/":        "../../dom/modules/",
+            "fn/":         "../../fn/modules/",
+            "form/":       "../../form-elements/",
+            "literal/":    "../../literal/",
+            "midi/":       "../../midi/modules/",
+            "soundstage/": "../../soundstage/modules/"
+        }
+    }</script>
+
+    <link rel="stylesheet" href="../../bolt/elements/html.css" />
+    <link rel="stylesheet" href="../../bolt/elements/table.css" />
+    <link rel="stylesheet" href="../../bolt/elements/label.css" />
+    <link rel="stylesheet" href="../../bolt/elements/form.css" />
+    <link rel="stylesheet" href="../../bolt/elements/svg.css" />
+    <link rel="stylesheet" href="../../bolt/classes/block.css" />
+    <link rel="stylesheet" href="../../bolt/classes/atoms.css" />
+    <link rel="stylesheet" href="../../bolt/classes/button.css" />
+    <link rel="stylesheet" href="../../bolt/classes/color.css" />
+
+    <style>
+        html, body {
+            height: 100%;
+        }
+
+        html {
+            background-color: #646568;
+        }
+
+        body {
+            font-family: var(--system-font);
+            padding: 1.875rem;
+        }
+
+        body > header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            text-align: right;
+            z-index: 2;
+            max-height: 0;
+        }
+
+        body > header > file-menu {
+            margin-top: 0.1875rem;
+            margin-right: 0.375rem;
+        }
+
+        input[type="range"] {
+            writing-mode: vertical-lr;
+            direction: rtl;
+            appearance: slider-vertical;
+            vertical-align: bottom;
+            min-height: 200px;
+        }
+
+        .point-input {
+            --handle-size: 0.625rem;
+
+            cursor: pointer;
+            width: 0.75rem;
+
+            -webkit-appearance: none !important;
+            background-color: transparent;
+            border-width: 0;
+
+            /*required for proper track sizing in FF*/
+            /*width: 100%;
+            height: 100%;*/
+
+            cursor: pointer;
+            cursor: ns-resize;
+
+            background-image: linear-gradient(to top,
+                transparent      0%,
+                transparent      calc(0.5 * var(--handle-size)),
+                currentcolor     calc(0.5 * var(--handle-size)),
+                currentcolor     calc((100% - var(--handle-size)) * var(--normal-value, 0) + 1px),
+                transparent calc((100% - var(--handle-size)) * var(--normal-value, 0) + 1px),
+                transparent 100%
+            );
+
+            background-size: 2px 100%;
+            background-position: center center;
+        }
+
+        .point-input::-webkit-slider-runnable-track {
+            background: transparent;
+            border-width: 0;
+        }
+
+        .point-input:hover,
+        .point-input:focus-visible {
+            background-color: rgba(0,0,0,0.04);
+        }
+
+        .point-input::-webkit-slider-thumb {
+            -webkit-appearance: none !important;
+
+            cursor: pointer;
+            cursor: ns-resize;
+
+            width: var(--handle-size, 0.6875rem);
+            height: var(--handle-size, var(--handle-size, 0.6875rem));
+
+            background: transparent;
+            border: 2px solid currentcolor;
+            border-radius: 50%;
+
+            /* Increase hit zone */
+            outline: 0.25rem solid transparent;
+        }
+
+        .square-point-input {
+            --handle-size: 0.5625rem;
+        }
+
+        .square-point-input::-webkit-slider-thumb {
+            border-radius: 0.125rem;
+        }
+
+        .point-input::-moz-range-thumb {
+            cursor: pointer;
+            cursor: ns-resize;
+
+            width: var(--handle-width, 0.875rem);
+            height: var(--handle-height, var(--handle-width, 0.875rem));
+            margin-top: calc(0.5 * (var(--track-height, 0.75rem) - var(--handle-height, var(--handle-width, 0.875rem))));
+            border: var(--handle-border, none);
+            border-radius: 50%;
+            background: #B6B2B0;
+            background: var(--handle-background, linear-gradient(rgb(247,247,247), rgb(140,140,140)));
+        }
+
+
+
+        [type="range"]::-moz-range-track {
+            height: var(--track-height, 0.75rem);
+            background: var(--track-background, #2B3134);
+            border: var(--track-background, none);
+            border-radius: var(--track-radius, calc(0.5 * var(--track-height, 0.75rem)));
+            box-shadow: var(--track-shadow);
+        }
+
+        [type="range"]::-moz-range-progress {
+            height: var(--track-height, 0.75rem);
+            background: var(--track-background, #2B3134);
+            border-radius: var(--track-radius, calc(0.5 * var(--track-height, 0.75rem)));
+            box-shadow: var(--track-shadow);
+        }
+
+        :root {
+            --system-font: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            --lime: #B2D732;
+            --darklime: #98b046;
+            --yellow: rgb(207, 176, 45);
+        }
+
+        .lime-fg { color: var(--lime); stroke: var(--lime); }
+        .darklime-fg { color: var(--darklime); stroke: var(--darklime); }
+        .yellow-fg { color: var(--yellow); stroke: var(--yellow); }
+
+        .text-10 {
+            font-family: sans-serif;
+            font-size: 0.6875rem;
+        }
+    </style>
+
+    <script type="module">
+        import 'bolt/attributes/data-law.js';
+        import events from 'dom/events.js';
+
+        events('input', document.body).each((e) => {
+            console.log(e.target.outputValue || e.target.valueAsNumber);
+        });
+
+
+
+        // Test runner
+        import run from 'fn/test.js';
+
+        // Test Waveform()
+        import Waveform from '../modules/waveform.js';
+
+        // Test the simplest possible cosine wave [1, -1]. A cosine wave is
+        // considered to be phase 0 after fourier transform.
+        run('Waveform(samples)', [[1,-1], 2, [0,0,2,0], [0,0,2,0], -1, 1, 0, [2,0], [2,0]], (test, done) => {
+            const waveform = new Waveform(Float32Array.of(1, -1));
+            test(waveform.samples);
+            test(waveform.size);
+            test(waveform.vectors);
+            test(waveform.phasors);
+            test(waveform.sampleAt(1));
+            test(waveform.gainAt(1));
+            test(waveform.phaseAt(1));
+            test(waveform.vectorAt(1));
+            test(waveform.phasorAt(1));
+            done();
+        });
+
+        // Test a sine wave [0,1,0,-1].
+        run('Waveform(samples)', [[0,1,0,-1], 4, [0,0,0,-2,0,0,0,2], [0,0,2,-1.5707963705062866,0,0,2,1.5707963705062866], 1, [0,-2], [2,-1.5707963705062866]], (test, done) => {
+            const waveform = new Waveform(Float32Array.of(0,1,0,-1));
+            console.log(waveform);
+            test(waveform.samples);
+            test(waveform.size);
+            test(waveform.vectors.map(Math.round));
+            test(waveform.phasors);
+            test(waveform.sampleAt(1));
+            test(waveform.vectorAt(1).map(Math.round));
+            test(waveform.phasorAt(1));
+            done();
+        });
+    </script>
+</head>
+
+<body>
+    <input class="point-input black-fg" type="range" step="any" value="0" />
+    <input class="point-input black-fg" type="range" step="any" data-law="log-24db" value="0" />
+    <input class="point-input black-fg" type="range" min="0" max="2" step="any" data-law="log-24db" value="1" />
+    <input class="point-input black-fg" type="range" min="0.5" max="4" step="any" data-law="log-24db" value="1" />
+</body>

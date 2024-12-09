@@ -24,24 +24,20 @@ export const lifecycle = {
 
     shadow: `
         <link rel="stylesheet" href="${ window.stageNodeStylesheet || import.meta.url.replace(/js$/, 'css') }"/>
-        <h4></h4>
         <svg class="inputs-svg" viewbox="0 0 12 18" width="12" height="18">
             <defs>
                 <g id="input-g">
                     <circle cx="6" cy="9" r="4"></circle>
                     <line x1="6" y1="13" x2="6" y2="18"></line>
                 </g>
-            </defs>
-        </svg>
-        <svg class="outputs-svg" viewbox="0 0 12 18" width="12" height="18">
-            <defs>
                 <g id="output-g">
                     <circle cx="6" cy="9" r="4"></circle>
                     <line x1="6" y1="0" x2="6" y2="5"></line>
                 </g>
             </defs>
         </svg>
-        <file-menu prefix="harmoniser/" title="Settings">
+        <h4></h4>
+        <file-menu title="Settings">
             <hr/>
             <option value disabled>Actions</option>
             <option value="$remove">Remove</option>
@@ -57,6 +53,9 @@ export const lifecycle = {
         const $node = internals.$node = Signal.of();
 
         if (menu) {
+            // Namespace things the menu stores with the name of the element
+            menu.prefix = this.tagName.toLowerCase() + '/';
+
             // This is a bit of a dodgy way of adding actions, it may
             // change in file-menu element
             menu.actions = {
@@ -137,6 +136,11 @@ console.log('Piped node ' + node.id + ' output ' + data.index + ' to node ' + th
         });
 
         if (menu) {
+            events('change', menu).each((e) => {
+                if (window.DEBUG) console.log('Setting', e.target.data);
+                assign(Data.of(this.node), e.target.data);
+            });
+
             Signal.frame(() => {
                 const node = this.node;
                 if (!node) return;
@@ -170,3 +174,8 @@ export const properties = {
 };
 
 export default element('<stage-node>', lifecycle, properties);
+
+// Helpful exports for building stage elements
+export const shadow    = lifecycle.shadow;
+export const construct = lifecycle.construct;
+export const connect   = lifecycle.connect;

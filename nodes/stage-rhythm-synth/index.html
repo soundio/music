@@ -1,0 +1,78 @@
+<head>
+    <meta charset="utf-8" />
+    <meta name="author" content="@stephband" />
+    <meta name="description" content="TODO" />
+    <meta name="viewport" content="width=device-width" />
+
+    <script>
+        window.DEBUG = true;
+    </script>
+
+    <script type="importmap">{
+        "imports": {
+            "bolt/":       "../../../bolt/",
+            "dom/":        "../../../dom/modules/",
+            "fn/":         "../../../fn/modules/",
+            "form/":       "../../../form-elements/",
+            "literal/":    "../../../literal/",
+            "midi/":       "../../../midi/modules/",
+            "soundstage/": "../../../soundstage/modules/"
+        }
+    }</script>
+
+    <link rel="stylesheet" href="../../../bolt/elements/html.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/table.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/label.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/form.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/svg.css" />
+    <link rel="stylesheet" href="../../../bolt/classes/block.css" />
+    <link rel="stylesheet" href="../../../bolt/classes/atoms.css" />
+    <link rel="stylesheet" href="../../../bolt/classes/button.css" />
+
+    <style>
+
+        html, body {
+            height: 100%;
+        }
+
+        html {
+            background-color: #646568;
+        }
+
+        body {
+            font-family: var(--system-font);
+            padding: 1.875rem 1.5rem;
+            padding: 0;
+        }
+
+        body > header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            text-align: right;
+            z-index: 2;
+            max-height: 0;
+        }
+
+        body > header > file-menu {
+            margin-top: 0.1875rem;
+            margin-right: 0.375rem;
+        }
+
+        body > stage-graph {
+            height: 100vh;
+            overflow: auto;
+        }
+    </style>
+
+    <script type="module">
+        // <stage-rhythm-synth>
+        import './element.js';
+    </script>
+</head>
+
+<body>
+    <stage-rhythm-synth></stage-rhythm-synth>
+</body>
