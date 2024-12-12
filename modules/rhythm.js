@@ -22,8 +22,10 @@ As `eventsToSamples()`, but outputs `buffer`, a Float32Array that must have a
 **/
 
 function eventsToCrossings(events, duration) {
+
     return events.reduce((crossings, event) => {
         if (event[1] === 'start') {
+            console.log(event[3]);
             crossings.push({
                 x:        event[0] / duration,
                 gradient: event[3]
@@ -127,12 +129,12 @@ function searchUpwardZeroCrossings(samples) {
     return crossings;
 }
 
-function crossingToEvent(crossing) {
-    return Event.of(crossing.x, 'start', 0, crossing.gradient);
+function crossingToEvent(crossing, duration) {
+    return Event.of(crossing.x * duration, 'start', 0, crossing.gradient);
 }
 
-export function samplesToEvents(samples, pitch) {
-    const events = searchUpwardZeroCrossings(samples).map(crossingToEvent);
+export function samplesToEvents(samples, duration, pitch) {
+    const events = searchUpwardZeroCrossings(samples).map((cross) => crossingToEvent(cross, duration));
     events.forEach((event) => event[2] = pitch);
     return events;
 }

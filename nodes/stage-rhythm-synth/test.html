@@ -1,0 +1,55 @@
+<head>
+    <meta charset="utf-8" />
+    <meta name="author" content="@stephband" />
+    <meta name="description" content="TODO" />
+    <meta name="viewport" content="width=device-width" />
+
+    <script>
+        window.DEBUG = true;
+    </script>
+
+    <script type="importmap">{
+        "imports": {
+            "bolt/":       "../../../bolt/",
+            "dom/":        "../../../dom/modules/",
+            "fn/":         "../../../fn/modules/",
+            "form/":       "../../../form-elements/",
+            "literal/":    "../../../literal/",
+            "midi/":       "../../../midi/modules/",
+            "soundstage/": "../../../soundstage/modules/"
+        }
+    }</script>
+
+    <link rel="stylesheet" href="../../../bolt/elements/html.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/table.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/label.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/form.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/svg.css" />
+    <link rel="stylesheet" href="../../../bolt/classes/block.css" />
+    <link rel="stylesheet" href="../../../bolt/classes/atoms.css" />
+    <link rel="stylesheet" href="../../../bolt/classes/button.css" />
+
+    <style>
+        html, body {
+            height: 100%;
+        }
+
+        html {
+            background-color: #eeeeee;
+        }
+
+        body {
+            font-family: var(--system-font);
+            padding: 1.875rem 1.5rem;
+        }
+    </style>
+
+    <script type="module">
+        // <stage-rhythm-synth>
+        import './element-skeleton.js';
+    </script>
+</head>
+
+<body>
+    <element-skeleton></element-skeleton>
+</body>

@@ -1,6 +1,6 @@
 
 @import '../stage-node/module.css';
-@import '../../classes/post-input.css';
+@import '../../classes/mono-input.css';
 
 
 :host {
@@ -46,7 +46,6 @@
 .ui-block > .events-block {
     top: 0;
     background: transparent;
-    background: yellow;
 }
 
 .ui-block > .harmonics-grid {
@@ -70,7 +69,7 @@ canvas {
     height: 25vw;
 }
 
-.events-block > .point-input {
+.events-block > .mono-input {
     position: absolute;
     top: 0;
     margin-top: 0;
@@ -85,8 +84,9 @@ canvas {
 
 
 .harmonics-grid {
+    grid-template-rows: 20vw min-content 1.125em;
     column-gap: 0;
-    row-gap: 0;
+    row-gap: 0.1875em;
 }
 
 .harmonics-grid > * {
@@ -122,3 +122,9 @@ canvas {
     font-family: sans-serif;
     font-size: 0.6875rem;
 }
+
+
+
+
+
+

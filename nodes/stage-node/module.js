@@ -113,7 +113,8 @@ console.log('Piped node ' + node.id + ' output ' + data.index + ' to node ' + th
 
             if (menu) {
                 menu.prefix = node.type;
-                menu.data   = node.data;
+                // Beware not all nodes have, or should have, .data
+                if (node.data) menu.data = node.data;
             }
 
             if (inputsSVG) {

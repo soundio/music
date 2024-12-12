@@ -37,27 +37,77 @@ export default class Waveform {
         return new Waveform(object);
     }
 
+    #samples;
     #vectors;
     #phasors;
+    #gate;
+    #gated;
 
     constructor(samples) {
         this.samples  = samples;
         this.size     = samples.length;
+        this.gate     = 0;
 
-        /*console.table({
+        console.table({
             magnitude: this.phasors.filter((n, i) => i % 2 === 0).slice(0, 8).map((n) => n.toFixed(6)),
             phase:     this.phasors.filter((n, i) => i % 2 !== 0).slice(0, 8)
-        });*/
+        });
+    }
+
+    set samples(samples) {
+        this.#vectors = undefined;
+        this.#phasors = undefined;
+        return this.#samples = samples;
+    }
+
+    get samples() {
+        return this.#samples;
     }
 
     get vectors() {
         return this.#vectors
-            || (this.#vectors = fft(this.samples));
+            || (this.#vectors = fft(this.#samples));
     }
 
     get phasors() {
         return this.#phasors
             || (this.#phasors = vectorsTophasors(this.vectors));
+    }
+
+    get outputSamples() {
+        // Reject vectors below gate threshold
+        const { vectors, phasors } = this;
+        const length = vectors.length;
+        const gatedVectors = this.#gated || (this.#gated = new this.vectors.constructor(length));
+
+        let j = gatedVectors.length / 4, j1, j2, max, mag, gain;
+        while (j--) {
+            j1   = j * 2;
+            j2   = (0.5 * length - j) * 2;
+            max  = j ? 0.25 * length / j : 0.5 * length ;
+            mag  = phasors[2 * j];
+            gain = mag / max;
+            if (gain > this.gate) {
+                gatedVectors[j1]     = vectors[j1];
+                gatedVectors[j1 + 1] = vectors[j1 + 1];
+                gatedVectors[j2]     = vectors[j2];
+                gatedVectors[j2 + 1] = vectors[j2 + 1];
+            }
+        }
+
+        const output = ifft(gatedVectors);
+        const samples = new output.constructor(0.5 * length);
+        let i = output.length, x, y;
+        while (i) {
+            y = output[--i];
+            x = output[--i];
+            // All imaginary parts should be 0, or very near 0
+            if (y < -0.000000001 && y > 0.000000001) console.log('PHASE NOT 0!!! What gives?');
+            // Real parts are the samples, write them back to the samples buffer
+            samples[i / 2] = x;
+        }
+
+        return samples;
     }
 
     /**
@@ -74,6 +124,14 @@ export default class Waveform {
     **/
     gainAt(n) {
         return 2 * this.phasors[2 * n] / this.phasors.length;
+    }
+
+    /**
+    .magnitudeAt(f)
+    Gets weighted magnitude of frequency index `f`.
+    **/
+    magnitudeAt(n) {
+        return this.phasors[2 * n];
     }
 
     /**
