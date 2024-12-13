@@ -22,10 +22,8 @@ As `eventsToSamples()`, but outputs `buffer`, a Float32Array that must have a
 **/
 
 function eventsToCrossings(events, duration) {
-
     return events.reduce((crossings, event) => {
         if (event[1] === 'start') {
-            console.log(event[3]);
             crossings.push({
                 x:        event[0] / duration,
                 gradient: event[3]

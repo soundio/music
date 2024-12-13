@@ -21,38 +21,6 @@
     background-color: white;
 }
 
-:host > .ui-block {
-    grid-column: 1 / span 3;
-    grid-row: 2 / span 1;
-    width: 100%;
-    margin: 0;
-}
-
-
-
-
-.ui-block > canvas {
-    width: 100%;
-}
-
-.ui-block > .events-block,
-.ui-block > .harmonics-grid {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 50%;
-}
-
-.ui-block > .events-block {
-    top: 0;
-    background: transparent;
-}
-
-.ui-block > .harmonics-grid {
-    bottom: 0;
-    background: transparent;
-}
-
 
 
 

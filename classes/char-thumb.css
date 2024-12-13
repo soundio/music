@@ -1,0 +1,27 @@
+
+.char-thumb {
+    background-color: #777777;
+    border-radius: 0.1875rem;
+    box-shadow: 0.0625rem 0.125rem 0.1875rem rgba(0,0,0,0.25);
+}
+
+.char-thumb::before {
+    content: attr(data-char);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    text-align: center;
+    line-height: 1.3125rem;
+}
+
+.invisible:checked + .char-thumb {
+    background-image: radial-gradient(oklch(0.78 0.17 220.7), oklch(0.55 0.14 225.15));
+    box-shadow: 0 0 0 1px color(display-p3 0.116 0.221 0.258 / 0.3);
+}
+
+.invisible:checked + .char-thumb[for="mute"] {
+    background-image: radial-gradient(oklch(0.71 0.24 25.26), oklch(0.53 0.24 28.82));
+    box-shadow: 0 0 0 1px color(display-p3 0.116 0.221 0.258 / 0.3);
+}

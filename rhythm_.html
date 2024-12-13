@@ -142,8 +142,8 @@
                 transparent      0%,
                 transparent      calc(0.5 * var(--handle-size)),
                 currentcolor     calc(0.5 * var(--handle-size)),
-                currentcolor     calc((100% - var(--handle-size)) * var(--normal-value, 0) + 1px),
-                transparent calc((100% - var(--handle-size)) * var(--normal-value, 0) + 1px),
+                currentcolor     calc((100% - var(--handle-size)) * var(--normal, 0) + 1px),
+                transparent calc((100% - var(--handle-size)) * var(--normal, 0) + 1px),
                 transparent 100%
             );
 
@@ -405,19 +405,17 @@ assign(Graph.constructors, {
 
     <template id="harmonic">
         <label class="y2 center-align text-10 darklime-fg" for="harmonic-${ DATA.n }-magnitude" style="grid-column: ${ DATA.n + 1 }; margin-top: 0; padding: 0; min-height: 0; ${ DATA.sequence.duration === DATA.n ? 'font-weight: bold;' : '' } color: ${ data.polars[2 * DATA.n] / DATA.max <= data.data.gate ? 'black' : 'var(--darklime)' };">${ DATA.n }</label>
-        <input class="y1 point-input" type="range" name="harmonic-${ DATA.n }-magnitude" min="0" max="1" data-law="log-24db" step="any" value="${ law.normalise(0, DATA.max, data.polars[2 * DATA.n]) }" title="${ (data.polars[2 * DATA.n] / DATA.max) < dB96 ? 0 : (data.polars[2 * DATA.n] / DATA.max).toPrecision(3) }" id="harmonic-${ DATA.n }-magnitude" style="grid-column: ${ DATA.n + 1 }; margin: 0 auto; --normal-value: ${ law.normalise(0, DATA.max, data.polars[2 * DATA.n]) }; color: ${ data.polars[2 * DATA.n] / DATA.max <= data.data.gate ? 'black' : 'var(--lime)' };" />
+        <input class="y1 point-input" type="range" name="harmonic-${ DATA.n }-magnitude" min="0" max="1" data-law="log-24db" step="any" value="${ law.normalise(0, DATA.max, data.polars[2 * DATA.n]) }" title="${ (data.polars[2 * DATA.n] / DATA.max) < dB96 ? 0 : (data.polars[2 * DATA.n] / DATA.max).toPrecision(3) }" id="harmonic-${ DATA.n }-magnitude" style="grid-column: ${ DATA.n + 1 }; margin: 0 auto; --normal: ${ law.normalise(0, DATA.max, data.polars[2 * DATA.n]) }; color: ${ data.polars[2 * DATA.n] / DATA.max <= data.data.gate ? 'black' : 'var(--lime)' };" />
         <input class="y3" style="margin: 0 auto; height: 100px; min-height: 100px; grid-column: ${ DATA.n + 1 };" type="range" name="harmonic-${ DATA.n }-phase" min="-3.141592653589793" max="3.141592653589793" step="any" value="${ data.polars[2 * DATA.n + 1] }" hidden="${ data.polars[2 * DATA.n] === 0 }" />
     </template>
 
     <template id="event-signpost">
-        <input class="y1 square-point-input point-input yellow-fg" type="range" name="event-${ data.i }-gain" min="0" max="1.2" step="any" title="${ law.normalise(0, 1, data.event[3]) }" value="${ law.normalise(0, 1, data.event[3]) }" id="event-${ data.i }-gain" style="left: calc(100% * ${ data.event[0] }); --normal-value: ${ law.normalise(0, 1, data.event[3]) * 5 / 6 };" />
+        <input class="y1 square-point-input point-input yellow-fg" type="range" name="event-${ data.i }-gain" min="0" max="1.2" step="any" title="${ law.normalise(0, 1, data.event[3]) }" value="${ law.normalise(0, 1, data.event[3]) }" id="event-${ data.i }-gain" style="left: calc(100% * ${ data.event[0] }); --normal: ${ law.normalise(0, 1, data.event[3]) * 5 / 6 };" />
     </template>
 
     <template id="scope">
         ${ (() => {
             const sequence = data.sequence;
-            console.log('SEQUENCE', sequence);
-
             const samples  = eventsToSamples(sequence.events, sequence.duration);
             const vectors  = fft(samples);
 
@@ -434,20 +432,6 @@ assign(Graph.constructors, {
             });
 
             const duration = 1.2;
-/*
-            function cue() {
-                const t0 = duration * Math.ceil(drum.context.currentTime / duration);
-
-                sequence.events.forEach((event) => { event[1] === 'start' && drum
-                    .start(t0 + event[0] * duration, event[2], event[3])
-                    .stop(t0 + event[0] * duration + 0.1)
-                });
-
-                setTimeout(cue, (t0 + 0.75 * duration - drum.context.currentTime) * 1000);
-            }
-
-            cue();
-*/
         })() }
 
         <canvas width="1024" height="512" class="block"
@@ -555,7 +539,7 @@ assign(Graph.constructors, {
             }, DATA)).map(include('#harmonic')) }
 
             <label class="y2 center-align text-10" for="gate-magnitude" style="grid-column: 34; margin-top: 0; padding: 0; min-height: 0; color: black;">Gate</label>
-            <input class="y1 point-input" type="range" name="gate-magnitude" min="0" max="1" step="any" value="${ law.normalise(0, 1, data.gate) }" style="grid-column: 34; margin: 0 auto; height: 100%; min-height: 100%; --normal-value: ${ law.normalise(0, 1, data.gate) }; color: black;" id="gate-magnitude" />
+            <input class="y1 point-input" type="range" name="gate-magnitude" min="0" max="1" step="any" value="${ law.normalise(0, 1, data.gate) }" style="grid-column: 34; margin: 0 auto; height: 100%; min-height: 100%; --normal: ${ law.normalise(0, 1, data.gate) }; color: black;" id="gate-magnitude" />
 
             <label class="x34 y1 center-align" style="margin-top: 0; padding: 0; min-height: 0; font-family: sans-serif;">All</label>
             <button class="x34 y2 button" type="button" name="harmonics-gain" value="0">Zero</button>

@@ -2,11 +2,24 @@
 @import '../../../bolt/elements/type.css';
 @import '../../../bolt/elements/form.css';
 @import '../../../bolt/elements/focus.css';
+@import '../../../bolt/classes/invisible.css';
 @import '../../../bolt/classes/block.css';
+@import '../../../bolt/classes/thumb.css';
 @import '../../../bolt/classes/atoms.css';
+/* TODO GENERATE ATOMS */
+.size-21 { --size: 1.3125rem; }
+
 @import '../../classes/color.css';
 
+
+/* TEMP */
+@import '../../../bolt/debug.css';
+
+
 :host {
+    --system-font: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    position: relative;
+
     display: grid;
     font-family: system-ui, sans-serif;
     grid-template-columns: auto 1fr 6rem;
@@ -45,6 +58,13 @@
     grid-row: 3;
     align-self: start;
     margin-bottom: -0.1875rem;
+}
+
+:host > .ui-block {
+    grid-column: 1 / span 3;
+    grid-row: 2 / span 1;
+    width: 100%;
+    margin: 0;
 }
 
 :host > h4 {
@@ -154,4 +174,29 @@ select {
 
     padding-left: 0.25rem;
     padding-right: 0;
+}
+
+
+
+
+.ui-block > canvas {
+    width: 100%;
+}
+
+.ui-block > .events-block,
+.ui-block > .harmonics-grid {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 50%;
+}
+
+.ui-block > .events-block {
+    top: 0;
+    background: transparent;
+}
+
+.ui-block > .harmonics-grid {
+    bottom: 0;
+    background: transparent;
 }

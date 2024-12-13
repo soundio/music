@@ -15,7 +15,7 @@ import { nodes }        from '../../modules/graph-node.js';
 
 
 const assign = Object.assign;
-
+window.Data = Data;
 
 /* Element */
 
@@ -142,7 +142,10 @@ console.log('Piped node ' + node.id + ' output ' + data.index + ' to node ' + th
 
         if (menu) {
             events('change', menu).each((e) => {
-                if (window.DEBUG) console.log('Setting', e.target.data);
+                if (window.DEBUG) console.trace('Setting', e.target.data);
+
+                // TEMP. Not necesssary but we dbugging right npw
+                if (!e.target.data) return;
                 assign(Data.of(this.node), e.target.data);
             });
 
