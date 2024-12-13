@@ -25,24 +25,18 @@ assign(Literal.scope, consts);
 // Templates
 Literal.compileHTML('param-pan',    '<input type="range" is="normal-input" name="pan" min="-1" max="1" step="any" value="${ 0 }" class="pan-input ${ DATA.class }" />');
 Literal.compileHTML('param-gain',   '<input type="range" is="normal-input" name="gain" min="0" max="2" step="any" value="${ 1 }" class="fader-input ${ DATA.class }" />');
+// TODO: This are not yet reading initial value of a param
 Literal.compileHTML('button-char', `
-    <input id="$\{ DATA.name }" type="checkbox" name="$\{ DATA.name }" checked="$\{ data[DATA.name] }" class="invisible" />
+    <input id="$\{ DATA.name }" type="checkbox" name="$\{ DATA.name }" checked="$\{ data.object[DATA.name] }" class="invisible" />
     <label for="$\{ DATA.name }" class="char-thumb thumb size-21 $\{ DATA.class }" data-char="$\{ DATA.char }">Mute</label>
 `);
 
-
 const literal = Literal.compileHTML('node-mix', `
     <div class="mix-grid grid">
-        $\{ data.node.data && data.node.data.pan && include('param-pan', {
-            param: data.node.data.pan
-        }) }
-
-        $\{ data.node.data && data.node.data.gain && include('param-gain', {
-            param: data.node.data.gain
-        }) }
-
-        $\{ include('button-char', { invert: false, name: 'invert', char: 'ø', text: 'Invert phase' }) }
-        $\{ include('button-char', { mute: true,  name: 'mute',   char: 'M', text: 'Mute' }) }
+        $\{ data.node.data && data.node.data.pan && include('param-pan', { param: data.node.data.pan }) }
+        $\{ data.node.data && data.node.data.gain && include('param-gain', { param: data.node.data.gain }) }
+        $\{ data.node.data && include('button-char', { object: {}, name: 'invert', char: 'ø', text: 'Invert phase' }) }
+        $\{ data.node.data && include('button-char', { object: DATA.node.data, name: 'mute',   char: 'M', text: 'Mute' }) }
     </div>
 `);
 

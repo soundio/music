@@ -42,6 +42,10 @@ export default class StageAudio extends StageNode {
                 stop:  (event) => this.#audioNode.stop(event[0], event[2]),
                 param: (event) => {
                     const audioNode = this.#audioNode;
+                    // We may be in uninitialised state. Ought not to be, but
+                    // could happen.
+                    if (!audioNode) return;
+
                     const name  = event[2];
                     const value = event[3];
                     const param = audioNode[name];
