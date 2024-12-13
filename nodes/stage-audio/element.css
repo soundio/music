@@ -28,7 +28,8 @@
     width: 4.625rem;
     padding: 0.375rem 0.1875rem;
     /* It would be nive to use some flexible space but Safari does not
-       like flexible space when it spans columns. Or something. It's dodgy. */
+       like flexible space when it spans rows. Or something. It's dodgy. */
+    grid-template-columns: 1fr 1.5rem;
     grid-template-rows: 1.5rem 0.9375rem 7.875rem 1.3125rem 1.3125rem 0.9375rem;
 
     --x-gap: 0;
@@ -51,20 +52,25 @@
 .mix-grid > [name="gain"] {
     grid-column: 1;
     grid-row: 2 / span 5;
+    justify-self: end;
 }
 
 .mix-grid > [for="invert"] {
     grid-column: 2;
     grid-row: 4;
+    justify-self: start;
 }
 
 .mix-grid > [for="mute"] {
     grid-column: 2;
     grid-row: 5;
+    justify-self: start;
 }
 
 
-
+.fader-input {
+    --tick-color: rgb(124 124 124);
+}
 
 
 

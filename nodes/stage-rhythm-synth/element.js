@@ -7,7 +7,7 @@ import element      from 'dom/element.js';
 import events       from 'dom/events.js';
 import Data         from 'fn/data.js';
 import Signal       from 'fn/signal.js';
-import { getScale } from 'form/modules/scales.js';
+import { getScale } from 'form/modules/law.js';
 import Literal      from 'literal/module.js';
 import Event        from 'soundstage/event.js';
 import setupDataLawAttribute from 'bolt/attributes/data-law.js';

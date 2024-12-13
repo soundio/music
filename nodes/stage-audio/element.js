@@ -14,7 +14,16 @@ import presets     from './presets.js';
 import { shadow, construct, connect, properties } from '../stage-node/module.js';
 
 
+// Extend Literal scope
+import 'literal/scope.js';
+import dB from 'fn/to-db.js';
+import toGain from 'fn/to-gain.js';
+
 const assign = Object.assign;
+assign(Literal.scope, { dB, toGain });
+
+
+
 
 
 // Extend Literal scope
@@ -24,7 +33,7 @@ assign(Literal.scope, consts);
 
 // Templates
 Literal.compileHTML('param-pan',    '<input type="range" is="normal-input" name="pan" min="-1" max="1" step="any" value="${ 0 }" class="pan-input ${ DATA.class }" />');
-Literal.compileHTML('param-gain',   '<input type="range" is="normal-input" name="gain" min="0" max="2" step="any" value="${ 1 }" class="fader-input ${ DATA.class }" />');
+Literal.compileHTML('param-gain',   '<input type="range" is="normal-input" name="gain" min="0" max="${ toGain(12) }" law="log-36db" step="any" value="${ 1 }" class="fader-input ${ DATA.class }" />');
 // TODO: This are not yet reading initial value of a param
 Literal.compileHTML('button-char', `
     <input id="$\{ DATA.name }" type="checkbox" name="$\{ DATA.name }" checked="$\{ data.object[DATA.name] }" class="invisible" />
@@ -100,7 +109,6 @@ export default element('<stage-audio>', {
                 }
             }
             else {
-                console.log(name, value);
                 Data.of(audioNode)[name] = value;
             }
         });
