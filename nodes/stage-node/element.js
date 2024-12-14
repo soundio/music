@@ -1,6 +1,7 @@
 
-
-import 'form/file-menu/module.js';
+import Menu        from 'form/file-menu/module.js';
+import NormalInput from 'form/normal-input/element.js';
+import RotaryInput from 'form/rotary-input/element.js';
 
 import Data     from 'fn/data.js';
 import get      from 'fn/get.js';
@@ -156,6 +157,12 @@ console.log('Piped node ' + node.id + ' output ' + data.index + ' to node ' + th
                 node.data = menu.data;
             });
         }
+
+        // Safari does not support customised built-ins but the element()
+        // function provides a partial polyfill. This does nothing in browsers
+        // that do have support.
+        NormalInput.polyfillByRoot(shadow);
+        RotaryInput.polyfillByRoot(shadow);
     },
 
     connect: function(shadow, internals, data) {

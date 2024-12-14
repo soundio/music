@@ -9,7 +9,7 @@ import element        from 'dom/element.js';
 import { toNoteName } from 'midi/note.js';
 import { MIDIInputs } from 'midi/ports.js';
 import Event          from '../../../soundstage/modules/event.js';
-import { lifecycle, properties } from '../stage-node/module.js';
+import { lifecycle, properties } from '../stage-node/element.js';
 import EventsMIDIInput from '../../modules/midi-in-node.js';
 import typeOptions from '../html/type-options.js';
 

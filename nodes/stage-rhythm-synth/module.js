@@ -89,7 +89,7 @@ export default class RhythmSynth extends StageNode {
     }
 
     set events(events) {
-console.trace('HELLO');
+//console.trace('HELLO');
         events = this.#events = events.map(Event.from);
 
         Signal.tick(() => {

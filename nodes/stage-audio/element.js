@@ -1,9 +1,5 @@
 /** <stage-audio> **/
 
-/* Elements */
-import NormalInput from 'form/normal-input/element.js';
-import RotaryInput from 'form/rotary-input/element.js';
-
 import delegate    from 'dom/delegate.js';
 import element     from 'dom/element.js';
 import events      from 'dom/events.js';
@@ -11,7 +7,7 @@ import Signal      from 'fn/signal.js';
 import Literal     from 'literal/module.js';
 import Module      from './module.js';
 import presets     from './presets.js';
-import { shadow, construct, connect, properties } from '../stage-node/module.js';
+import { shadow, construct, connect, properties } from '../stage-node/element.js';
 
 
 // Extend Literal scope
@@ -23,17 +19,14 @@ const assign = Object.assign;
 assign(Literal.scope, { dB, toGain });
 
 
-
-
-
 // Extend Literal scope
 import * as consts from 'form/modules/constants.js';
 assign(Literal.scope, consts);
 
 
 // Templates
-Literal.compileHTML('param-pan',    '<input type="range" is="normal-input" name="pan" min="-1" max="1" step="any" value="${ 0 }" class="pan-input ${ DATA.class }" />');
-Literal.compileHTML('param-gain',   '<input type="range" is="normal-input" name="gain" min="0" max="${ toGain(12) }" law="log-36db" step="any" value="${ 1 }" class="fader-input ${ DATA.class }" />');
+Literal.compileHTML('param-pan',  '<input type="range" is="normal-input" name="pan" min="-1" max="1" step="any" value="${ 0 }" class="pan-input ${ DATA.class }" />');
+Literal.compileHTML('param-gain', '<input type="range" is="normal-input" name="gain" min="0" max="${ toGain(12) }" law="log-36db" step="any" value="${ 1 }" class="fader-input vertical ${ DATA.class }" />');
 // TODO: This are not yet reading initial value of a param
 Literal.compileHTML('button-char', `
     <input id="$\{ DATA.name }" type="checkbox" name="$\{ DATA.name }" checked="$\{ data.object[DATA.name] }" class="invisible" />
@@ -114,7 +107,7 @@ export default element('<stage-audio>', {
         });
     },
 
-    connect: function(shadow, { canvas, ctx, box, consts, renderers, ui }) {
+    connect: function(shadow, { consts, ui }) {
         connect.apply(this, arguments);
 
         // Where node is not yet defined give element node

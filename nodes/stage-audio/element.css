@@ -1,10 +1,11 @@
 
-@import '../stage-node/module.css';
-@import '../../classes/char-thumb.css';
-@import '../../classes/fader-input.css';
-@import '../../classes/mono-input.css';
+@import '../stage-node/element.css';
+@import '../../../bolt/elements/focus.css';
+@import '../../../form-elements/normal-input/input.css';
 @import '../../../form-elements/normal-input/pan-input.css';
-
+@import '../../../form-elements/normal-input/fader-input.css';
+@import '../../classes/char-thumb.css';
+@import '../../classes/mono-input.css';
 
 
 :host {
@@ -25,7 +26,7 @@
 
 
 .mix-grid {
-    width: 4.625rem;
+    width: 4.5rem;
     padding: 0.375rem 0.1875rem;
     /* It would be nive to use some flexible space but Safari does not
        like flexible space when it spans rows. Or something. It's dodgy. */
@@ -41,6 +42,10 @@
 .mix-grid > * {
     margin: 0;
     justify-self: center;
+}
+
+.mix-grid > .pan-input {
+    margin: 0 -0.375rem;
 }
 
 .mix-grid > [name="pan"] {
@@ -71,7 +76,3 @@
 .fader-input {
     --tick-color: rgb(124 124 124);
 }
-
-
-
-

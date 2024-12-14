@@ -15,7 +15,7 @@ import { frequencyToFloat }       from 'midi/frequency.js';
 import { int7ToFloat }            from 'midi/maths.js';
 import { toRootName, toNoteName } from 'midi/note.js';
 import Event, { isNoteStart, isNoteStop } from '../../../soundstage/modules/event.js';
-import { lifecycle, properties } from '../stage-node/module.js';
+import { lifecycle, properties } from '../stage-node/element.js';
 import EventsHarmoniser  from '../../modules/harmoniser-node.js';
 import notesOptions from '../html/notes-options.js';
 

@@ -8,7 +8,7 @@ import overload         from 'fn/overload.js';
 import element          from 'dom/element.js';
 import { toNoteName }   from 'midi/note.js';
 import Event            from '../../../soundstage/modules/event.js';
-import { lifecycle, properties } from '../stage-node/module.js';
+import { lifecycle, properties } from '../stage-node/element.js';
 import EventsButton from '../../modules/button-node.js';
 import typeOptions from '../html/type-options.js';
 

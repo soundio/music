@@ -11,7 +11,7 @@ import { frequencyToFloat }       from 'midi/frequency.js';
 import { int7ToFloat }            from 'midi/maths.js';
 import { toRootName, toNoteName } from 'midi/note.js';
 import { isNoteOn, isControl, toChannel, toType, toSignedFloat } from 'midi/message.js';
-import { lifecycle, properties } from '../stage-node/module.js';
+import { lifecycle, properties } from '../stage-node/element.js';
 import StageNode from '../../modules/graph-node.js';
 
 

@@ -1,5 +1,5 @@
 
-@import '../stage-node/module.css';
+@import '../stage-node/element.css';
 @import '../../classes/mono-input.css';
 
 
@@ -80,6 +80,10 @@ canvas {
     align-self: start;
     margin-top: 25vw;
     z-index: 2;
+}
+
+.harmonics-grid > input {
+    margin: 0 auto;
 }
 
 

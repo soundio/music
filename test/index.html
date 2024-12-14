@@ -181,11 +181,10 @@
     </style>
 
     <script type="module">
-        import 'bolt/attributes/data-law.js';
         import events from 'dom/events.js';
 
         events('input', document.body).each((e) => {
-            console.log(e.target.outputValue || e.target.valueAsNumber);
+            console.log(e.target.value || e.target.valueAsNumber);
         });
 
 
@@ -230,7 +229,7 @@
 
 <body>
     <input class="point-input black-fg" type="range" step="any" value="0" />
-    <input class="point-input black-fg" type="range" step="any" data-law="log-24db" value="0" />
-    <input class="point-input black-fg" type="range" min="0" max="2" step="any" data-law="log-24db" value="1" />
-    <input class="point-input black-fg" type="range" min="0.5" max="4" step="any" data-law="log-24db" value="1" />
+    <input is="normal-input" class="point-input black-fg" type="range" step="any" data-law="log-24db" value="0" />
+    <input is="normal-input" class="point-input black-fg" type="range" min="0" max="2" step="any" data-law="log-24db" value="1" />
+    <input is="normal-input" class="point-input black-fg" type="range" min="0.5" max="4" step="any" data-law="log-24db" value="1" />
 </body>

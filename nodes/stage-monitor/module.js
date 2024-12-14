@@ -10,7 +10,7 @@ import element        from 'dom/element.js';
 import { toNoteName } from 'midi/note.js';
 import Event          from '../../../soundstage/modules/event.js';
 import GraphNode      from '../../modules/graph-node.js';
-import { lifecycle, properties } from '../stage-node/module.js';
+import { lifecycle, properties } from '../stage-node/element.js';
 import typeOptions from '../html/type-options.js';
 
 

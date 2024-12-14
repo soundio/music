@@ -13,7 +13,7 @@ import { toNoteName } from 'midi/note.js';
 import { toChannel, toType } from 'midi/message.js';
 import { MIDIOutputs } from 'midi/ports.js';
 import Event          from '../../../soundstage/modules/event.js';
-import { lifecycle, properties } from '../stage-node/module.js';
+import { lifecycle, properties } from '../stage-node/element.js';
 import EventsMIDIOutput from '../../modules/midi-out-node.js';
 import typeOptions    from '../html/type-options.js';
 

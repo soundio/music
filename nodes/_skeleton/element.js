@@ -8,7 +8,7 @@ import events       from 'dom/events.js';
 import Signal       from 'fn/signal.js';
 import Literal      from 'literal/module.js';
 import presets      from './presets.js';
-import { shadow, construct, connect, properties } from '../stage-node/module.js';
+import { shadow, construct, connect, properties } from '../stage-node/element.js';
 
 
 const assign = Object.assign;

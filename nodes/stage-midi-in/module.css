@@ -1,5 +1,5 @@
 
-@import '../stage-node/module.css';
+@import '../stage-node/element.css';
 
 :host {
     grid-template-columns: 1fr;
