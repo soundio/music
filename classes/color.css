@@ -7,6 +7,6 @@
     --yellow: rgb(207, 176, 45);
 }
 
-.lime-fg { color: var(--lime); stroke: var(--lime); }
+.lime-fg     { color: var(--lime); stroke: var(--lime); }
 .darklime-fg { color: var(--darklime); stroke: var(--darklime); }
-.yellow-fg { color: var(--yellow); stroke: var(--yellow); }
+.yellow-fg   { color: var(--yellow); stroke: var(--yellow); }

@@ -20,7 +20,7 @@ assign(Literal.scope, { dB, toGain });
 
 
 // Extend Literal scope
-import * as consts from 'form/modules/constants.js';
+import * as consts from 'forms/modules/constants.js';
 assign(Literal.scope, consts);
 
 

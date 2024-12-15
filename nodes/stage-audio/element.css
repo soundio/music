@@ -4,8 +4,8 @@
 @import '../../../form-elements/normal-input/input.css';
 @import '../../../form-elements/normal-input/pan-input.css';
 @import '../../../form-elements/normal-input/fader-input.css';
+@import '../../../form-elements/normal-input/mono-input.css';
 @import '../../classes/char-thumb.css';
-@import '../../classes/mono-input.css';
 
 
 :host {

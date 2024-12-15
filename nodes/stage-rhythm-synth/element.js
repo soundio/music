@@ -4,7 +4,7 @@ import element      from 'dom/element.js';
 import events       from 'dom/events.js';
 import Data         from 'fn/data.js';
 import Signal       from 'fn/signal.js';
-import { getScale } from 'form/modules/law.js';
+import { getScale } from 'forms/modules/law.js';
 import Literal      from 'literal/module.js';
 import Event        from 'soundstage/event.js';
 import RhythmSynth  from './module.js';
@@ -17,7 +17,7 @@ const assign = Object.assign;
 
 
 // Extend Literal scope
-import * as consts from 'form/modules/constants.js';
+import * as consts from 'forms/modules/constants.js';
 import 'literal/scope.js';
 import dB from 'fn/to-db.js';
 import toGain from 'fn/to-gain.js';
@@ -29,7 +29,7 @@ assign(Literal.scope, consts, { dB, toGain, law: getScale('log-24db'), normalise
 // Templates
 
 const eventInput = Literal.compileHTML('event-input', `
-    <input is="normal-input" class="y1 square-mono-input mono-input yellow-fg" type="range" name="event-$\{ data.i }-gain" min="0" max="1.2" law="log-24db" step="any" value="$\{ element.$event = data.event, console.log(data.event[3], law.normalise(0, 1, data.event[3]), denormalise(0, 1, law.normalise(0, 1, data.event[3]))), denormalise(0, 1, law.normalise(0, 1, data.event[3])) }" title="$\{ dB(data.event[3]).toPrecision(3) + 'dB' }" id="event-$\{ data.i }-gain" style="left: calc(100% * $\{ data.event[0] / data.node.duration });" />
+    <input is="normal-input" class="y1 square-mono-input mono-input vertical yellow-fg" type="range" name="event-$\{ data.i }-gain" min="0" max="1.2" law="log-24db" step="any" value="$\{ element.$event = data.event, console.log(data.event[3], law.normalise(0, 1, data.event[3]), denormalise(0, 1, law.normalise(0, 1, data.event[3]))), denormalise(0, 1, law.normalise(0, 1, data.event[3])) }" title="$\{ dB(data.event[3]).toPrecision(3) + 'dB' }" id="event-$\{ data.i }-gain" style="left: calc(100% * $\{ data.event[0] / data.node.duration });" />
 `);
 
 const eventsBlock = Literal.compileHTML('events', `
@@ -42,15 +42,15 @@ const eventsBlock = Literal.compileHTML('events', `
 
 const harmonic = Literal.compileHTML('harmonic', `
     <label class="y2 center-align text-10 darklime-fg" for="harmonic-$\{ DATA.n }-magnitude" style="grid-column: $\{ DATA.n + 1 }; margin-top: 0; padding: 0; min-height: 0; $\{ data.node.wave.duration === DATA.n ? 'font-weight: bold;' : '' } color: $\{ data.node.wave.gainAt(DATA.n) <= data.node.wave.gate ? 'black' : 'var(--darklime)' };">$\{ DATA.n }</label>
-    <input is="normal-input" class="y1 mono-input $\{ data.node.wave.gainAt(DATA.n) <= data.node.wave.gate ? 'black-fg' : 'lime-fg' }" type="range" name="harmonic-$\{ DATA.n }-magnitude" min="0" max="$\{ DATA.max }" law="log-24db" step="any" value="$\{ data.node.wave.magnitudeAt(DATA.n) }" title="$\{ /* REMEMBER WRITING DIRECTION IS SCRWED UP */ data.node.wave.gainAt(DATA.n) < dB96 ? '-∞dB' : dB(data.node.wave.gainAt(DATA.n)).toPrecision(3) + 'dB' }" id="harmonic-$\{ DATA.n }-magnitude" style="grid-column: $\{ DATA.n + 1 };" />
-    <rotary-input class="y3 mono-input $\{ data.node.wave.gainAt(DATA.n) <= data.node.wave.gate ? 'black-fg' : 'lime-fg' }" style="grid-column: $\{ DATA.n + 1 };" name="harmonic-$\{ DATA.n }-phase" min="0" max="${ 2 * Math.PI }" wrap step="any" value="$\{ wrap(0, 2 * PI, data.node.wave.phaseAt(DATA.n)) }" hidden="$\{ data.node.wave.magnitudeAt(DATA.n) === 0 }" />
+    <input is="normal-input" class="y1 mono-input vertical $\{ data.node.wave.gainAt(DATA.n) <= data.node.wave.gate ? 'black-fg' : 'lime-fg' }" type="range" name="harmonic-$\{ DATA.n }-magnitude" min="0" max="$\{ DATA.max }" law="log-24db" step="any" value="$\{ data.node.wave.magnitudeAt(DATA.n) }" title="$\{ /* REMEMBER WRITING DIRECTION IS SCRWED UP */ data.node.wave.gainAt(DATA.n) < dB96 ? '-∞dB' : dB(data.node.wave.gainAt(DATA.n)).toPrecision(3) + 'dB' }" id="harmonic-$\{ DATA.n }-magnitude" style="grid-column: $\{ DATA.n + 1 };" />
+    <rotary-input class="y3 mono-input vertical $\{ data.node.wave.gainAt(DATA.n) <= data.node.wave.gate ? 'black-fg' : 'lime-fg' }" style="grid-column: $\{ DATA.n + 1 };" name="harmonic-$\{ DATA.n }-phase" min="0" max="${ 2 * Math.PI }" wrap step="any" value="$\{ wrap(0, 2 * PI, data.node.wave.phaseAt(DATA.n)) }" hidden="$\{ data.node.wave.magnitudeAt(DATA.n) === 0 }" />
 `);
 
 const harmonics = Literal.compileHTML('harmonics', `
     <div class="harmonics-grid grid" style="--x-gap: 0.1875rem; --y-gap: 0.1875rem; padding: 0.25rem 0.25rem;">
         $\{ Array.from({ length: 33 }, (v, n) => assign({ n, max: n ? 0.25 * DATA.node.wave.size / n : 0.5 * DATA.node.wave.size }, DATA)).map(include('harmonic')) }
         <label class="y2 center-align text-10" for="gate-magnitude" style="grid-column: 34; margin-top: 0; padding: 0; min-height: 0;">Gate</label>
-        <input is="normal-input" class="y1 mono-input" type="range" name="gate-magnitude" min="0" max="1" law="log-24db" step="any" value="$\{ data.node.wave.gate }" style="grid-column: 34;" id="gate-magnitude" />
+        <input is="normal-input" class="y1 mono-input vertical" type="range" name="gate-magnitude" min="0" max="1" law="log-24db" step="any" value="$\{ data.node.wave.gate }" style="grid-column: 34;" id="gate-magnitude" />
         <button class="x1 6x y4 button" type="button" name="harmonics-gain" value="0">Zero magnitudes</button>
         <button class="x7 6x y4 button" type="button" name="harmonics-phase" value="0">Zero phases</button>
     </div>

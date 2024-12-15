@@ -1,6 +1,6 @@
 
 
-import 'form/file-menu/module.js';
+import 'forms/file-menu/module.js';
 
 import clamp    from 'fn/clamp.js';
 import matches  from 'fn/matches.js';

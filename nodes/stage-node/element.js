@@ -1,7 +1,7 @@
 
-import Menu        from 'form/file-menu/module.js';
-import NormalInput from 'form/normal-input/element.js';
-import RotaryInput from 'form/rotary-input/element.js';
+import Menu        from 'forms/file-menu/module.js';
+import NormalInput from 'forms/normal-input/element.js';
+import RotaryInput from 'forms/rotary-input/element.js';
 
 import Data     from 'fn/data.js';
 import get      from 'fn/get.js';

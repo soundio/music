@@ -1,6 +1,10 @@
 
 @import '../stage-node/element.css';
-@import '../../classes/mono-input.css';
+@import '../../../bolt/elements/focus.css';
+@import '../../../form-elements/normal-input/input.css';
+@import '../../../form-elements/normal-input/pan-input.css';
+@import '../../../form-elements/normal-input/fader-input.css';
+@import '../../../form-elements/normal-input/mono-input.css';
 
 
 :host {
@@ -10,6 +14,9 @@
     grid-template-rows: 1.125rem min-content 1.875rem;
     /* Make it fill its container by default */
     width: 100%;
+    /* Up to a point */
+    min-width: 32em;
+    max-width: 64em;
 }
 
 :host > pre {

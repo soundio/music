@@ -1,6 +1,6 @@
 /** <stage-rhythm-synth> **/
 
-import RotaryInput  from 'form/rotary-input/element.js';
+import RotaryInput  from 'forms/rotary-input/element.js';
 
 import delegate     from 'dom/delegate.js';
 import element      from 'dom/element.js';
@@ -15,7 +15,7 @@ const assign = Object.assign;
 
 
 // Extend Literal scope
-import * as consts from 'form/modules/constants.js';
+import * as consts from 'forms/modules/constants.js';
 assign(Literal.scope, consts);
 
 

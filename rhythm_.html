@@ -13,7 +13,7 @@
             "bolt/":       "../bolt/",
             "dom/":        "../dom/modules/",
             "fn/":         "../fn/modules/",
-            "form/":       "../form-elements/",
+            "forms/":       "../form-elements/",
             "literal/":    "../literal/",
             "midi/":       "../midi/modules/",
             "soundstage/": "../soundstage/modules/"
@@ -235,7 +235,7 @@
 
     <script type="module">
         import 'bolt/attributes/data-law.js';
-        import 'form/file-menu/module.js';
+        import 'forms/file-menu/module.js';
 
         import delegate      from 'dom/delegate.js';
         import events        from 'dom/events.js';
@@ -249,8 +249,8 @@
         import { fft, ifft } from './modules/fft.js';
         import { eventsToSamples, samplesToEvents } from './modules/rhythm.js';
         import { plotYAxis, plot, plotWaveform, plotBuffer, plotSignpost, plotSamples, plotMeter } from './modules/canvas.js';
-        import { dB12, dB24, dB60, dB96 } from 'form/modules/constants.js';
-        import { getScale }  from 'form/modules/law.js';
+        import { dB12, dB24, dB60, dB96 } from 'forms/modules/constants.js';
+        import { getScale }  from 'forms/modules/law.js';
 
 const assign = Object.assign;
 
