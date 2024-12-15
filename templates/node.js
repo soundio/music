@@ -1,8 +1,10 @@
 
-import delegate     from 'dom/delegate.js';
-import events       from 'dom/events.js';
-import Literal      from 'literal/module.js';
-import { isParam }  from '../modules/param.js';
+import delegate    from 'dom/delegate.js';
+import events      from 'dom/events.js';
+import Literal     from 'literal/module.js';
+import { isParam } from '../modules/param.js';
+import { configs } from '../modules/constructors.js';
+// Make param templates available in Literal
 import './param.js';
 
 const assign = Object.assign;
@@ -24,33 +26,10 @@ const blacklist = {
     frequencyBinCount: true
 };
 
-const nodeOptions = {
-    AnalyserNode: {
-        fftSize: [32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768],
-    },
-
-    BiquadFilterNode: {
-        type: ['lowpass', 'highpass', 'bandpass', 'lowshelf', 'highshelf', 'peaking', 'notch', 'allpass']
-    },
-
-    OscillatorNode: {
-        type: ["sine", "square", "sawtooth", "triangle", "custom"]
-    },
-
-    PannerNode: {
-        panningModel:  ['equalpower', 'HRTF'],
-        distanceModel: ['linear', 'inverse', 'exponential']
-    },
-
-    WaveShaperNode: {
-        oversample: ['none', '2x', '4x']
-    }
-};
-
 assign(Literal.scope, {
     delegate,
     events,
-    nodeOptions,
+    configs,
     isParam,
     isParamOrProperty: (name, node) => (
         // Reject blacklistd properties
@@ -77,36 +56,48 @@ export default Literal.compileHTML('node', `
                     const context = DATA.context;
                     const param   = DATA[input.name];
                     param.setValueAtTime(value, context.currentTime);
+                    if (param.signal) param.signal.invalidate();
                 }
                 else {
                     data[input.name] = value;
                 }
             },
-            '[type="text"], select': (input, e) => data[input.name] = input.value,
-            '[type="checkbox"]':     (input, e) => data[input.name] = input.checked
+            '[type="text"], [type="radio"], select': (input, e) => data[input.name] = input.value,
+            '[type="checkbox"]': (input, e) => data[input.name] = input.checked,
         })) }
 
         $\{ ((node, includes) => {
             // Use a for in loop because we want all enumerable properties, not
             // only own enumerable properties
-            for (let name in node) if (isParamOrProperty(name, node)) includes.push(
-                // A DOM element, display its id
-                node[name] instanceof Element ? include('property-element', { node, name, element: node[name] }) :
-                // An AudioParam or settings object
-                typeof node[name] === 'object' ?
-                    isParam(node[name]) ? include('param', { node, name, param: node[name] }) :
-                    include('property-object', { node, name }) :
-                // It has config in nodeOptions
-                nodeOptions[node.constructor.name] && nodeOptions[node.constructor.name][name] ?
-                    nodeOptions[node.constructor.name][name].length < 4 ?
-                        include('property-radio', { node, name, options: nodeOptions[node.constructor.name][name] }) :
-                    include('property-option', { node, name, options: nodeOptions[node.constructor.name][name] }) :
-                // It's a primitive
-                typeof node[name] === 'number'  ? include('property-number',  { node, name }) :
-                typeof node[name] === 'string'  ? include('property-string',  { node, name }) :
-                typeof node[name] === 'boolean' ? include('property-boolean', { node, name }) :
-                printError('Literal template "node" cannot render property "' + name + '"')
-            );
+            for (let name in node) if (isParamOrProperty(name, node)) {
+                const constructor = node.constructor.name;
+                const config = assign({ node, name }, configs[constructor] && configs[constructor][name]);
+
+                // TESTING THIS
+                if (isParam(node[name]) && !node[name].signal) {
+                    node[name].signal = Signal.fromProperty('value', node[name]);
+                }
+
+                includes.push(
+                    // A DOM element, display its id
+                    node[name] instanceof Element ? include('property-element', config) :
+                    // An AudioParam or settings object
+                    typeof node[name] === 'object' ?
+                        isParam(node[name]) ?
+                        include('param',           config) :
+                        include('property-object', config) :
+                    // It has config and config is an array
+                    config && config.values ?
+                        config.values.length < 4 ?
+                        include('property-radio',  config) :
+                        include('property-option', config) :
+                    // It's a primitive
+                    typeof node[name] === 'number'  ? include('property-number',  config) :
+                    typeof node[name] === 'string'  ? include('property-string',  config) :
+                    typeof node[name] === 'boolean' ? include('property-boolean', config) :
+                    printError('Literal template "node" cannot render property "' + name + '"')
+                );
+            }
             return includes;
         })(DATA, []) }
     </form>

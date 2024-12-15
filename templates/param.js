@@ -4,7 +4,7 @@ AudioParam.maxValue
 AudioParam.minValue
 AudioParam.value
 
-Wraning: maxValue and minValue are not useful to us, they represent the max and
+Warning: maxValue and minValue are not useful to us, they represent the max and
 min possible 32-bit floating point values. We need a means of getting sensible
 default min and max values. I can't think of another way other than buy name
 right now. It's not ideal.
@@ -15,13 +15,8 @@ import toGain      from 'fn/to-gain.js';
 import Literal     from 'literal/module.js';
 
 const assign = Object.assign;
-const defaults = {
-    gain:        { min: 0, max: toGain(6), law: 'log-24db' },
-    minDecibels: { min: -96, max: 0 },
-    maxDecibels: { min: -96, max: 0 },
-};
 
-assign(Literal.scope, { defaults,
+assign(Literal.scope, {
     toSpaceCase: function(camelCase) {
         return camelCase.replace(/[A-Z]/g, ($0) => ' ' + $0.toLowerCase());
     }
@@ -29,24 +24,26 @@ assign(Literal.scope, { defaults,
 
 export default Literal.compileHTML('param', `<div class="line-param-grid param-grid grid">
     <label for="$\{ DATA.name }">$\{ DATA.label || toSpaceCase(DATA.name) }</label>
-    <input type="range"
-        is="normal-input"
+    <input type="range" is="normal-input"
         name="$\{ DATA.name }"
-        min="$\{ DATA.min !== undefined ? DATA.min : defaults[DATA.name] && defaults[DATA.name].min }"
-        max="$\{ DATA.max !== undefined ? DATA.max : defaults[DATA.name] && defaults[DATA.name].max }"
-        value="$\{ DATA.param.value }"
-        law="$\{ DATA.law || defaults[DATA.name] && defaults[DATA.name].law }"
+        min="$\{ DATA.min !== undefined ? DATA.min : 0 }"
+        max="$\{ DATA.max !== undefined ? DATA.max : 1 }"
+        value="$\{
+            // AudioParam is not proxyable. We read signal to bind this template to value
+            DATA.node[DATA.name].signal.value
+        }"
+        law="$\{ DATA.law }"
         step="any"
         id="$\{ DATA.name }"
     />
-    <output for="$\{ DATA.name }">$\{ data.param.value }</output>
+    <output for="$\{ DATA.name }">$\{ DATA.node[DATA.name].signal.value.toPrecision(3) }</output>
 </div>`);
 
 export const propertyElement = Literal.compileHTML('property-element', `<div class="line-param-grid param-grid grid">
     <label for="$\{ DATA.name }">$\{ DATA.label || toSpaceCase(DATA.name) }</label>
     <input type="text"
         name="$\{ DATA.name }"
-        value="$\{ '#' + data.element.id }"
+        value="$\{ '#' + data.node[DATA.name].id }"
         id="$\{ DATA.name }"
         readonly
     />
@@ -59,16 +56,16 @@ export const propertyObject = Literal.compileHTML('property-object', `<div class
 
 export const propertyNumber = Literal.compileHTML('property-number', `<div class="line-param-grid param-grid grid">
     <label for="$\{ DATA.name }">$\{ DATA.label || toSpaceCase(DATA.name) }</label>
-    <input type="range"
+    <input type="range" is="normal-input"
         name="$\{ DATA.name }"
         min="$\{ DATA.min !== undefined ? DATA.min : 0 }"
         max="$\{ DATA.max !== undefined ? DATA.max : 1 }"
         value="$\{ data.node[DATA.name] }"
-        law="$\{ DATA.law || (defaults[DATA.name] && defaults[DATA.name].law) || 'linear' }"
+        law="$\{ DATA.law }"
         step="$\{ DATA.step || 'any' }"
         id="$\{ DATA.name }"
     />
-    <output for="$\{ DATA.name }">$\{ data.node[DATA.name] }</output>
+    <output for="$\{ DATA.name }">$\{ data.node[DATA.name].toPrecision(3) }</output>
 </div>`);
 
 export const propertyString = Literal.compileHTML('property-string', `<div class="line-param-grid param-grid grid">
@@ -94,14 +91,14 @@ Literal.compileHTML('option', `<option value="$\{ DATA.value }">$\{ DATA.value }
 export const propertyOption = Literal.compileHTML('property-option', `<div class="line-param-grid param-grid grid">
     <label for="$\{ DATA.name }">$\{ DATA.label || toSpaceCase(DATA.name) }</label>
     <select name="$\{ DATA.name }" value="$\{ data.node[DATA.name] }" id="$\{ DATA.name }">
-        $\{ DATA.options.map((value) => include('option', { value })) }
+        $\{ DATA.values.map((value) => include('option', { value })) }
     </select>
 </div>`);
 
 Literal.compileHTML('radio', `
     <input class="invisible"
         type="radio"
-        name="$\{ DATA.name }"
+        name="$\{ DATA.data.name }"
         value="$\{ DATA.value }"
         checked="$\{ data.data.node[DATA.data.name] === DATA.value }"
         id="$\{ DATA.data.name + '-' + DATA.value }" />
@@ -111,6 +108,6 @@ Literal.compileHTML('radio', `
 export const propertyRadio = Literal.compileHTML('property-radio', `<div class="line-param-grid param-grid grid">
     <label for="$\{ DATA.name }">$\{ DATA.label || toSpaceCase(DATA.name) }</label>
     <div class="radio-flex flex">
-        $\{ DATA.options.map((value) => include('radio', { value, data: DATA })) }
+        $\{ DATA.values.map((value) => include('radio', { value, data: DATA })) }
     </div>
 </div>`);

@@ -75,14 +75,15 @@
     </style>
 
     <script type="module">
-        import events from 'dom/events.js';
+        import events       from 'dom/events.js';
         import nodeTemplate from './node.js';
+        import registerNode, { configs } from '../modules/constructors.js';
 
         const assign  = Object.assign;
         const context = new AudioContext();
 
-        events('input', document.body).each(() => {
-
+        events('input mousedown', document.body).each(() => {
+            context.resume();
         });
 
         function render(node) {
@@ -102,7 +103,8 @@
 
         // 'biquad-filter': BiquadFilterNode,
         // https://developer.mozilla.org/en-US/docs/Web/API/BiquadFilterNode/BiquadFilterNode
-        render(context.createBiquadFilter());
+        const f = context.createBiquadFilter();
+        render(f);
 
         // 'constant': ConstantSourceNode,
         // https://developer.mozilla.org/en-US/docs/Web/API/ConstantSourceNode/ConstantSourceNode
@@ -114,15 +116,18 @@
 
         // 'delay': DelayNode,
         // https://developer.mozilla.org/en-US/docs/Web/API/DelayNode/DelayNode
-        render(context.createDelay());
+        const d = context.createDelay(10);
+        render(d);
 
         // 'compressor': DynamicsCompressorNode,
         // https://developer.mozilla.org/en-US/docs/Web/API/DynamicsCompressorNode/DynamicsCompressorNode
-        render(context.createDynamicsCompressor());
+        const c = context.createDynamicsCompressor();
+        render(c);
 
         // 'gain': GainNode,
         // https://developer.mozilla.org/en-US/docs/Web/API/GainNode/GainNode
-        render(context.createGain());
+        const g = context.createGain();
+        render(g);
 
         // 'iir-filter': IIRFilterNode,
         // https://developer.mozilla.org/en-US/docs/Web/API/IIRFilterNode/IIRFilterNode
@@ -143,11 +148,13 @@
 
         // 'oscillator': OscillatorNode,
         // https://developer.mozilla.org/en-US/docs/Web/API/OscillatorNode/OscillatorNode
-        render(context.createOscillator());
+        const o = context.createOscillator();
+        render(o);
 
         // 'panner': PannerNode,
         // https://developer.mozilla.org/en-US/docs/Web/API/PannerNode/PannerNode
-        render(context.createPanner());
+        const p = context.createPanner();
+        render(p);
 
         // 'splitter': ChannelSplitterNode,
         // https://developer.mozilla.org/en-US/docs/Web/API/ChannelSplitterNode/ChannelSplitterNode
@@ -171,16 +178,26 @@
         import Graph      from '../../../soundstage/nodes/graph.js';
         import Instrument from '../../../soundstage/nodes/instrument.js';
 
+        // Envelope
+        registerNode(Envelope, {
+            gain: { min: 0,     max: 1, law: 'log-24db' },
+            rate: { min: 0.125, max: 8, law: 'log' }
+        });
+        render(new Envelope(context));
+
         // Mix
+        registerNode(Mix, {});
         render(new Mix(context));
 
         // Sample
+        registerNode(Sample, {});
         //render(new Sample(context));
 
-        // Envelope
-        render(new Envelope(context));
-
         // Instrument
+        registerNode(Instrument, {
+            pitch: { min: -12, max: 12 }
+        });
+        // TODO: This should be handled by registerNode!
         assign(Graph.constructors, { envelope: Envelope, mix: Mix });
         render(new Instrument(context, {
             name: 'Thump',
@@ -201,6 +218,16 @@
                 }
             }
         }));
+
+
+        // Make sound
+        o.connect(p);
+        p.connect(f);
+        f.connect(g);
+        g.connect(c);
+        c.connect(d);
+        d.connect(context.destination);
+        o.start();
     </script>
 </head>
 <body>
