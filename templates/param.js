@@ -60,6 +60,11 @@ export const paramFader = Literal.compileHTML('param-fader', `
 </output>
 `);
 
+export const paramPan = Literal.compileHTML('param-pan', `
+<input type="range" is="normal-input" class="pan-input" name="$\{ DATA.name }" min="$\{ DATA.min !== undefined ? DATA.min : 0 }" max="$\{ DATA.max !== undefined ? DATA.max : 1 }" law="$\{ DATA.law }" value="$\{ DATA.node[DATA.name].signal.value }" step="any" id="$\{ DATA.name }"/>
+<output for="$\{ DATA.name }">$\{ toFixedPrecision(2, 30 * (DATA.node[DATA.name].signal.value || 0)) }°</output>
+`);
+
 export const propertyElement = Literal.compileHTML('property-element', `<div class="line-param-grid param-grid grid">
     <label for="$\{ DATA.name }">$\{ DATA.label || toSpaceCase(DATA.name) }</label>
     <input type="text"

@@ -15,7 +15,7 @@ import * as templates from '../../templates/node.js';
 
 // Extend Literal scope
 import 'literal/scope.js';
-import dB from 'fn/to-db.js';
+import dB     from 'fn/to-db.js';
 import toGain from 'fn/to-gain.js';
 
 const assign = Object.assign;
@@ -127,7 +127,9 @@ export default element('<stage-audio>', {
         connect.apply(this, arguments);
 
         // Choose template and render it
-        const template = templates[this.node.TYPE] || templates.default;
+        // TEMP redirect for panner because export names can't have dashes
+        const type = this.node.TYPE === 'stereo-panner' ? 'pan' : this.node.TYPE ;
+        const template = templates[type] || templates.default;
         const renderer = template.render(shadow, consts, this.node.data );
 
         // Append rendered content

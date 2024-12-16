@@ -113,7 +113,7 @@ output { display: block; font-size: 0.6875em; text-align: center; width: 100%; c
     $\{ ((node, includes) => {
         const constructor = node.constructor.name;
         const param = node.gain;
-        const data  = assign({}, configs[constructor] && configs[constructor][name], {
+        const data  = assign({}, configs[constructor] && configs[constructor].gain, {
             node, param,
             name: 'gain',
             min:  0,
@@ -128,6 +128,30 @@ output { display: block; font-size: 0.6875em; text-align: center; width: 100%; c
 
         // Include its template
         return include('param-fader', data);
+    })(DATA, []) }
+</form>
+`);
+
+export const pan = Literal.compileHTML('node', `
+<style>
+:host { width: 4.625rem !important; }
+.ui-block { width: 4.625rem; }
+.node-form { width: 4.625rem; padding-bottom: 0.5625rem; }
+output { display: block; font-size: 0.6875em; text-align: center; width: 100%; color: #666666; }
+</style>
+<form class="node-form" data-number-of-inputs="$\{ DATA.numberOfInputs }" data-number-of-outputs="$\{ DATA.numberOfOutputs }" data-channel-count="$\{ DATA.channelCount }" data-channel-count-mode="$\{ DATA.channelCountMode }" data-channel-interpretation="$\{ DATA.channelInterpretation }">
+    $\{ ((node, includes) => {
+        const constructor = node.constructor.name;
+        const name  = 'pan';
+        const param = node[name];
+    console.log( constructor, configs[constructor] );
+        const data  = assign({}, configs[constructor] && configs[constructor][name], { node, name, param });
+
+        // Give it a signal
+        if (!param.signal) param.signal = Signal.fromProperty('value', param);
+
+        // Include its template
+        return include('param-pan', data);
     })(DATA, []) }
 </form>
 `);

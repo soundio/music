@@ -68,6 +68,10 @@ export const configs = {
         distanceModel:  { values: ['linear', 'inverse', 'exponential'] }
     },
 
+    StereoPannerNode: {
+        pan: { min: -1, max: 1, display: 'stereo-angle' }
+    },
+
     WaveShaperNode: {
         oversample: { values: ['none', '2x', '4x'] }
     }
