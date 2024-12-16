@@ -50,6 +50,16 @@ export default Literal.compileHTML('param', `<div class="line-param-grid param-g
         ) }<abbr class="unit-abbr" hidden="$\{ !DATA.unit }">$\{ DATA.unit }</abbr></output>
 </div>`);
 
+export const paramFader = Literal.compileHTML('param-fader', `
+<input type="range" is="normal-input" class="fader-input vertical" name="$\{ DATA.name }" min="$\{ DATA.min !== undefined ? DATA.min : 0 }" max="$\{ DATA.max !== undefined ? DATA.max : 1 }" law="$\{ DATA.law }" value="$\{ DATA.node[DATA.name].signal.value }" step="any" id="$\{ DATA.name }"/>
+<output for="$\{ DATA.name }">$\{
+    toFixedPrecision(2,
+        DATA.display === 'db' ? todB(DATA.node[DATA.name].signal.value || 0) :
+        DATA.node[DATA.name].signal.value || 0
+    ) }<abbr class="unit-abbr" hidden="$\{ !DATA.unit }">$\{ DATA.unit }</abbr>
+</output>
+`);
+
 export const propertyElement = Literal.compileHTML('property-element', `<div class="line-param-grid param-grid grid">
     <label for="$\{ DATA.name }">$\{ DATA.label || toSpaceCase(DATA.name) }</label>
     <input type="text"

@@ -6,6 +6,8 @@ Returns the shorter of `n.toFixed()` and `n.Precision()`.
 
 export function toFixedPrecision(n, number) {
     const abs = Math.abs(number);
+    if (abs === Infinity) return number < 0 ? '-∞' : '∞';
+
     // Order of magnitude
     const order = Math.pow(10, n);
     // toPrecision() spits out scientific notation for numbers greater than
@@ -26,9 +28,7 @@ of `number`, postfixing a 'μ', 'm', 'k' or 'M' where applicable.
 export function toMetricPrecision(number) {
     const abs = Math.abs(number);
     return abs === 0 ? number :
-        abs === Infinity ?
-            number < 0 ? '-∞' :
-            '∞' :
+        abs === Infinity ? number < 0 ? '-∞' : '∞' :
         abs < 0.001 ? toFixedPrecision(3, number * 1000000) + 'μ' :
         abs < 1        ? toFixedPrecision(3, number * 1000) + 'm' :
         abs < 1000     ? toFixedPrecision(3, number) + '' :

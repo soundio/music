@@ -33,7 +33,7 @@ export const configs = {
 
     DelayNode: {
         // https://developer.mozilla.org/en-US/docs/Web/API/DelayNode/DelayNode
-        delayTime:    { min: 0.001, max: 10,  law: 'log', unit: 's' },
+        delayTime:    { min: 0.003, max: 10,  law: 'log', unit: 's' },
         maxDelayTime: { min: 10,    max: 100, law: 'log', unit: 's' }
     },
 

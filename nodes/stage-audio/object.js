@@ -16,8 +16,6 @@ import { eventsToSamples, samplesToEvents } from '../../modules/rhythm.js';
 const assign    = Object.assign;
 
 
-/* RhythmSynth */
-
 export default class StageAudio extends StageNode {
 //    #audioNode;
     #connections = [];

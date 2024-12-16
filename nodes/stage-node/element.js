@@ -13,6 +13,10 @@ import { createProperty } from 'dom/element/create-attribute.js';
 import { dragstart, dragend }        from '../../../bolt/attributes/data-draggable.js';
 import { dragenter, dragover, drop } from '../../../bolt/attributes/data-droppable.js';
 import { nodes }        from '../../modules/graph-node.js';
+import { log }  from '../../modules/log.js';
+
+// Should come from a more local place I think, but it's here for the mo
+import * as presets from '../stage-audio/presets.js';
 
 
 const assign = Object.assign;
@@ -56,9 +60,13 @@ export const lifecycle = {
         const outputsSVG = shadow.querySelector('.outputs-svg');
         const $node      = internals.$node = Signal.of();
 
+        internals.menu = menu;
+
         if (menu) {
+            //console.log(this.tagName);
+
             // Namespace things the menu stores with the name of the element
-            menu.prefix = this.tagName.toLowerCase() + '/';
+            //menu.prefix = this.tagName.toLowerCase() + '/';
 
             // This is a bit of a dodgy way of adding actions, it may
             // change in file-menu element
@@ -111,12 +119,6 @@ console.log('Piped node ' + node.id + ' output ' + data.index + ' to node ' + th
 
             title.textContent = node.type;
 
-            if (menu) {
-                menu.prefix = node.type;
-                // Beware not all nodes have, or should have, .data
-                if (node.data) menu.data = node.data;
-            }
-
             if (inputsSVG) {
                 let i = -1;
                 let html = '';
@@ -165,8 +167,27 @@ console.log('Piped node ' + node.id + ' output ' + data.index + ' to node ' + th
         RotaryInput.polyfillByRoot(shadow);
     },
 
-    connect: function(shadow, internals, data) {
+    connect: function(shadow, { menu }) {
+        if (!this.node) {
+            throw new Error('<stage-object> or its descendent must have .object before being put in the DOM');
+        }
 
+        if (menu) {
+            // Beware not all nodes have, or should have, .data
+            if (this.node.data) menu.data = this.node.data;
+
+            // Namespace things the menu stores with the name of the element
+            const prefix = this.node.constructor.name + '/'
+                + (this.node.TYPE ? this.node.TYPE + '/' : '') ;
+            menu.prefix = prefix;
+
+            // Add presets to settings menu
+            this.presets = presets[prefix];
+            if (this.presets) {
+                this.presets.forEach((preset) => menu.createPreset(preset.name, preset));
+                log('<stage-object>', this.presets.length + ' preset' + (this.presets.length !== 1 ? 's' : '') + ' added for ' + prefix);
+            }
+        }
     }
 };
 

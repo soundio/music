@@ -5,10 +5,13 @@ import element     from 'dom/element.js';
 import events      from 'dom/events.js';
 import Signal      from 'fn/signal.js';
 import Literal     from 'literal/module.js';
+import { isParam } from '../../modules/param.js';
 import StageObject from './object.js';
-import presets     from './presets.js';
+
 import { shadow, construct, connect, properties } from '../stage-node/element.js';
 import nodeTemplate from '../../templates/node.js';
+import * as templates from '../../templates/node.js';
+
 
 // Extend Literal scope
 import 'literal/scope.js';
@@ -63,9 +66,6 @@ export default element('<stage-audio>', {
             consts: { shadow, host: this }
         });
 
-        // Add presets to settings menu
-        presets.forEach((preset) => menu.createPreset(preset.name, preset));
-
         // Listen for interaction
         events('input', shadow).each((e) => {
             const audioNode = this.node.data;
@@ -80,8 +80,7 @@ export default element('<stage-audio>', {
             const value = (type === 'range' || type === 'number') ?
                 // We are observing an augmented input element like is="normal-input"
                 // that publishes its value as a number. Use directly.
-                typeof input.value === 'number' ?
-                    input.value :
+                typeof input.value === 'number' ? input.value :
                 // Parse to number
                 input.valueAsNumber || parseFloat(input.value) :
                 // Use checkbox value if not the standard 'on', otherwise boolean
@@ -95,21 +94,21 @@ export default element('<stage-audio>', {
                 // Its a select or radio, use its string
                 input.value ;
 
-            const param = audioNode[name];
+            const context = audioNode.context;
+            const param   = audioNode[name];
 
             // All this stuff should be handled by soundstage.. look it up
             if (typeof param === 'object') {
-                if (param.setValueAtTime) {
+                if (isParam(param)) {
                     // Value can only be numeric here, we should handle this sooner, mebbe around line 80??
-                    //
                     if (value <= 0) param.linearRampToValueAtTime(value, audioNode.context.currentTime + 1/60);
                     else param.exponentialRampToValueAtTime(value, audioNode.context.currentTime + 1/60);
-                    //param.setValueAtTime(value, audioNode.context.currentTime);
-                    // TODO We're gonna need to notify updates somehow
-                    // ??? Data.notify(param);
+                    // Notify signal of changes
+                    if (param.signal) param.signal.invalidate();
                 }
                 else {
-                    console.log('HUH? Is it a signal?', param);
+                    // We set object like buffers and whatnot
+                    audioNode[input.name] = value;
                 }
             }
             else {
@@ -119,23 +118,23 @@ export default element('<stage-audio>', {
     },
 
     connect: function(shadow, { consts, ui }) {
-        connect.apply(this, arguments);
-
         // Where node is not yet defined give element node
         if (!this.node) {
-            console.log('StageObject.node missing, creating node');
+            console.log('<stage-object> .object not set, creating object');
             this.node = new StageObject();
         }
 
-        // Render
-        //const renderer = literal.render(shadow, consts, { node: this.node });
-        const renderer = nodeTemplate.render(shadow, consts, this.node.data );
+        connect.apply(this, arguments);
+
+        // Choose template and render it
+        const template = templates[this.node.TYPE] || templates.default;
+        const renderer = template.render(shadow, consts, this.node.data );
 
         // Append rendered content
         ui.append(renderer.content);
 
         // Return array of renderers and signal observers, and anything else
-        // with a .stop() method – they are stopped on disconnect
+        // with a .stop() method – to be stopped on element disconnect
         return [
             renderer,
             Signal.frame(() => {})

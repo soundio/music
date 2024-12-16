@@ -66,14 +66,10 @@
         const object15 = new StageAudio(15, { TYPE: 'waveshaper', data: {} }, context);
         const object16 = new StageAudio(16, { TYPE: 'stereo-panner', data: {} }, context);
 
-
         const lfo     = new StageAudio(17, { TYPE: 'oscillator', data: { type: 'sine', frequency: 120 } }, context);
         const lfoGain = new StageAudio(18, { TYPE: 'gain', data: { gain: 120 } }, context);
 
-
         events('mousedown', document).each(() => context.resume());
-
-
 
 
         object12.connect(object3);
