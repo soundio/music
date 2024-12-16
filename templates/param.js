@@ -13,10 +13,13 @@ right now. It's not ideal.
 import NormalInput from 'forms/normal-input/element.js';
 import toGain      from 'fn/to-gain.js';
 import Literal     from 'literal/module.js';
+import { toMetricPrecision, toFixedPrecision } from '../modules/number.js';
 
 const assign = Object.assign;
 
 assign(Literal.scope, {
+    toFixedPrecision,
+    toMetricPrecision,
     toSpaceCase: function(camelCase) {
         return camelCase.replace(/[A-Z]/g, ($0) => ' ' + $0.toLowerCase());
     }
@@ -33,10 +36,18 @@ export default Literal.compileHTML('param', `<div class="line-param-grid param-g
             DATA.node[DATA.name].signal.value
         }"
         law="$\{ DATA.law }"
-        step="any"
+        step="$\{ DATA.step || 'any' }"
         id="$\{ DATA.name }"
     />
-    <output for="$\{ DATA.name }">$\{ DATA.node[DATA.name].signal.value.toPrecision(3) }</output>
+    <output for="$\{ DATA.name }">$\{ DATA.unit ?
+        toMetricPrecision(
+            DATA.display === 'db' ? todB(DATA.node[DATA.name].signal.value || 0) :
+            DATA.node[DATA.name].signal.value || 0
+        ) :
+        toFixedPrecision(3,
+            DATA.display === 'db' ? todB(DATA.node[DATA.name].signal.value || 0) :
+            DATA.node[DATA.name].signal.value || 0
+        ) }<abbr class="unit-abbr" hidden="$\{ !DATA.unit }">$\{ DATA.unit }</abbr></output>
 </div>`);
 
 export const propertyElement = Literal.compileHTML('property-element', `<div class="line-param-grid param-grid grid">
@@ -65,7 +76,19 @@ export const propertyNumber = Literal.compileHTML('property-number', `<div class
         step="$\{ DATA.step || 'any' }"
         id="$\{ DATA.name }"
     />
-    <output for="$\{ DATA.name }">$\{ data.node[DATA.name].toPrecision(3) }</output>
+    <output for="$\{ DATA.name }">$\{ DATA.unit ?
+        toMetricPrecision(data.node[DATA.name] || 0) :
+        toFixedPrecision(3, data.node[DATA.name] || 0) }<abbr class="unit-abbr" hidden="$\{ !DATA.unit }">$\{ DATA.unit }</abbr></output>
+</div>`);
+
+export const propertyReadonly = Literal.compileHTML('property-readonly', `<div class="line-param-grid param-grid grid">
+    <label for="$\{ DATA.name }">$\{ DATA.label || toSpaceCase(DATA.name) }</label>
+    <input type="text"
+        name="$\{ DATA.name }"
+        value="$\{ data.node[DATA.name] }"
+        id="$\{ DATA.name }"
+        readonly
+    />
 </div>`);
 
 export const propertyString = Literal.compileHTML('property-string', `<div class="line-param-grid param-grid grid">

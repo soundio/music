@@ -5,10 +5,10 @@ import element     from 'dom/element.js';
 import events      from 'dom/events.js';
 import Signal      from 'fn/signal.js';
 import Literal     from 'literal/module.js';
-import Module      from './module.js';
+import StageObject from './object.js';
 import presets     from './presets.js';
 import { shadow, construct, connect, properties } from '../stage-node/element.js';
-
+import nodeTemplate from '../../templates/node.js';
 
 // Extend Literal scope
 import 'literal/scope.js';
@@ -23,7 +23,7 @@ assign(Literal.scope, { dB, toGain });
 import * as consts from 'forms/modules/constants.js';
 assign(Literal.scope, consts);
 
-
+/*
 // Templates
 Literal.compileHTML('param-pan',  '<input type="range" is="normal-input" name="pan" min="-1" max="1" step="any" value="${ 0 }" class="pan-input ${ DATA.class }" />');
 Literal.compileHTML('param-gain', '<input type="range" is="normal-input" name="gain" min="0" max="${ toGain(12) }" law="log-36db" step="any" value="${ 1 }" class="fader-input vertical ${ DATA.class }" />');
@@ -41,7 +41,7 @@ const literal = Literal.compileHTML('node-mix', `
         $\{ data.node.data && include('button-char', { object: DATA.node.data, name: 'mute',   char: 'M', text: 'Mute' }) }
     </div>
 `);
-
+*/
 
 export default element('<stage-audio>', {
     mode: 'open',
@@ -49,7 +49,7 @@ export default element('<stage-audio>', {
     // Extend StageNode's `shadow`
     shadow: shadow + `
         <link rel="stylesheet" href="${ window.stageAudioStylesheet || import.meta.url.replace(/js$/, 'css') }"/>
-        <div class="block" id="ui"></div>
+        <div class="ui-block block" id="ui"></div>
     `,
 
     construct: function(shadow, internals) {
@@ -78,13 +78,21 @@ export default element('<stage-audio>', {
             const name  = input.name;
             const type  = input.type;
             const value = (type === 'range' || type === 'number') ?
+                // We are observing an augmented input element like is="normal-input"
+                // that publishes its value as a number. Use directly.
+                typeof input.value === 'number' ?
+                    input.value :
+                // Parse to number
                 input.valueAsNumber || parseFloat(input.value) :
+                // Use checkbox value if not the standard 'on', otherwise boolean
+                // from .checked
                 type === 'checkbox' ?
                     input.value && input.value !== 'on' ?
                         input.checked ?
                             input.value :
                         undefined :
                     input.checked :
+                // Its a select or radio, use its string
                 input.value ;
 
             const param = audioNode[name];
@@ -92,8 +100,11 @@ export default element('<stage-audio>', {
             // All this stuff should be handled by soundstage.. look it up
             if (typeof param === 'object') {
                 if (param.setValueAtTime) {
-                    // Value can only be numeric here, we should split this sooner
-                    param.setValueAtTime(value, audioNode.context.currentTime);
+                    // Value can only be numeric here, we should handle this sooner, mebbe around line 80??
+                    //
+                    if (value <= 0) param.linearRampToValueAtTime(value, audioNode.context.currentTime + 1/60);
+                    else param.exponentialRampToValueAtTime(value, audioNode.context.currentTime + 1/60);
+                    //param.setValueAtTime(value, audioNode.context.currentTime);
                     // TODO We're gonna need to notify updates somehow
                     // ??? Data.notify(param);
                 }
@@ -111,10 +122,14 @@ export default element('<stage-audio>', {
         connect.apply(this, arguments);
 
         // Where node is not yet defined give element node
-        if (!this.node) this.node = new Module();
+        if (!this.node) {
+            console.log('StageObject.node missing, creating node');
+            this.node = new StageObject();
+        }
 
         // Render
-        const renderer = literal.render(shadow, consts, { node: this.node });
+        //const renderer = literal.render(shadow, consts, { node: this.node });
+        const renderer = nodeTemplate.render(shadow, consts, this.node.data );
 
         // Append rendered content
         ui.append(renderer.content);

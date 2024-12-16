@@ -21,6 +21,7 @@
     }</script>
 
     <link rel="stylesheet" href="../../../bolt/elements/html.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/body.css" />
     <link rel="stylesheet" href="../../../bolt/elements/table.css" />
     <link rel="stylesheet" href="../../../bolt/elements/label.css" />
     <link rel="stylesheet" href="../../../bolt/elements/form.css" />
@@ -30,27 +31,101 @@
     <link rel="stylesheet" href="../../../bolt/classes/button.css" />
 
     <style>
-        html, body {
-            height: 100%;
-        }
-
-        html {
-            background-color: #646568;
+        :root {
+            background-color: #eeeeee;
         }
 
         body {
             font-family: var(--system-font);
             padding: 1.875rem 1.5rem;
         }
+
+        stage-audio { margin-top: 1lh; }
     </style>
 
     <script type="module">
-        import './element.js';
+        import events     from 'dom/events.js';
+        import StageAudio from './object.js';
+        import StageAudioElement from './element.js';
+
+        const context  = new AudioContext();
+        const object1  = new StageAudio(1, { TYPE: 'analyser', data: {} }, context);
+        const object2  = new StageAudio(2, { TYPE: 'buffer-source', data: {} }, context);
+        const object3  = new StageAudio(3, { TYPE: 'biquad-filter', data: {} }, context);
+        const object4  = new StageAudio(4, { TYPE: 'constant', data: {} }, context);
+        const object5  = new StageAudio(5, { TYPE: 'convolver', data: {} }, context);
+        const object6  = new StageAudio(6, { TYPE: 'delay', data: { maxDelayTime: 10 } }, context);
+        const object7  = new StageAudio(7, { TYPE: 'compressor', data: {} }, context);
+        const object8  = new StageAudio(8, { TYPE: 'gain', data: {} }, context);
+        //const object9  = new StageAudio(9, { TYPE: 'iir-filter', data: {} }, context);
+        //const object10 = new StageAudio(10, { TYPE: 'media-source', data: {} }, context);
+        const object11 = new StageAudio(11, { TYPE: 'merger', data: {} }, context);
+        const object12 = new StageAudio(12, { TYPE: 'oscillator', data: {} }, context);
+        const object13 = new StageAudio(13, { TYPE: 'panner', data: {} }, context);
+        const object14 = new StageAudio(14, { TYPE: 'splitter', data: {} }, context);
+        const object15 = new StageAudio(15, { TYPE: 'waveshaper', data: {} }, context);
+        const object16 = new StageAudio(16, { TYPE: 'stereo-panner', data: {} }, context);
+
+
+        const lfo     = new StageAudio(17, { TYPE: 'oscillator', data: { type: 'sine', frequency: 120 } }, context);
+        const lfoGain = new StageAudio(18, { TYPE: 'gain', data: { gain: 120 } }, context);
+
+
+        events('mousedown', document).each(() => context.resume());
+
+
+
+
+        object12.connect(object3);
+        object3.connect(object7);
+        object7.connect(object6);
+        object6.connect(object8);
+        object8.connect(object13);
+        object13.connect({ data: context.destination });
+
+        lfo.connect(lfoGain);
+        lfo.input(0).push([1, 'start', 120, 1]);
+        lfoGain.data.connect(object12.data.detune);
+
+        object12.input(0).push([1, 'start', 120, 1]);
+
+        const element1  = document.createElement('stage-audio'); element1.node = object1;
+        const element2  = document.createElement('stage-audio'); element2.node = object2;
+        const element3  = document.createElement('stage-audio'); element3.node = object3;
+        const element4  = document.createElement('stage-audio'); element4.node = object4;
+        const element5  = document.createElement('stage-audio'); element5.node = object5;
+        const element6  = document.createElement('stage-audio'); element6.node = object6;
+        const element7  = document.createElement('stage-audio'); element7.node = object7;
+        const element8  = document.createElement('stage-audio'); element8.node = object8;
+        //const element9  = document.createElement('stage-audio'); element9.node = object9;
+        //const element10 = document.createElement('stage-audio'); element10.node = object10;
+        const element11 = document.createElement('stage-audio'); element11.node = object11;
+        const element12 = document.createElement('stage-audio'); element12.node = object12;
+        const element13 = document.createElement('stage-audio'); element13.node = object13;
+        const element14 = document.createElement('stage-audio'); element14.node = object14;
+        const element15 = document.createElement('stage-audio'); element15.node = object15;
+        const element16 = document.createElement('stage-audio'); element16.node = object16;
+
+        document.body.append.apply(document.body, [
+            element1,
+            element2,
+            element3,
+            element4,
+            element5,
+            element6,
+            element7,
+            element8,
+            //const element9,
+            //const element10,
+            element11,
+            element12,
+            element13,
+            element14,
+            element15,
+            element16
+        ]);
+        window.c = context;
     </script>
 </head>
 
-<body>
-    <stage-audio style="display: inline-grid;margin-left:1px"></stage-audio
-    ><stage-audio style="display: inline-grid;margin-left:1px"></stage-audio
-    ><stage-audio style="display: inline-grid;margin-left:1px"></stage-audio>
-</body>
+<body></body>

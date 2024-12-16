@@ -54,8 +54,7 @@ export const lifecycle = {
         const menu       = shadow.querySelector('file-menu');
         const inputsSVG  = shadow.querySelector('.inputs-svg');
         const outputsSVG = shadow.querySelector('.outputs-svg');
-
-        const $node = internals.$node = Signal.of();
+        const $node      = internals.$node = Signal.of();
 
         if (menu) {
             // Namespace things the menu stores with the name of the element
@@ -143,7 +142,7 @@ console.log('Piped node ' + node.id + ' output ' + data.index + ' to node ' + th
 
         if (menu) {
             events('change', menu).each((e) => {
-                if (window.DEBUG) console.trace('Setting', e.target.data);
+//                if (window.DEBUG) console.trace('Setting', e.target.data);
 
                 // TEMP. Not necesssary but we dbugging right npw
                 if (!e.target.data) return;
@@ -154,7 +153,8 @@ console.log('Piped node ' + node.id + ' output ' + data.index + ' to node ' + th
                 const node = this.node;
                 if (!node) return;
                 if (!menu.data) return;
-                node.data = menu.data;
+                if (node.data) menu.data = node.data;
+                else node.data = menu.data;
             });
         }
 

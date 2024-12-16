@@ -77,6 +77,7 @@ export default class StageAudio extends StageNode {
 
         super(id, inputs, outputs);
 
+        this.TYPE = setting.TYPE;
     }
 
     set data(data) {

@@ -5,12 +5,16 @@
 @import '../../../form-elements/normal-input/pan-input.css';
 @import '../../../form-elements/normal-input/fader-input.css';
 @import '../../../form-elements/normal-input/mono-input.css';
+@import '../../classes/param.css';
 @import '../../classes/char-thumb.css';
+@import '../../../bolt/classes/checkbox-button.css';
+@import '../../../bolt/classes/checkbox-label.css';
 
 
 :host {
     grid-template-rows: 1.125rem min-content 1.875rem;
-    width: 74px;
+    width: auto;
+    max-width: 30rem;
 }
 
 :host > pre {
@@ -75,4 +79,10 @@
 
 .fader-input {
     --tick-color: rgb(124 124 124);
+}
+
+
+output {
+    font-size: 0.875em;
+    font-family: monospace;
 }

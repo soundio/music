@@ -4,6 +4,7 @@ import events      from 'dom/events.js';
 import Literal     from 'literal/module.js';
 import { isParam } from '../modules/param.js';
 import { configs } from '../modules/constructors.js';
+import { isReadOnlyProperty } from '../modules/property.js';
 // Make param templates available in Literal
 import './param.js';
 
@@ -42,7 +43,8 @@ assign(Literal.scope, {
         && node[name] !== null
         // Reject Float32Arrays
         && !(node[name] && node[name].constructor.name === 'Float32Array')
-    )
+    ),
+    isReadOnlyProperty
 });
 
 export default Literal.compileHTML('node', `
@@ -72,13 +74,19 @@ export default Literal.compileHTML('node', `
             for (let name in node) if (isParamOrProperty(name, node)) {
                 const constructor = node.constructor.name;
                 const config = assign({ node, name }, configs[constructor] && configs[constructor][name]);
+                let readonly;
 
-                // TESTING THIS
+                // Give param a signal
                 if (isParam(node[name]) && !node[name].signal) {
                     node[name].signal = Signal.fromProperty('value', node[name]);
                 }
+                // Test property for read-only-ness
+                else {
+                    readonly = isReadOnlyProperty(name, node);
+                }
 
                 includes.push(
+                    readonly ? include('property-readonly', config) :
                     // A DOM element, display its id
                     node[name] instanceof Element ? include('property-element', config) :
                     // An AudioParam or settings object
