@@ -2,7 +2,7 @@ import get          from 'fn/get.js';
 import overload     from 'fn/overload.js';
 import Stream       from 'fn/stream/stream.js';
 import mix          from '../../modules/mix.js';
-import StageNode    from '../../modules/graph-node.js';
+import StageObject  from '../../modules/graph-node.js';
 import Waveform     from '../../modules/waveform.js';
 import Data         from 'fn/data.js';
 import Signal       from 'fn/signal.js';
@@ -26,6 +26,7 @@ function vectorsToSamples(vectors, samples = new vectors.constructor(vectors.len
         mag  = DATA.phasors[2 * j];
         gain = mag / max;
         if (gain > data.gate) {
+            if (j < 32) console.log(j);
             gatedVectors[j1]     = vectors[j1];
             gatedVectors[j1 + 1] = vectors[j1 + 1];
             gatedVectors[j2]     = vectors[j2];
@@ -53,7 +54,7 @@ function vectorsToSamples(vectors, samples = new vectors.constructor(vectors.len
 
 /* RhythmSynth */
 
-export default class RhythmSynth extends StageNode {
+export default class RhythmSynth extends StageObject {
     #events;
 
     constructor(id, data = {}) {
@@ -89,7 +90,7 @@ export default class RhythmSynth extends StageNode {
     }
 
     set events(events) {
-//console.trace('HELLO');
+console.log('HELLO', events);
         events = this.#events = events.map(Event.from);
 
         Signal.tick(() => {

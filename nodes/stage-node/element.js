@@ -72,18 +72,18 @@ export const lifecycle = {
             // change in file-menu element
             menu.actions = {
                 $remove: () => {
-                    this.node.stop();
+                    this.object.stop();
                     this.remove();
                 }
             };
         }
 
-        /* Set node as this.node */
+        /* Set stage object as this.object */
         Signal.observe(internals.$node, (node) => {
             if (!node) return;
 
-            this.dataset.node = this.node.id;
-            this.node.style = this.style;
+            this.dataset.node = this.object.id;
+            this.object.style = this.style;
 
             // TODO: if node is changed (it isn't, but if it is) more handlers
             // will be registered
@@ -98,12 +98,12 @@ export const lifecycle = {
                     if (!node) throw new Error('Dropped data has no .node id, or id is not in nodes registry');
                     const output = node.output(data.index);
                     if (!output) throw new Error('Dropped data has no .output index, or index is not in node.output(index)');
-                    const input = this.node.input(e.target.dataset.inputIndex);
+                    const input = this.object.input(e.target.dataset.inputIndex);
                     if (!input) throw new Error('Drop target has no input at index ' + e.target.dataset.inputIndex);
 
                     // Pipe output t't'input
                     output.pipe(input);
-console.log('Piped node ' + node.id + ' output ' + data.index + ' to node ' + this.node.id + ' input ' + e.target.dataset.inputIndex);
+console.log('Piped node ' + node.id + ' output ' + data.index + ' to node ' + this.object.id + ' input ' + e.target.dataset.inputIndex);
                 });
             }
 
@@ -114,7 +114,7 @@ console.log('Piped node ' + node.id + ' output ' + data.index + ' to node ' + th
         });
 
         Signal.frame(() => {
-            const node = this.node;
+            const node = this.object;
             if (!node) return;
 
             title.textContent = node.type;
@@ -148,11 +148,11 @@ console.log('Piped node ' + node.id + ' output ' + data.index + ' to node ' + th
 
                 // TEMP. Not necesssary but we dbugging right npw
                 if (!e.target.data) return;
-                assign(Data.of(this.node), e.target.data);
+                assign(Data.of(this.object), e.target.data);
             });
 
             Signal.frame(() => {
-                const node = this.node;
+                const node = this.object;
                 if (!node) return;
                 if (!menu.data) return;
                 if (node.data) menu.data = node.data;
@@ -168,17 +168,17 @@ console.log('Piped node ' + node.id + ' output ' + data.index + ' to node ' + th
     },
 
     connect: function(shadow, { menu }) {
-        if (!this.node) {
-            throw new Error('<stage-object> or its descendent must have .object before being put in the DOM');
+        if (!this.object) {
+            throw new Error('<stage-object> (or its descendent) must have object="id" attribute, or .object property set before being put in the DOM');
         }
 
         if (menu) {
             // Beware not all nodes have, or should have, .data
-            if (this.node.data) menu.data = this.node.data;
+            if (this.object.data) menu.data = this.object.data;
 
             // Namespace things the menu stores with the name of the element
-            const prefix = this.node.constructor.name + '/'
-                + (this.node.TYPE ? this.node.TYPE + '/' : '') ;
+            const prefix = this.object.constructor.name + '/'
+                + (this.object.TYPE ? this.object.TYPE + '/' : '') ;
             menu.prefix = prefix;
 
             // Add presets to settings menu
@@ -194,19 +194,35 @@ console.log('Piped node ' + node.id + ' output ' + data.index + ' to node ' + th
 export const properties = {
     input: {
         value: function(i = 0) {
-            if (!this.node) throw new Error('Element has no graph node');
-            return this.node.input(i);
+            if (!this.object) throw new Error('Element has no graph node');
+            return this.object.input(i);
         }
     },
 
     output: {
         value: function(o = 0) {
-            if (!this.node) throw new Error('Element has no graph node');
-            return this.node.output(o);
+            if (!this.object) throw new Error('Element has no graph node');
+            return this.object.output(o);
         }
     },
 
-    node: createProperty('node', undefined, Data.objectOf)
+    node: {
+        attribute: function() {
+            console.trace('element attriute node="" renamed object="" ... ???');
+        },
+
+        set: function(v) {
+            console.trace('element property .node renamed .object');
+            return this.object = v;
+        },
+
+        get: function() {
+            console.trace('element property .node renamed .object');
+            return this.object;
+        }
+    },
+
+    object: createProperty('object', undefined, Data.objectOf)
 };
 
 export default element('<stage-node>', lifecycle, properties);

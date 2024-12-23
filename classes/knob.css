@@ -1,0 +1,135 @@
+
+/* Range input */
+
+.knob-input {
+    --track-size:  0.125em;
+    --handle-size: 0.75rem;
+
+    --handle-background:
+        /* background-image */
+        radial-gradient(hsl(202, 7%, 90%), hsl(162, 2%, 56%))
+        /* background-position / background-size */
+        80% 100% / 140% 140%;
+
+    --handle-shadow:
+        inset 0 0 0 0.03125rem hsl(153, 2%, 26%),
+        0.003125rem 0.09375rem 0.125rem rgba(0,0,0,0.25);
+
+    /* Width of the input */
+    --width:  4.5rem;
+
+    -webkit-appearance: none !important;
+
+    display: block;
+    width:   100%;
+    height:  var(--height);
+
+    background-color: transparent;
+    background-size: 100% auto;
+    background-position: 50% 100%;
+    border-width: 0;
+    border-radius: calc(0.5 * var(--track-size));
+}
+
+.knob-input:hover,
+.knob-input:focus-visible {
+    background-color: none;
+}
+
+/* Track */
+
+.knob-input::-webkit-slider-runnable-track {
+    background-color: #25292c;
+    border-width: 0;
+    height: 2px;
+    border-radius: 2px
+}
+
+/* Handle */
+
+.knob-input::-webkit-slider-thumb {
+    -webkit-appearance: none !important;
+
+    width: var(--handle-size, 0.6875rem);
+    height: var(--handle-size, var(--handle-size, 0.6875rem));
+    background: var(--handle-background);
+    border-width: 0;
+    border-radius: 50%;
+    box-shadow: var(--handle-shadow);
+    margin-top: calc(-0.5 * var(--handle-size) + 0.5 * var(--track-size));
+
+    /* Increase hit zone */
+    outline: 0.25rem solid transparent;
+}
+
+.knob-input::-moz-range-thumb {
+    width:  var(--handle-size, 0.6875rem);
+    height: var(--handle-size, var(--handle-size, 0.6875rem));
+    background: var(--handle-background);
+    border-width:  0;
+    border-radius: 50%;
+    box-shadow: var(--handle-shadow);
+
+    /* Increase hit zone */
+    outline: 0.25rem solid transparent;
+}
+
+/* Focus */
+
+.knob-input:focus-visible {
+    outline-width: 0;
+    /* Override rule in focus.css */
+    box-shadow: none !important;
+}
+
+.knob-input:focus-visible::-webkit-slider-thumb {
+    box-shadow: var(--focus-shadow), var(--handle-shadow);
+}
+
+.knob-input:focus-visible::-moz-range-thumb {
+    box-shadow: var(--focus-shadow), var(--handle-shadow);
+}
+
+
+
+/* Radio button */
+
+.knob-radio-button {
+    font-size: 0.6875rem;
+    --size: 1.5rem;
+    padding-left: var(--padding-left);
+    /* background-image */
+    background-image: var(--knob-background);
+}
+
+.invisible:checked + .knob-radio-button {
+    color: color(display-p3 0 1 0.946);
+    border-color: black;
+}
+
+
+.flex > .knob-radio-button + .invisible + .knob-radio-button {
+    margin-left: -1px;
+}
+
+.flex > .knob-radio-button:first-of-type {
+    border-top-left-radius: 0.185rem;
+    border-bottom-left-radius: 0.185rem;
+}
+
+.flex > .knob-radio-button:last-of-type {
+    border-top-right-radius: 0.185rem;
+    border-bottom-right-radius: 0.185rem;
+}
+
+
+/* Button */
+
+.knob-button {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    --size: 1.5rem;
+
+    /* background-image */
+    background-image: var(--knob-background);
+}

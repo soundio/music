@@ -10,6 +10,8 @@
 @import '../../../bolt/classes/checkbox-button.css';
 @import '../../../bolt/classes/checkbox-label.css';
 
+@import '../../classes/knob.css';
+
 
 :host {
     grid-template-rows: 1.125rem min-content 1.875rem;
@@ -85,4 +87,31 @@
 output {
     font-size: 0.875em;
     font-family: monospace;
+}
+
+
+
+
+:root,
+:host {
+    --knob-background: linear-gradient(to bottom,
+        /* Top to bottom main shading and centre line */
+        hsl(193, 5%, 84%) 0%,
+        hsl(179, 1%, 66%) 100%
+    );
+}
+
+
+.radio-button::before,
+.radio-button::after {
+    content: none;
+}
+
+.flex > .invisible + .radio-button {
+    margin-top: 0;
+}
+
+
+.char-thumb {
+    background: var(--knob-background);
 }

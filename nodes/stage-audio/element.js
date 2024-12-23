@@ -66,9 +66,44 @@ export default element('<stage-audio>', {
             consts: { shadow, host: this }
         });
 
+        // OPTION-mousedown on an input resets param value to 0
+        events({ type: 'mousedown', modifiers: 'alt', select: 'input' }, shadow).each((e) => {
+            const audioNode = this.object.data;
+            // It is possible we are not initialised, but we really ought to
+            // avoid this state, so this is just a safety check
+            if (!audioNode) return;
+
+            const name  = e.target.name;
+            const param = audioNode[name];
+            if (typeof param === 'object'&& isParam(param)) {
+                // Instead of 0 we should get default value from config??
+                param.linearRampToValueAtTime(0, audioNode.context.currentTime + 0.004);
+                // Notify signal of changes
+                if (param.signal) {
+                    //param.signal.invalidate();
+                    // Sometimes that was too quick for the .value of the param
+                    // to have updated - maybe we have clicked near to a frame,
+                    // and the value doesn't update until the next 128 sample
+                    // block, so cue it again
+                    requestAnimationFrame(() => param.signal.invalidate());
+                }
+            }
+        });
+
+        let voice;
+        events({ type: 'mousedown mouseup', select: '[name="startstop"]' }, shadow).each((e) => {
+            const node = this.object.data;
+            // It is possible we are not initialised, but we really ought to
+            // avoid this state, so this is just a safety check
+            if (!node) return;
+
+            if (e.type === 'mousedown') voice = node.start();
+            else voice && voice.stop();
+        });
+
         // Listen for interaction
         events('input', shadow).each((e) => {
-            const audioNode = this.node.data;
+            const audioNode = this.object.data;
 
             // It is possible we are not initialised, but we really ought to
             // avoid this state, so this is just a safety check
@@ -119,18 +154,18 @@ export default element('<stage-audio>', {
 
     connect: function(shadow, { consts, ui }) {
         // Where node is not yet defined give element node
-        if (!this.node) {
+        if (!this.object) {
             console.log('<stage-object> .object not set, creating object');
-            this.node = new StageObject();
+            this.object = new StageObject();
         }
 
         connect.apply(this, arguments);
 
         // Choose template and render it
         // TEMP redirect for panner because export names can't have dashes
-        const type = this.node.TYPE === 'stereo-panner' ? 'pan' : this.node.TYPE ;
+        const type = this.object.TYPE === 'stereo-panner' ? 'pan' : this.object.TYPE ;
         const template = templates[type] || templates.default;
-        const renderer = template.render(shadow, consts, this.node.data );
+        const renderer = template.render(shadow, consts, this.object.data );
 
         // Append rendered content
         ui.append(renderer.content);

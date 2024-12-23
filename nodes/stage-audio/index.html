@@ -47,8 +47,32 @@
         import events     from 'dom/events.js';
         import StageAudio from './object.js';
         import StageAudioElement from './element.js';
+        import Graph      from '../../../soundstage/nodes/graph.js';
+        import Mix        from '../../../soundstage/nodes/mix.js';
+        import Sample     from '../../../soundstage/nodes/sample-set.js';
+        import Voice      from '../../../soundstage/nodes/voice.js';
+        import Instrument from '../../../soundstage/nodes/instrument.js';
+
+        Graph.register('mix',    Mix);
+        Graph.register('sample', Sample);
+        Graph.register('voice',  Voice);
+        Graph.register('instrument', Instrument);
 
         const context  = new AudioContext();
+
+
+/*
+        // Setup voice. TODO: All this faff really should not be necessary.
+        import Envelope   from '../../../soundstage/nodes/envelope.js';
+        import Mix        from '../../../soundstage/nodes/mix.js';
+        import Instrument from '../../../soundstage/nodes/instrument.js';
+
+        Graph.register('envelope', Envelope);
+        Graph.register('mix', Mix);
+*/
+
+
+/*        const object0  = new StageAudio(0, { TYPE: 'mix', data: {} }, context);
         const object1  = new StageAudio(1, { TYPE: 'analyser', data: {} }, context);
         const object2  = new StageAudio(2, { TYPE: 'buffer-source', data: {} }, context);
         const object3  = new StageAudio(3, { TYPE: 'biquad-filter', data: {} }, context);
@@ -64,46 +88,96 @@
         const object13 = new StageAudio(13, { TYPE: 'panner', data: {} }, context);
         const object14 = new StageAudio(14, { TYPE: 'splitter', data: {} }, context);
         const object15 = new StageAudio(15, { TYPE: 'waveshaper', data: {} }, context);
-        const object16 = new StageAudio(16, { TYPE: 'stereo-panner', data: {} }, context);
+        const object16 = new StageAudio(16, { TYPE: 'pan', data: {} }, context);
 
         const lfo     = new StageAudio(17, { TYPE: 'oscillator', data: { type: 'sine', frequency: 120 } }, context);
         const lfoGain = new StageAudio(18, { TYPE: 'gain', data: { gain: 120 } }, context);
+*/
+
+        const object21 = new StageAudio(21, { TYPE: 'instrument', data: {
+            nodes: {
+                sample: { type: 'sample', data: { src: '../../../soundstage/audio/gretsch-kit/samples.js', nominalFrequency: 440 }},
+                output: { type: 'gain', data: { gain: 1 }}
+            },
+
+            connects: [
+                'sample', 'output'
+            ],
+
+            commands: [
+                { target: 'sample' }
+            ]
+        } }, context);
 
         events('mousedown', document).each(() => context.resume());
 
-
+/*
         object12.connect(object3);
         object3.connect(object7);
         object7.connect(object6);
         object6.connect(object8);
         object8.connect(object16);
         object16.connect(object13);
-        object13.connect({ data: context.destination });
+        object16.connect(object0);
+        object0.connect({ data: context.destination });
+*/        object21.connect({ data: context.destination });
 
+console.log(object21);
+
+        const es = [
+            [2.0, 'start', 60, 1],
+            [2.1, 'stop', 60],
+            [2.4, 'start', 60, 0.6],
+            [2.5, 'stop', 60],
+            [2.8, 'start', 60, 0.8],
+            [2.9, 'stop', 60],
+            [3.4, 'start', 60, 1],
+            [3.5, 'stop', 60],
+            [3.5, 'start', 60, 1],
+            [3.6, 'stop', 60],
+            [3.6, 'start', 60, 1],
+            [3.7, 'stop', 60],
+            [3.7, 'start', 60, 1],
+            [3.8, 'stop', 60],
+            [3.8, 'start', 60, 1],
+            [3.9, 'stop', 60],
+            [4.0, 'start', 60, 1],
+            [4.1, 'stop', 60]
+        ];
+
+        let n = -1, e;
+        while (e = es[++n]) object21.input().push(e);
+
+
+/*
         lfo.connect(lfoGain);
         lfo.input(0).push([1, 'start', 120, 1]);
         lfoGain.data.connect(object12.data.detune);
 
         object12.input(0).push([1, 'start', 120, 1]);
 
-        const element1  = document.createElement('stage-audio'); element1.node = object1;
-        const element2  = document.createElement('stage-audio'); element2.node = object2;
-        const element3  = document.createElement('stage-audio'); element3.node = object3;
-        const element4  = document.createElement('stage-audio'); element4.node = object4;
-        const element5  = document.createElement('stage-audio'); element5.node = object5;
-        const element6  = document.createElement('stage-audio'); element6.node = object6;
-        const element7  = document.createElement('stage-audio'); element7.node = object7;
-        const element8  = document.createElement('stage-audio'); element8.node = object8;
-        //const element9  = document.createElement('stage-audio'); element9.node = object9;
-        //const element10 = document.createElement('stage-audio'); element10.node = object10;
-        const element11 = document.createElement('stage-audio'); element11.node = object11;
-        const element12 = document.createElement('stage-audio'); element12.node = object12;
-        const element13 = document.createElement('stage-audio'); element13.node = object13;
-        const element14 = document.createElement('stage-audio'); element14.node = object14;
-        const element15 = document.createElement('stage-audio'); element15.node = object15;
-        const element16 = document.createElement('stage-audio'); element16.node = object16;
+        const element0  = document.createElement('stage-audio'); element0.object = object0;
+        const element1  = document.createElement('stage-audio'); element1.object = object1;
+        const element2  = document.createElement('stage-audio'); element2.object = object2;
+        const element3  = document.createElement('stage-audio'); element3.object = object3;
+        const element4  = document.createElement('stage-audio'); element4.object = object4;
+        const element5  = document.createElement('stage-audio'); element5.object = object5;
+        const element6  = document.createElement('stage-audio'); element6.object = object6;
+        const element7  = document.createElement('stage-audio'); element7.object = object7;
+        const element8  = document.createElement('stage-audio'); element8.object = object8;
+        //const element9  = document.createElement('stage-audio'); element9.object = object9;
+        //const element10 = document.createElement('stage-audio'); element10.object = object10;
+        const element11 = document.createElement('stage-audio'); element11.object = object11;
+        const element12 = document.createElement('stage-audio'); element12.object = object12;
+        const element13 = document.createElement('stage-audio'); element13.object = object13;
+        const element14 = document.createElement('stage-audio'); element14.object = object14;
+        const element15 = document.createElement('stage-audio'); element15.object = object15;
+        const element16 = document.createElement('stage-audio'); element16.object = object16;
+*/      const element21 = document.createElement('stage-audio'); element21.object = object21;
 
         document.body.append.apply(document.body, [
+            element21,
+/*            element0,
             element1,
             element2,
             element3,
@@ -120,7 +194,7 @@
             element14,
             element15,
             element16
-        ]);
+*/        ]);
         window.c = context;
     </script>
 </head>

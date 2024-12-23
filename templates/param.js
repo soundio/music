@@ -27,7 +27,7 @@ assign(Literal.scope, {
 
 export default Literal.compileHTML('param', `<div class="line-param-grid param-grid grid">
     <label for="$\{ DATA.name }">$\{ DATA.label || toSpaceCase(DATA.name) }</label>
-    <input type="range" is="normal-input"
+    <input type="range" is="normal-input" class="knob-input"
         name="$\{ DATA.name }"
         min="$\{ DATA.min !== undefined ? DATA.min : 0 }"
         max="$\{ DATA.max !== undefined ? DATA.max : 1 }"
@@ -61,13 +61,22 @@ export const paramFader = Literal.compileHTML('param-fader', `
 `);
 
 export const paramPan = Literal.compileHTML('param-pan', `
+<output class="pan-output" for="$\{ DATA.name }">$\{ toFixedPrecision(2, 30 * (DATA.node[DATA.name].signal.value || 0)) }°</output>
 <input type="range" is="normal-input" class="pan-input" name="$\{ DATA.name }" min="$\{ DATA.min !== undefined ? DATA.min : 0 }" max="$\{ DATA.max !== undefined ? DATA.max : 1 }" law="$\{ DATA.law }" value="$\{ DATA.node[DATA.name].signal.value }" step="any" id="$\{ DATA.name }"/>
-<output for="$\{ DATA.name }">$\{ toFixedPrecision(2, 30 * (DATA.node[DATA.name].signal.value || 0)) }°</output>
+`);
+
+export const paramBooleanInv = Literal.compileHTML('param-boolean-inv', `
+<input id="$\{ DATA.name }" type="checkbox" name="$\{ DATA.name }" checked="$\{ DATA.node[DATA.name].signal.value === 0 }" class="invisible" />
+<label for="$\{ DATA.name }" class="char-thumb thumb size-18 $\{ DATA.class }" data-char="$\{ DATA.char }">Mute</label>
+`);
+
+export const startstopButton = Literal.compileHTML('startstop-button', `
+<button type="button" class="knob-button button" name="startstop" class="button">Play</button>
 `);
 
 export const propertyElement = Literal.compileHTML('property-element', `<div class="line-param-grid param-grid grid">
     <label for="$\{ DATA.name }">$\{ DATA.label || toSpaceCase(DATA.name) }</label>
-    <input type="text"
+    <input type="text" class="knob-input"
         name="$\{ DATA.name }"
         value="$\{ '#' + data.node[DATA.name].id }"
         id="$\{ DATA.name }"
@@ -82,7 +91,7 @@ export const propertyObject = Literal.compileHTML('property-object', `<div class
 
 export const propertyNumber = Literal.compileHTML('property-number', `<div class="line-param-grid param-grid grid">
     <label for="$\{ DATA.name }">$\{ DATA.label || toSpaceCase(DATA.name) }</label>
-    <input type="range" is="normal-input"
+    <input type="range" is="normal-input" class="knob-input"
         name="$\{ DATA.name }"
         min="$\{ DATA.min !== undefined ? DATA.min : 0 }"
         max="$\{ DATA.max !== undefined ? DATA.max : 1 }"
@@ -98,7 +107,7 @@ export const propertyNumber = Literal.compileHTML('property-number', `<div class
 
 export const propertyReadonly = Literal.compileHTML('property-readonly', `<div class="line-param-grid param-grid grid">
     <label for="$\{ DATA.name }">$\{ DATA.label || toSpaceCase(DATA.name) }</label>
-    <input type="text"
+    <input type="text" class="knob-input"
         name="$\{ DATA.name }"
         value="$\{ data.node[DATA.name] }"
         id="$\{ DATA.name }"
@@ -117,12 +126,13 @@ export const propertyString = Literal.compileHTML('property-string', `<div class
 
 export const propertyBoolean = Literal.compileHTML('property-boolean', `<div class="line-param-grid param-grid grid">
     <label for="$\{ DATA.name }">$\{ DATA.label || toSpaceCase(DATA.name) }</label>
-    <input type="checkbox"
-        name="$\{ DATA.name }"
-        checked="$\{ data.node[DATA.name] }"
-        id="$\{ DATA.name }"
-    />
+    <input type="checkbox" name="$\{ DATA.name }" checked="$\{ data.node[DATA.name] }" id="$\{ DATA.name }" />
 </div>`);
+
+export const propertyBooleanThumb = Literal.compileHTML('property-boolean-thumb', `
+    <input type="checkbox" name="$\{ DATA.name }" checked="$\{ data.node[DATA.name] }" class="invisible" id="$\{ DATA.name }" />
+    <label for="$\{ DATA.name }" class="char-thumb thumb size-18 $\{ DATA.class }" data-char="$\{ DATA.char }">Mute</label>
+`);
 
 Literal.compileHTML('option', `<option value="$\{ DATA.value }">$\{ DATA.value }</option>`);
 
@@ -140,7 +150,7 @@ Literal.compileHTML('radio', `
         value="$\{ DATA.value }"
         checked="$\{ data.data.node[DATA.data.name] === DATA.value }"
         id="$\{ DATA.data.name + '-' + DATA.value }" />
-    <label class="radio-label" for="$\{ DATA.data.name + '-' + DATA.value }">$\{ DATA.value }</label>
+    <label class="knob-radio-button radio-button button size-24" for="$\{ DATA.data.name + '-' + DATA.value }">$\{ DATA.value }</label>
 `);
 
 export const propertyRadio = Literal.compileHTML('property-radio', `<div class="line-param-grid param-grid grid">
@@ -149,3 +159,4 @@ export const propertyRadio = Literal.compileHTML('property-radio', `<div class="
         $\{ DATA.values.map((value) => include('radio', { value, data: DATA })) }
     </div>
 </div>`);
+

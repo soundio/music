@@ -1,11 +1,11 @@
 
-@import '../stage-node/element.css';
 @import '../../../bolt/elements/focus.css';
 @import '../../../form-elements/normal-input/input.css';
 @import '../../../form-elements/normal-input/pan-input.css';
 @import '../../../form-elements/normal-input/fader-input.css';
 @import '../../../form-elements/normal-input/mono-input.css';
 
+@import '../../classes/color.css';
 
 :host {
     --system-font: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -59,6 +59,9 @@ canvas {
 
 
 .harmonics-grid {
+    --x-gap: 0.1875rem;
+    --y-gap: 0.1875rem;
+    padding: 0 0.25rem;
     grid-template-rows: 20vw min-content 1.125em;
     column-gap: 0;
     row-gap: 0.1875em;

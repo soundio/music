@@ -21,6 +21,7 @@
     }</script>
 
     <link rel="stylesheet" href="../../../bolt/elements/html.css" />
+    <link rel="stylesheet" href="../../../bolt/elements/body.css" />
     <link rel="stylesheet" href="../../../bolt/elements/table.css" />
     <link rel="stylesheet" href="../../../bolt/elements/label.css" />
     <link rel="stylesheet" href="../../../bolt/elements/form.css" />
@@ -30,49 +31,82 @@
     <link rel="stylesheet" href="../../../bolt/classes/button.css" />
 
     <style>
-
-        html, body {
-            height: 100%;
-        }
-
-        html {
-            background-color: #646568;
+        :root {
+            background-color: #555555;
         }
 
         body {
             font-family: var(--system-font);
-            padding: 1.875rem 1.5rem;
-            padding: 0;
+            padding: 0.5625rem;
         }
 
-        body > header {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            width: 100%;
-            text-align: right;
-            z-index: 2;
-            max-height: 0;
-        }
-
-        body > header > file-menu {
-            margin-top: 0.1875rem;
-            margin-right: 0.375rem;
-        }
-
-        body > stage-graph {
-            height: 100vh;
-            overflow: auto;
-        }
+        stage-audio { margin-top: 1lh; }
     </style>
 
     <script type="module">
-        // <stage-rhythm-synth>
-        import './element.js';
+        import events      from 'dom/events.js';
+        import StageAudio  from '../stage-audio/object.js';
+        import StageAudioElement from '../stage-audio/element.js';
+        import RhythmSynth from './object.js';
+        import StageRhythmSynth from './element.js';
+        import Graph       from '../../../soundstage/nodes/graph.js';
+        import Mix         from '../../../soundstage/nodes/mix.js';
+        import Sample      from '../../../soundstage/nodes/sample-set.js';
+        import Voice       from '../../../soundstage/nodes/voice.js';
+        import Instrument  from '../../../soundstage/nodes/instrument.js';
+
+        Graph.register('mix',    Mix);
+        Graph.register('sample', Sample);
+        Graph.register('voice',  Voice);
+        Graph.register('instrument', Instrument);
+
+        const context = new AudioContext();
+        const object1 = new RhythmSynth(1, {
+            events: [
+                [0, 'start', 40, 1],
+                [0.125, 'start', 40, 1],
+                [0.25, 'start', 40, 1],
+                [0.5, 'start', 40, 1],
+                [0.75, 'start', 40, 1]
+            ]
+        }, context);
+
+
+
+
+
+
+
+        const object2 = new StageAudio(2, { TYPE: 'instrument', data: {
+            nodes: {
+                sample: { type: 'sample', data: { src: '../../../soundstage/audio/gretsch-kit/samples.js', nominalFrequency: 440 }},
+                output: { type: 'gain', data: { gain: 1 }}
+            },
+
+            connects: [
+                'sample', 'output'
+            ],
+
+            commands: [
+                { target: 'sample' }
+            ]
+        } }, context);
+
+        events('mousedown', document).each(() => context.resume());
+
+        object1.output().pipe(object2.input());
+        object2.connect({ data: context.destination });
+
+        const element1 = document.createElement('stage-rhythm-synth'); element1.object = object1;
+        const element2 = document.createElement('stage-audio'); element2.object = object2;
+
+        document.body.append.apply(document.body, [
+            element1,
+            element2
+        ]);
+
+        window.c = context;
     </script>
 </head>
 
-<body>
-    <stage-rhythm-synth></stage-rhythm-synth>
-</body>
+<body></body>

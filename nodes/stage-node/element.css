@@ -5,7 +5,9 @@
 @import '../../../bolt/classes/invisible.css';
 @import '../../../bolt/classes/block.css';
 @import '../../../bolt/classes/thumb.css';
+@import '../../../bolt/classes/button.css';
 @import '../../../bolt/classes/atoms.css';
+
 /* TODO GENERATE ATOMS */
 .size-21 { --size: 1.3125rem; }
 
@@ -200,3 +202,4 @@ select {
     bottom: 0;
     background: transparent;
 }
+

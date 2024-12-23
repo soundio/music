@@ -13,7 +13,7 @@
     right: 0;
     bottom: 0;
     text-align: center;
-    line-height: 1.3125rem;
+    line-height: 1.125rem;
 }
 
 .invisible:checked + .char-thumb {

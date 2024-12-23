@@ -59,16 +59,37 @@ assign(StageNode.prototype, {
         return outputs[o] || (outputs[o] = assign(Stream.of(), { node: this }));
     },
 
-    toJSON: function() {
-        return assign({}, this, {
+    toJSON() {
+        const node = this.data;
+        const data = {};
+
+        // Assemble node settings
+        let name;
+        for (name in node) {
+            //if (!this.hasOwnProperty(name)) { continue; }
+            if (node[name] === null)      { continue; }
+            if (node[name] === undefined) { continue; }
+            if (blacklist[name])          { continue; }
+            // Is it an AudioParam or pseudo-AudioParam
+            data[name] = node[name].setValueAtTime ? node[name].value :
+                // Is it a... TODO: what are we doing here?
+                node[name].connect ? toJSON.apply(node[name]) :
+                // Get value of property
+                node[name] ;
+        }
+
+        return {
+            id:     this.id,
             // Because .type is on prototype it does not automatically get added
             // to JSON
-            type:  this.type,
+            type:   this.type,
+            events: this.events,
+            node:   data,
             // Style is not really a part of Node, but it may be used by the
             // stage to maintain a document and this is a Quick and Dirty Place
             // to Keep It
-            style: this.style && this.style.cssText || undefined
-        });
+            style:  this.style && this.style.cssText || undefined
+        };
     },
 
     stop: function() {
