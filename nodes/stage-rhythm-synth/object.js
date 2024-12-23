@@ -90,13 +90,9 @@ export default class RhythmSynth extends StageObject {
     }
 
     set events(events) {
-console.log('HELLO', events);
-        events = this.#events = events.map(Event.from);
-
-        Signal.tick(() => {
-            // Meh we have to use Data?
-            console.log('new wave');
-            Data.of(this).wave = Waveform.from(eventsToSamples(Data.of(this.#events), this.duration));
-        });
+        this.#events = events.map(Event.from);
+        const samples = eventsToSamples(Data.of(this.#events), this.duration);
+console.log('RhythmDesigner: new waveform from events, samples: ' + samples.length + ' duration: ' + this.duration);
+        Data.of(this).wave = Waveform.from(samples);
     }
 }

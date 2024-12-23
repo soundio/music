@@ -42,7 +42,7 @@ const eventsBlock = Literal.compileHTML('events', `
 
 const harmonic = Literal.compileHTML('harmonic', `
 <label class="y2 center-align text-10 $\{ 2 * data.node.wave.magnitudeAt(DATA.n) * (DATA.n || 0.5) / DATA.node.wave.size <= data.node.wave.gate ? 'black-fg' : 'darklime-fg' }" for="harmonic-$\{ DATA.n }-magnitude" style="grid-column: $\{ DATA.n + 1 }; margin-top: 0; padding: 0; min-height: 0; $\{ data.node.wave.duration === DATA.n ? 'font-weight: bold;' : '' }">$\{ DATA.n }</label>
-<input is="normal-input" class="y1 mono-input vertical $\{ 2 * data.node.wave.magnitudeAt(DATA.n) * (DATA.n || 0.5) / DATA.node.wave.size <= data.node.wave.gate ? 'black-fg' : 'lime-fg' }" type="range" name="harmonic-$\{ DATA.n }-magnitude" min="0" max="$\{ DATA.max }" law="log-24db" step="any" value="$\{ data.node.wave.magnitudeAt(DATA.n) }" title="$\{ /* REMEMBER WRITING DIRECTION IS SCRWED UP */ data.node.wave.gainAt(DATA.n) < dB96 ? '-∞dB' : dB(data.node.wave.gainAt(DATA.n)).toPrecision(3) + 'dB' }" id="harmonic-$\{ DATA.n }-magnitude" style="grid-column: $\{ DATA.n + 1 };" />
+<input is="normal-input" class="y1 mono-input vertical $\{ 2 * data.node.wave.magnitudeAt(DATA.n) * (DATA.n || 0.5) / DATA.node.wave.size <= data.node.wave.gate ? 'black-fg' : 'lime-fg' }" type="range" name="harmonic-$\{ DATA.n }-magnitude" min="0" max="$\{ DATA.max }" law="log-24db" step="any" value="$\{ data.node.wave.magnitudeAt(DATA.n) }" title="" id="harmonic-$\{ DATA.n }-magnitude" style="grid-column: $\{ DATA.n + 1 };" />
 <rotary-input class="y3 mono-input  $\{ 2 * data.node.wave.magnitudeAt(DATA.n) * (DATA.n || 0.5) / DATA.node.wave.size <= data.node.wave.gate ? 'black-fg' : 'lime-fg' }" style="grid-column: $\{ DATA.n + 1 };" name="harmonic-$\{ DATA.n }-phase" min="0" max="${ 2 * Math.PI }" wrap step="any" value="$\{ wrap(0, 2 * PI, data.node.wave.phaseAt(DATA.n)) }" hidden="$\{ data.node.wave.magnitudeAt(DATA.n) === 0 }" />
 `);
 
@@ -248,7 +248,7 @@ console.log(this.object.events.includes(event));
         // Return objects that need to be .stop()ed on disconnect
         return [a, b, Signal.frame(() => {
             // Signal changes to this.node.wave
-            const samples = Data.of(this.object).wave.outputSamples;
+            const samples = Data.of(this.object).wave.samples;
 
 
 const events = Data.of(this.object.events);

@@ -14,7 +14,7 @@ function magnitude(x, y) {
     return Math.sqrt(x * x + y * y);
 }
 
-function vectorsTophasors(vectors) {
+function vectorsToPhasors(vectors) {
     const phasors = new vectors.constructor(vectors.length);
 
     let n = vectors.length;
@@ -26,6 +26,45 @@ function vectorsTophasors(vectors) {
     return phasors;
 }
 
+function vectorsToSamples(vectors, phasors, gate) {
+    // Reject vectors below gate threshold
+    const length = vectors.length;
+
+    /*
+    const gatedVectors = this.#gated || (this.#gated = new this.vectors.constructor(length));
+
+    let j = gatedVectors.length / 4, j1, j2, max, mag, gain;
+    while (j--) {
+        j1   = j * 2;
+        j2   = (0.5 * length - j) * 2;
+        max  = j ? 0.25 * length / j : 0.5 * length ;
+        mag  = phasors[2 * j];
+        gain = mag / max;
+        if (gain > this.gate) {
+            gatedVectors[j1]     = vectors[j1];
+            gatedVectors[j1 + 1] = vectors[j1 + 1];
+            gatedVectors[j2]     = vectors[j2];
+            gatedVectors[j2 + 1] = vectors[j2 + 1];
+        }
+    }
+    */
+
+    const output  = ifft(vectors);
+    const samples = new output.constructor(0.5 * length);
+
+    let i = output.length, x, y;
+    while (i) {
+        y = output[--i];
+        x = output[--i];
+        // All imaginary parts should be 0, or very near 0
+        if (y < -0.000000001 && y > 0.000000001) console.log('PHASE NOT 0!!! What gives?');
+        // Real parts are the samples, write them back to the samples buffer
+        samples[i / 2] = x;
+    }
+
+    return samples;
+}
+
 /**
 Waveform(samples, duration)
 An object that analyses a `samples` array via FFT and publishes arrays of
@@ -33,8 +72,8 @@ vectors and of polar coordinates.
 **/
 
 export default class Waveform {
-    static from(object) {
-        return new Waveform(object);
+    static from(samples) {
+        return new Waveform(samples);
     }
 
     #samples;
@@ -44,9 +83,9 @@ export default class Waveform {
     #gated;
 
     constructor(samples) {
-        this.samples  = samples;
-        this.size     = samples.length;
-        this.gate     = 0;
+        this.gate    = 0;
+        this.size    = samples.length;
+        this.samples = samples;
 
         console.table({
             magnitude: this.phasors.filter((n, i) => i % 2 === 0).slice(0, 8).map((n) => n.toFixed(6)),
@@ -57,57 +96,19 @@ export default class Waveform {
     set samples(samples) {
         this.#vectors = undefined;
         this.#phasors = undefined;
-        return this.#samples = samples;
+        this.#samples = samples;
     }
 
     get samples() {
-        return this.#samples;
+        return this.#samples || (this.#samples = vectorsToSamples(this.vectors, this.phasors, this.gate));
     }
 
     get vectors() {
-        return this.#vectors
-            || (this.#vectors = fft(this.#samples));
+        return this.#vectors || (this.#vectors = fft(this.samples));
     }
 
     get phasors() {
-        return this.#phasors
-            || (this.#phasors = vectorsTophasors(this.vectors));
-    }
-
-    get outputSamples() {
-        // Reject vectors below gate threshold
-        const { vectors, phasors } = this;
-        const length = vectors.length;
-        const gatedVectors = this.#gated || (this.#gated = new this.vectors.constructor(length));
-
-        let j = gatedVectors.length / 4, j1, j2, max, mag, gain;
-        while (j--) {
-            j1   = j * 2;
-            j2   = (0.5 * length - j) * 2;
-            max  = j ? 0.25 * length / j : 0.5 * length ;
-            mag  = phasors[2 * j];
-            gain = mag / max;
-            if (gain > this.gate) {
-                gatedVectors[j1]     = vectors[j1];
-                gatedVectors[j1 + 1] = vectors[j1 + 1];
-                gatedVectors[j2]     = vectors[j2];
-                gatedVectors[j2 + 1] = vectors[j2 + 1];
-            }
-        }
-
-        const output = ifft(gatedVectors);
-        const samples = new output.constructor(0.5 * length);
-        let i = output.length, x, y;
-        while (i) {
-            y = output[--i];
-            x = output[--i];
-            // All imaginary parts should be 0, or very near 0
-            if (y < -0.000000001 && y > 0.000000001) console.log('PHASE NOT 0!!! What gives?');
-            // Real parts are the samples, write them back to the samples buffer
-            samples[i / 2] = x;
-        }
-
-        return samples;
+        return this.#phasors || (this.#phasors = vectorsToPhasors(this.vectors));
     }
 
     /**
@@ -122,9 +123,11 @@ export default class Waveform {
     .gainAt(f)
     Gets gain of frequency index `f`.
     **/
+    /*
     gainAt(n) {
         return 2 * this.phasors[2 * n] / this.phasors.length;
     }
+    */
 
     /**
     .magnitudeAt(f)
