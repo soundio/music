@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/mathjs@11.3.0/lib/browser/math.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+  <div id="plot"></div>
+  <script>
+    const number_of_harmonics = 128;
+    const harmonics = Array.from({ length: number_of_harmonics }, (_, i) => i + 1);
+
+    function fterms(x, coeffs, weighting = Array.from({ length: coeffs.length / 2 }, (_, i) => 0.5 ** i)) {
+      const L = coeffs.length / 2;
+      return [
+        ...Array.from({ length: L }, (_, i) => (weighting[i] * coeffs[i] * Math.sin(x * (i + 1))) / (i + 1)),
+        ...Array.from({ length: L }, (_, i) => (weighting[i] * coeffs[L + i] * Math.cos(x * (i + 1))) / (i + 1))
+      ];
+    }
+
+    function dfterms(x, coeffs, weighting = Array.from({ length: coeffs.length / 2 }, (_, i) => 0.5 ** i)) {
+      const L = coeffs.length / 2;
+      return [
+        ...Array.from({ length: L }, (_, i) => weighting[i] * coeffs[i] * Math.cos(x * (i + 1))),
+        ...Array.from({ length: L }, (_, i) => -weighting[i] * coeffs[L + i] * Math.sin(x * (i + 1)))
+      ];
+    }
+
+    function f(x, coeffs, weighting = Array.from({ length: coeffs.length / 2 }, (_, i) => 0.5 ** i)) {
+      return x.map(xi => math.sum(fterms(xi, coeffs, weighting)));
+    }
+
+    function df(x, coeffs, weighting = Array.from({ length: coeffs.length / 2 }, (_, i) => 0.5 ** i)) {
+      return x.map(xi => math.sum(dfterms(xi, coeffs, weighting)));
+    }
+
+    function plotIt(coeffs, crossingPoints = null, weighting = weighting) {
+      const xs = math.linspace(0, 2 * Math.PI, 100);
+      const ys = f(xs, coeffs, weighting);
+      const ylim = [Math.min(-1, math.min(ys) * 1.05), Math.max(1, math.max(ys) * 1.05)];
+
+      const trace1 = {
+        x: xs,
+        y: ys,
+        mode: 'lines',
+        name: 'f',
+        line: { width: 5 }
+      };
+
+      const trace2 = {
+        x: xs,
+        y: df(xs, coeffs, weighting),
+        mode: 'lines',
+        name: 'df',
+        line: { width: 1, dash: 'dash' }
+      };
+
+      const layout = {
+        yaxis: { range: ylim },
+        xaxis: {
+          tickvals: math.linspace(0, 2 * Math.PI, 9),
+          ticktext: ['0', 'π/4', 'π/2', '3π/4', 'π', '5π/4', '3π/2', '7π/4', '2π']
+        },
+        showlegend: true
+      };
+
+      const data = [trace1, trace2];
+
+      Plotly.newPlot('plot', data, layout);
+
+      if (crossingPoints) {
+        Plotly.addTraces('plot', {
+          x: crossingPoints.map(p => p[0]),
+          y: crossingPoints.map(p => p[1]),
+          mode: 'markers',
+          name: 'crossing points',
+          marker: { color: 'red' }
+        });
+      }
+    }
+
+    function fourierExpand(crossingPoints, numberOfHarmonics, weighting) {
+      const n = crossingPoints.length;
+      const L = numberOfHarmonics;
+      const A = numeric.rep([2 * n, 2 * L], 0);
+
+      for (let i = 0; i < n; i++) {
+        A[2 * i] = fterms(crossingPoints[i][0], Array(2 * L).fill(1), weighting);
+        A[2 * i + 1] = dfterms(crossingPoints[i][0], Array(2 * L).fill(1), weighting);
+      }
+
+      const S = numeric.svd(A);
+
+      if (numeric.norm2(A - numeric.dot(S.U, numeric.dot(numeric.diag(S.S), numeric.transpose(S.V)))) > 1e-12) {
+        throw new Error('SVD decomposition error');
+      }
+
+      const pseudoInverse = numeric.dot(S.V, numeric.dot(numeric.diag(S.S.map(s => 1 / s)), numeric.transpose(S.U)));
+
+      const select = Array.from({ length: n }, (_, i) => [i, n + i]).flat();
+      const b = Array(2 * n).fill(0).map((_, i) => (i % 2 === 0 ? 0 : crossingPoints[Math.floor(i / 2)][1]));
+
+      const z0 = numeric.dot(pseudoInverse, b);
+
+      return z0;
+    }
+
+    const twopi = 2 * Math.PI;
+    const pointSets = {
+      door: {
+        name: "There's somebody at the door",
+        data: [
+          [0, 1],
+          [1 / 3 * twopi / 4, 0.4],
+          [2 / 3 * twopi / 4, 0.5],
+          [twopi / 4, 0.9],
+          [5 / 3 * twopi / 4, 0.8],
+          [twopi / 2, 1],
+          [11 / 3 * twopi / 4, 0.3]
+        ]
+      },
+      mario: {
+        name: "1st bar of Mario",
+        data: [
+          [0, 1],
+          [3 * twopi / 16, 0.75],
+          [6 * twopi / 16, 0.75],
+          [9 * twopi / 16, 0.75],
+          [11 * twopi / 16, 1],
+          [13 * twopi / 16, 0.75],
+          [14 * twopi / 16, 0.75]
+        ]
+      }
+    };
+
+    pointSets.door2 = JSON.parse(JSON.stringify(pointSets.door));
+    pointSets.door2.data[6][0] = 3 * twopi / 4;
+    pointSets.door2.name = "There's somebody at the door (simple)";
+
+    const crossingPoints = pointSets.door;
+    const weighting = Array.from({ length: number_of_harmonics }, (_, i) => 0.5 ** (i * 2));
+    const z0 = fourierExpand(crossingPoints.data, number_of_harmonics, weighting);
+
+    plotIt(z0, crossingPoints.data, weighting);
+    console.log(z0);
+  </script>
+</body>
+</html>

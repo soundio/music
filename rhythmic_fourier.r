@@ -4,68 +4,92 @@ library( pracma ) # for nullspace
 number_of_harmonics = 128
 harmonics = 1:number_of_harmonics
 
-# compute all terms of the Fourier series up to L harmonics.
-# sin terms come first, then cosine terms
-# A weighting is included so that we can up-weight lower harmonics i.e. favour them in fitted coefficients
+#
+# The fourier series of a function d is:
+# f(x) = sum_n a_n sin(nx)/n + b_n cos(nx)/n
+# Its derivative is
+# f'(x) = sum_i a_n cos(nx) - b_n sin(nx)
+#
+
+# We use a slightly generalised version below that include fixed weights w_n on the terms, so
+# f(x) = sum_n a_n sin(nx) * w_n/n + b_n cos(nx) * w_n/n
+# This is a simple way to prefer lower harmonics when we solve for coefficients.
+# E.g. if we set the weights to 1/2^(n-1) then a gradient of 1 at x=0 will be obtained by any of:
+# a_1 = 1, a_2 = 2, a_3 = 4, and so on.
+
+# fterms()
+# Given coefficients (a_n), (b_n) this function computes the terms in the fourier series, as above.
+# a_n terms come first in the coeffs vector, then b_n terms.
+# The same weights is applied to sin and cosine terms.
 fterms = function(
 	x,
 	coeffs,
-	weighting = 0.5^(0:(L-1))
+	weights = 0.5^(0:(L-1))
 ) {
 	L = length(coeffs)/2
 	# ith harmonic is given amplitude 1/i, so has same gradient at 0
 	c(
-		(weighting * coeffs[1:L] * sin(x*(1:L)) / 1:L),
-		(weighting * coeffs[L+(1:L)] * cos(x*(1:L)) / 1:L )
+		(weights * coeffs[1:L] * sin(x*(1:L)) / 1:L),          
+		(weights * coeffs[L+(1:L)] * cos(x*(1:L)) / 1:L )
 	)
 }
 
+# dfterms()
+# Given coefficients (a_n), (b_n) this function computes the terms in the derivative of the fourier series.
+# a_n terms come first in the coeffs vector, then b_n terms.
+# The same weights is applied to sin and cosine terms.
 dfterms = function(
 	x,
 	coeffs,
-	weighting = 0.5^(0:(L-1))
+	weights = 0.5^(0:(L-1))
 ) {
 	L = length(coeffs)/2
 	# ith harmonic is given amplitude 1/i, so has same gradient at 0
 	c(
-		(weighting * coeffs[1:L] * cos(x*(1:L)) ),
-		(-weighting * coeffs[L+(1:L)] * sin(x*(1:L)) )
+		(weights * coeffs[1:L] * cos(x*(1:L)) ),          
+		(-weights * coeffs[L+(1:L)] * sin(x*(1:L)) )
 	)
 }
 
-f = function(x, coeffs, weighting = 0.5^(0:(L-1)) ) {
+# f()
+# Add up the fourier series to compute the function
+f = function(x, coeffs, weights = 0.5^(0:(L-1)) ) {
 	sapply(
 		x,
 		function(x) {
-			sum( fterms( x, coeffs, weighting ))
+			sum( fterms( x, coeffs, weights ))
 		}
 	)
 }
 
-df = function(x, coeffs, weighting = 0.5^(0:(L-1)) ) {
+# df()
+# Add up the derivative of the fourier series to compute the derivative of the function
+df = function(x, coeffs, weights = 0.5^(0:(L-1)) ) {
 	sapply(
 		x,
 		function(x) {
-			sum( dfterms( x, coeffs, weighting ))
+			sum( dfterms( x, coeffs, weights ))
 		}
 	)
 }
 
-plot.it <- function( coeffs, crossing.points = NULL, weighting = weighting ) {
+# plot.it()
+# This function plots the function f and its derivative, annotating specific points.
+plot.it <- function( coeffs, crossing.points = NULL, weights = weights ) {
 	xs = seq( from = 0, to = 2*pi, by = 0.01 )
 	ylim = c(
-		min(-1, min( f( xs, coeffs, weighting ) * 1.05 )),
-		max(1, max( f( xs, coeffs, weighting ) * 1.05 ))
+		min(-1, min( f( xs, coeffs, weights ) * 1.05 )),
+		max(1, max( f( xs, coeffs, weights ) * 1.05 ))
 	)
 
-	plot( xs, f( xs, coeffs, weighting ), type = 'l', lwd = 5, bty = 'n', ylim = ylim, xaxt = 'n', xlab = '' )
+	plot( xs, f( xs, coeffs, weights ), type = 'l', lwd = 5, bty = 'n', ylim = ylim, xaxt = 'n', xlab = '' )
 	axis( 1, at = seq( from = 0, to = 2*pi, by = pi/4 ), labels = c( '0', 'pi/4', 'pi/2', '3pi/4', 'pi', '5pi/4', '6pi/4', '7pi/4', '2pi'))
 	mtext( 'x', side = 1, line = 3, cex = 2 )
 	abline( h = seq( from = floor( min( ylim )), to = ceiling( max( ylim )), by = 0.5 ), lty = 1, col = rgb( 0, 0, 0, 0.2 ), lwd = 1 )
 	abline( h = seq( from = floor( min( ylim )), to = ceiling( max( ylim )), by = 1 ), lty = 1, col = rgb( 0, 0, 0, 0.2 ), lwd = 2 )
 	abline( v = 2*pi*(0:7)/8, lty = 1, col = rgb( 0, 0, 0, 0.2 ), lwd = 1 )
 	abline( v = 2*pi*(0:3)/4, lty = 1, col = rgb( 0, 0, 0, 0.2 ), lwd = 2 )
-	points( xs, df( xs, coeffs, weighting ), type = 'l', lwd = 1, lty = 2 )
+	points( xs, df( xs, coeffs, weights ), type = 'l', lwd = 1, lty = 2 )
 	legend(
 		"topright",
 		legend = c( "f", "df" ),
@@ -87,8 +111,15 @@ plot.it <- function( coeffs, crossing.points = NULL, weighting = weighting ) {
 	}
 }
 
-
-fourier.expand = function( crossing.points, number_of_harmonics, weighting ) {
+# find.fourier.series()
+# Given a set of points where f should cross the x axis, with gradients,
+# this function computes a fourier series that has these crossing points.
+# Specifically it computes the series with the 'smallest' coefficient vector (in the sense
+# of Euclidean distance to the origin).  If weights are given then they can affect which solution is 
+# found (because, in effect, they stretch out the coefficient dimensions so affecting which are closest to the origin).
+# The function works by representing the crossing points as linear equations the coefficients must satisfy,
+# and solving using the pseudoinverse.
+find.fourier.series = function( crossing.points, number_of_harmonics, weights ) {
 	# We will write constrians as Ax = b and we need to solve for x.
 	A = matrix(
 		NA,
@@ -99,8 +130,8 @@ fourier.expand = function( crossing.points, number_of_harmonics, weighting ) {
 	L = number_of_harmonics
 	for( i in 1:nrow( crossing.points )) {
 		# Curve passes through zero so encode value of the harmonic comonents at the point
-		A[2*i-1,] = fterms( crossing.points[i,1], rep( 1, L*2 ), weighting )
-		A[2*i,] = dfterms( crossing.points[i,1], rep( 1, L*2 ), weighting )
+		A[2*i-1,] = fterms( crossing.points[i,1], rep( 1, L*2 ), weights )
+		A[2*i,] = dfterms( crossing.points[i,1], rep( 1, L*2 ), weights )
 	}
 
 	S = svd(A)
@@ -125,7 +156,7 @@ fourier.expand = function( crossing.points, number_of_harmonics, weighting ) {
 
 
 twopi = 2*pi
-point.sets = list(
+rhythms = list(
 	door = list(
 		name = "There's somebody at the door",
 		data = as.matrix(
@@ -165,28 +196,28 @@ point.sets = list(
 	)
 )
 
-point.sets$door2 = point.sets$door
-point.sets$door2$data[7,1] = 3 * twopi / 4
-point.sets$door2$name = "There's somebody at the door (simple)"
+rhythms$door2 = rhythms$door
+rhythms$door2$data[7,1] = 3 * twopi / 4
+rhythms$door2$name = "There's somebody at the door (simple)"
 
-crossing.points = point.sets[['door']]
+crossing.points = rhythms[['mario']]
 
-weighting = 0.5^(seq( from = 0, to = (number_of_harmonics-1)*2, by = 2 ))
-z_0 = fourier.expand( crossing.points$data, number_of_harmonics, weighting = weighting )
+# I'll weight by powers of 4
+weights = 0.5^(seq( from = 0, to = (number_of_harmonics-1)*2, by = 2 ))
 
-layout( matrix( 1, ncol = 1 ))
-plot.it( z_0, crossing.points$data, weighting = weighting )
+# Solve for the fourier coefficients
+z_0 = find.fourier.series( crossing.points$data, number_of_harmonics, weights = weights )
+
+# Plot the solution
+plot.it( z_0, crossing.points$data, weights = weights )
 mtext( crossing.points$name, 3, line = 1, cex = 2 )
+
+# Print the top few parameters
 print( tibble::tibble(
 	harmonic = 1:number_of_harmonics,
-	sin = sprintf( "%.4f", z_0[1:number_of_harmonics]*weighting ),
-	cos = sprintf( "%.4f", z_0[number_of_harmonics+(1:number_of_harmonics)]*weighting )
+	sin = sprintf( "%.4f", z_0[1:number_of_harmonics]*weights ),
+	cos = sprintf( "%.4f", z_0[number_of_harmonics+(1:number_of_harmonics)]*weights )
 ), n = 16 )
-
-
-
-
-
 
 
 this.stuff.is.unused.at.the.moment = function() {
