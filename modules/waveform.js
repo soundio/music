@@ -65,6 +65,7 @@ function vectorsToSamples(vectors, phasors, gate) {
     return samples;
 }
 
+
 /**
 Waveform(samples, duration)
 An object that analyses a `samples` array via FFT and publishes arrays of
@@ -137,12 +138,54 @@ export default class Waveform {
         return this.phasors[2 * n];
     }
 
+    setMagnitudeAt(n, value) {
+        const i1 = 2 * n;
+        const i2 = 2 * (0.5 * this.phasors.length - n);
+
+        this.phasors[i1] = value;
+        this.phasors[i2] = value;
+
+        const d = this.phasors[i1];
+        const a = this.phasors[i1 + 1];
+        const x = Math.cos(a) * d;
+        const y = Math.sin(a) * d;
+
+        this.vectors[i1]     = x;
+        this.vectors[i1 + 1] = y;
+        this.vectors[i2]     = x;
+        this.vectors[i2 + 1] = -y;
+
+        // Invalidate samples
+        this.#samples = undefined;
+    }
+
     /**
     .phaseAt(f)
     Gets phase of frequency index `f`.
     **/
     phaseAt(n) {
         return this.phasors[2 * n + 1];
+    }
+
+    setPhaseAt(n, value) {
+        const i1 = 2 * n;
+        const i2 = 2 * (0.5 * this.phasors.length - n);
+
+        this.phasors[i1 + 1] = value;
+        this.phasors[i2 + 1] = value;
+
+        const d = this.phasors[i1];
+        const a = this.phasors[i1 + 1];
+        const x = Math.cos(a) * d;
+        const y = Math.sin(a) * d;
+
+        this.vectors[i1]     = x;
+        this.vectors[i1 + 1] = y;
+        this.vectors[i2]     = x;
+        this.vectors[i2 + 1] = -y;
+
+        // Invalidate samples
+        this.#samples = undefined;
     }
 
     /**

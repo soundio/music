@@ -14,41 +14,25 @@ const assign   = Object.assign;
 const defaults = {};
 
 
-function vectorsToSamples(vectors, samples = new vectors.constructor(vectors.length / 2)) {
-    // Reject vectors below gate threshold
-    const gatedVectors = new vectors.constructor(vectors.length);
-
-    let j = gatedVectors.length / 4, j1, j2, max, mag, gain;
-    while (j--) {
-        j1 = j * 2;
-        j2 = (0.5 * DATA.phasors.length - j) * 2;
-        max  = j ? 0.25 * DATA.phasors.length / j : 0.5 * DATA.phasors.length ;
-        mag  = DATA.phasors[2 * j];
-        gain = mag / max;
-        if (gain > data.gate) {
-            if (j < 32) console.log(j);
-            gatedVectors[j1]     = vectors[j1];
-            gatedVectors[j1 + 1] = vectors[j1 + 1];
-            gatedVectors[j2]     = vectors[j2];
-            gatedVectors[j2 + 1] = vectors[j2 + 1];
+function mergeEvents(events, incomes) {
+    let n = -1, event;
+    while (event = events[++n]) {
+        // No more incoming events, shorten events and get out of here
+        if (!incomes[n]) {
+            events.length = n;
+            return events;
         }
+
+        // Set existing event to incoming event data
+        event[0] = incomes[n][0];
+        event[2] = incomes[n][2];
+        event[3] = incomes[n][3];
     }
 
-    // Do the inverse FFT to print the output signal. THIS SHOULD BE
-    // IN A SEPARATE RENDER FN SOMEWHERE. It's only here because
-    // this is where updates happen, for now.
-    const output = DATA.output = ifft(gatedVectors);
-    let i = output.length, x, y;
-    while (i) {
-        y = output[--i];
-        x = output[--i];
-        // All imaginary parts should be 0, or very near 0
-        if (y < -0.000000001 && y > 0.000000001) console.log('PHASE NOT 0!!! What gives?');
-        // Real parts are the samples, write them back to the samples buffer
-        samples[i / 2] = x;
-    }
-
-    return samples;
+    // Push any extra incomes into events
+    --n;
+    while (incomes[++n]) events.push(Event.from(incomes[n]));
+    return events;
 }
 
 
@@ -70,23 +54,28 @@ export default class RhythmSynth extends StageObject {
         const outputs = { size: 1 };
         super(id, inputs, outputs);
 
-        //this.data     = data;
         this.duration = data.duration || 1;
         this.events   = data.events;
+
+        const output0 = this.output(0);
+        let h = 0;
+        this.PLAY = () => {
+            const events = this.events;
+            let n = -1;
+            while (events[++n]) output0.push(Event.of(
+                events[n][0] + (++h),
+                events[n][1],
+                events[n][2],
+                events[n][3]
+            ));
+            if (!this.STOPPED) setTimeout(this.PLAY, 1000);
+        }
     }
 
     get events() {
-        // This logic is dodge. We get the input samples unless outputSamples
-        // is available.
-        //if (!this.wave || !this.wave.outputSamples)
-        return this.#events;
-
         // TEMP pitch = 60
-        //const outputEvents = samplesToEvents(this.wave.outputSamples, this.duration, 60);
-
-        // TODO Mutate/merge output events with existing events
-        //console.log(outputEvents);
-        //return outputEvents;
+        const incoming = samplesToEvents(this.wave.samples, this.duration, 60);
+        return mergeEvents(this.#events, incoming);
     }
 
     set events(events) {
@@ -94,5 +83,14 @@ export default class RhythmSynth extends StageObject {
         const samples = eventsToSamples(Data.of(this.#events), this.duration);
 console.log('RhythmDesigner: new waveform from events, samples: ' + samples.length + ' duration: ' + this.duration);
         Data.of(this).wave = Waveform.from(samples);
+    }
+
+    start() {
+        this.PLAY();
+    }
+
+    stop() {
+        // TEMP
+        this.STOPPED = true;
     }
 }

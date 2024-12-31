@@ -122,58 +122,41 @@ export default element('<stage-rhythm-synth>', {
                 // input.$event is set in the value attribute. Hacky but effective.
                 const event  = input.$event;
                 const value  = input.value;
-                //const normal = parseFloat(input.value);
-                //const value  = law.denormalise(0, 1, normal);
+
 console.log(this.object.events.includes(Data.objectOf(event)));
 console.log(this.object.events.includes(event));
+
                 event[3] = value;
+
+                // Signal changes
+                //const TEMPsignal = Data.signal('events', this.object);
+                //TEMPsignal.invalidate();
             },
 
             // Respond to harmonic magnitude inputs
             '[name^="harmonic-"][name$="-magnitude"]': (input, e) => {
-                const wave   = this.object.wave;
-                const data   = Data.of(wave);
-                const n      = parseInt(input.name.slice(9), 10);
-                const i0     = n * 2;
-                const i2     = (0.5 * wave.phasors.length - n) * 2;
-                const max    = n ? 0.25 * wave.phasors.length / n : 0.5 * wave.phasors.length;
-                //const normal = parseFloat(input.value);
-                //const value  = law.denormalise(0, max, normal);
+                const waveform = this.object.wave;
+                const n        = parseInt(input.name.slice(9), 10);
 
-                data.phasors[i0] = input.value;
-                data.phasors[i2] = input.value;
+                // Sets both +ve and -ve frequency components
+                waveform.setMagnitudeAt(n, input.value);
 
-                const d = wave.phasors[i0];
-                const a = wave.phasors[i0 + 1];
-                const x = Math.cos(a) * d;
-                const y = Math.sin(a) * d;
-
-                data.vectors[i0]     = x;
-                data.vectors[i0 + 1] = y;
-                data.vectors[i2]     = x;
-                data.vectors[i2 + 1] = -y;
+                // Signal changes
+                const TEMPsignal = Data.signal('events', this.object);
+                TEMPsignal.invalidate();
             },
 
             // Respond to harmonic phase inputs
             '[name^="harmonic-"][name$="-phase"]': (input, e) => {
                 const wave = this.object.wave;
-                const data = Data.of(wave);
                 const n    = parseInt(input.name.slice(9), 10);
-                const i0   = n * 2;
-                const i2   = (0.5 * wave.phasors.length - n) * 2;
 
-                data.phasors[i0 + 1] = input.value;
-                data.phasors[i2 + 1] = input.value;
+                // Sets both +ve and -ve frequency components
+                waveform.setPhaseAt(n, input.value);
 
-                const d = wave.phasors[i0];
-                const a = wave.phasors[i0 + 1];
-                const x = Math.cos(a) * d;
-                const y = Math.sin(a) * d;
-
-                data.vectors[i0]     = x;
-                data.vectors[i0 + 1] = y;
-                data.vectors[i2]     = x;
-                data.vectors[i2 + 1] = -y;
+                // Signal changes
+                const TEMPsignal = Data.signal('events', this.object);
+                TEMPsignal.invalidate();
             },
 
             // Respond to harmonics gate input
@@ -248,17 +231,16 @@ console.log(this.object.events.includes(event));
         // Return objects that need to be .stop()ed on disconnect
         return [a, b, Signal.frame(() => {
             // Signal changes to this.node.wave
-            const samples = Data.of(this.object).wave.samples;
+            const samples = this.object.wave.samples;
 
 
-const events = Data.of(this.object.events);
+const events = Data.of(this.object).events;
 let n = events.length, a;
 while (n--) {
     events[n][0];
     events[n][2];
     events[n][3];
 }
-console.log('FRAME');
 
 
             // Draw
